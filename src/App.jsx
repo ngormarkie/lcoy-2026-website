@@ -714,8 +714,10 @@ export default function App() {
     </div>
   </section>
 
-  <section className="objectives-section">
-    <div className="wrap">
+  <section className="nys-section">
+    <div className="about-hero-bg" style={{backgroundImage:"url('photos/COP29 Photo.jpeg')",backgroundPosition:'center 60%'}}></div>
+    <div className="about-hero-overlay"></div>
+    <div className="wrap" style={{position:'relative',zIndex:3}}>
       <div className="section-head" style={{textAlign:'center',margin:'0 auto 48px',maxWidth:'none'}}>
         <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>The output</span>
         <h2 style={{color:'#fff',marginTop:'14px'}}>The National Youth Statement <em className="script-em">2026</em></h2>
