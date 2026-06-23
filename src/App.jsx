@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 const NAV = [
-  ['home','Home'],['about','About'],['programme','Programme'],
-  ['themes','Thematic Areas'],['editions','Past Editions'],['contact','Contact']
+  ['home','Home'],
+  ['about','About',[ ['about','What is LCOY'], ['team','Organizing Team'], ['editions','Past Conferences'] ]],
+  ['programme','Programme'],
+  ['themes','Thematic Areas'],
+  ['contact','Contact']
 ];
 const CAPS = [
   'Photos from LCOY Sierra Leone 2024',
@@ -24,6 +27,7 @@ export default function App() {
   const [open,setOpen] = useState(false);
   const [slide,setSlide] = useState(0);
   const [regOk,setRegOk] = useState(false);
+  const [volTab,setVolTab] = useState(0);
   const [msgOk,setMsgOk] = useState(false);
   const [cd,setCd] = useState({d:'--',h:'--',m:'--',s:'--'});
   const timer = useRef(null);
@@ -85,7 +89,12 @@ export default function App() {
           <img src="/photos/Logos for host organizations/LCOY-YOUNGO-Endored.png" alt="LCOY Sierra Leone 2026" />
         </div>
         <nav className={"menu"+(open?" open":"")}>
-          {NAV.map(([id,label])=>(<a key={id} className={page===id?"active":""} onClick={()=>nav(id)}>{label}</a>))}
+          {NAV.map(([id,label,sub])=> sub ? (
+            <div key={id} className={"nav-dropdown"+(page===id||sub.some(s=>s[0]===page)?" active":"")}>
+              <a onClick={()=>nav(id)}>{label} <span className="nav-arrow">▾</span></a>
+              <div className="nav-sub">{sub.map(([sid,slabel])=>(<a key={sid} className={page===sid?"active":""} onClick={()=>nav(sid)}>{slabel}</a>))}</div>
+            </div>
+          ) : (<a key={id} className={page===id?"active":""} onClick={()=>nav(id)}>{label}</a>))}
         </nav>
         <div className="nav-cta">
           <a className="btn btn-blue" onClick={()=>nav('register')}>Register</a>
@@ -289,47 +298,6 @@ export default function App() {
     </div>
   </section>
 
-  
-  <section className="inclusion-section">
-    <div className="wrap">
-      <div className="inclusion-header reveal">
-        <span className="eyebrow">What inclusion means in practice</span>
-        <h2>Leaving no youth behind — <em className="script-em">starting with ourselves</em></h2>
-      </div>
-      <div className="inclusion-grid">
-        <div className="inc-card reveal d1">
-          <div className="inc-icon" style={{background:'var(--blue)'}}>⊕</div>
-          <h3>Geographic</h3>
-          <p>Youth from all four regions — rural and peri-urban representation prioritised over Freetown-only attendance.</p>
-        </div>
-        <div className="inc-card reveal d2">
-          <div className="inc-icon" style={{background:'var(--orange)'}}>☆</div>
-          <h3>Disability</h3>
-          <p>Reserved places, accessible venue, sign language interpretation, and accessible materials.</p>
-        </div>
-        <div className="inc-card reveal d3">
-          <div className="inc-icon" style={{background:'#c678dd'}}>⚥</div>
-          <h3>Gender</h3>
-          <p>Minimum 50% female participation, dedicated space for young mothers, women's climate networks.</p>
-        </div>
-        <div className="inc-card reveal d1">
-          <div className="inc-icon" style={{background:'var(--green)'}}>⛏</div>
-          <h3>Informal economy</h3>
-          <p>Trading, artisanal fishing, smallholder farming, waste picking, okada &amp; kekeh transport.</p>
-        </div>
-        <div className="inc-card reveal d2">
-          <div className="inc-icon" style={{background:'#e06c75'}}>⛉</div>
-          <h3>Age</h3>
-          <p>Structured engagement of children and adolescents in age-appropriate sessions with safeguarding protocols.</p>
-        </div>
-        <div className="inc-card reveal d3">
-          <div className="inc-icon" style={{background:'#56b6c2'}}>Aa</div>
-          <h3>Linguistic</h3>
-          <p>Facilitation in Krio alongside English. Key materials translated for accessibility.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
   
   <section className="partners-top" id="partners">
@@ -469,6 +437,47 @@ export default function App() {
         <div className="obj-card reveal d1"><div className="obj-num">04</div><h3>Build finance literacy</h3><p>A youth cohort able to access, track and influence finance flows under the NDC 3.0 finance architecture.</p></div>
         <div className="obj-card reveal d2"><div className="obj-num">05</div><h3>Deliver community action</h3><p>Mangrove restoration, tree planting and clean-up that demonstrate advocacy matched by practice.</p></div>
         <div className="obj-card reveal d3"><div className="obj-num">06</div><h3>Mobilise stakeholders</h3><p>Government, UN partners, the private sector and civil society around an inclusive, NDC-aligned youth agenda.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section className="inclusion-section">
+    <div className="wrap">
+      <div className="inclusion-header reveal">
+        <span className="eyebrow">What inclusion means in practice</span>
+        <h2>Leaving no youth behind — <em className="script-em">starting with ourselves</em></h2>
+      </div>
+      <div className="inclusion-grid">
+        <div className="inc-card reveal d1">
+          <div className="inc-icon" style={{background:'var(--blue)'}}>⊕</div>
+          <h3>Geographic</h3>
+          <p>Youth from all four regions — rural and peri-urban representation prioritised over Freetown-only attendance.</p>
+        </div>
+        <div className="inc-card reveal d2">
+          <div className="inc-icon" style={{background:'var(--orange)'}}>☆</div>
+          <h3>Disability</h3>
+          <p>Reserved places, accessible venue, sign language interpretation, and accessible materials.</p>
+        </div>
+        <div className="inc-card reveal d3">
+          <div className="inc-icon" style={{background:'#c678dd'}}>⚥</div>
+          <h3>Gender</h3>
+          <p>Minimum 50% female participation, dedicated space for young mothers, women's climate networks.</p>
+        </div>
+        <div className="inc-card reveal d1">
+          <div className="inc-icon" style={{background:'var(--green)'}}>⛏</div>
+          <h3>Informal economy</h3>
+          <p>Trading, artisanal fishing, smallholder farming, waste picking, okada &amp; kekeh transport.</p>
+        </div>
+        <div className="inc-card reveal d2">
+          <div className="inc-icon" style={{background:'#e06c75'}}>⛉</div>
+          <h3>Age</h3>
+          <p>Structured engagement of children and adolescents in age-appropriate sessions with safeguarding protocols.</p>
+        </div>
+        <div className="inc-card reveal d3">
+          <div className="inc-icon" style={{background:'#56b6c2'}}>Aa</div>
+          <h3>Linguistic</h3>
+          <p>Facilitation in Krio alongside English. Key materials translated for accessibility.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -918,7 +927,88 @@ export default function App() {
   </section>
   </>);
 
-  const pages = { home:Page_home,about:Page_about,programme:Page_programme,themes:Page_themes,editions:Page_editions,register:Page_register,contact:Page_contact };
+  const STEERING = [
+    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+  ];
+  const VOL_GROUPS = [
+    { group: 'Programme & Policy', color: 'var(--blue)', members: [
+      { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
+    ]},
+    { group: 'Logistics', color: 'var(--orange)', members: [
+      { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
+    ]},
+    { group: 'Registration & Protocol', color: '#2ecc71', members: [
+      { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
+    ]},
+    { group: 'Finance & Fundraising', color: '#c678dd', members: [
+      { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
+    ]},
+    { group: 'Communications & Media', color: '#56b6c2', members: [
+      { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
+    ]},
+  ];
+
+  const Page_team = () => (<>
+  <section className="about-hero">
+    <div className="about-hero-bg" style={{backgroundImage:"url('photos/Past Editions/LCOY 2024 Day 2/Day 2/Main 2.jpg')",backgroundPosition:'center 55%'}}></div>
+    <div className="about-hero-overlay"></div>
+    <div className="wrap" style={{position:'relative',zIndex:3}}>
+      <span className="eyebrow" style={{color:'var(--orange)',fontSize:'1.4rem'}}>The team</span>
+      <h2 className="about-title">The people behind <em className="script-em">LCOY-SL 2026</em></h2>
+      <p className="about-lead">A coalition of passionate young climate leaders working to make LCOY Sierra Leone 2026 a reality.</p>
+    </div>
+  </section>
+
+  <section>
+    <div className="wrap">
+      <div className="section-head" style={{textAlign:'center',margin:'0 auto 48px',maxWidth:'none'}}>
+        <span className="eyebrow" style={{fontSize:'1.6rem'}}>Leadership</span>
+        <h2 style={{marginTop:'14px'}}>Steering <em className="script-em">Committee</em></h2>
+      </div>
+      <div className="team-grid">
+        {STEERING.map((m,i)=>(
+          <div className={"team-card reveal d"+(i%3+1)} key={i}>
+            <div className="team-avatar">{m.name.split(' ').map(w=>w[0]).join('')}</div>
+            <h3 className="team-name">{m.name}</h3>
+            <div className="team-role">{m.role}</div>
+            <div className="team-org">{m.org}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section className="objectives-section">
+    <div className="wrap">
+      <div className="section-head" style={{textAlign:'center',margin:'0 auto 36px',maxWidth:'none'}}>
+        <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>Support team</span>
+        <h2 style={{color:'#fff',marginTop:'14px'}}>Volunteers by <em className="script-em">Working Group</em></h2>
+      </div>
+      <div className="vol-tabs">
+        {VOL_GROUPS.map((g,gi)=>(
+          <button key={gi} className={"vol-tab"+(volTab===gi?" active":"")} style={{borderColor: volTab===gi ? g.color : 'transparent', color: volTab===gi ? g.color : 'rgba(255,255,255,.6)'}} onClick={()=>setVolTab(gi)}>{g.group}</button>
+        ))}
+      </div>
+      <div className="vol-panel">
+        <div className="vol-group-cards">
+          {VOL_GROUPS[volTab].members.map((m,mi)=>(
+            <div className="vol-card-item" key={mi}>
+              {m.photo ? <img src={m.photo} alt={m.name} className="vol-card-photo" /> : <div className="vol-card-avatar" style={{background:VOL_GROUPS[volTab].color}}>{m.name.split(' ').map(w=>w[0]).join('')}</div>}
+              <h4>{m.name}</h4>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+  </>);
+
+  const pages = { home:Page_home,about:Page_about,programme:Page_programme,themes:Page_themes,editions:Page_editions,team:Page_team,register:Page_register,contact:Page_contact };
 
   return (
     <>
