@@ -123,6 +123,7 @@ section{padding:84px 0}
 .ticker-logo{height:55px;width:auto;object-fit:contain}
 .ticker-logo[alt="YCC-SL"]{height:100px;clip-path:inset(20% 3% 25% 3%)}
 .ticker-logo[alt="ACRG"]{height:75px}
+.ticker-logo[alt="FAEICY"]{height:100px;clip-path:inset(30% 0% 30% 0%)}
 @keyframes scrollx{from{transform:translateX(0)}to{transform:translateX(-25%)}}
 
 .grid{display:grid;gap:24px}
@@ -234,6 +235,7 @@ select.dark-input option{background:var(--ink);color:#fff}
 .coalition-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px;display:grid;place-items:center;min-height:140px;transition:transform .3s,box-shadow .3s,border-color .3s}
 .coalition-card:hover{transform:translateY(-8px);box-shadow:0 20px 44px -18px rgba(11,34,51,.2);border-color:var(--blue)}
 .coalition-logo{height:90px;width:auto;max-width:100%;object-fit:contain}
+.coalition-logo[alt="FAEICY-SL"]{height:130px;clip-path:inset(25% 0% 25% 0%)}
 .coalition-card h3{font-size:1.2rem;font-weight:700;margin:0}
 .coalition-card.c-dark{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);backdrop-filter:blur(6px)}
 .coalition-card.c-dark:hover{background:rgba(255,255,255,.14);border-color:var(--orange);box-shadow:0 20px 44px -16px rgba(0,0,0,.4)}

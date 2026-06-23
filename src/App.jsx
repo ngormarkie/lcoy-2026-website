@@ -193,14 +193,16 @@ export default function App() {
       <span className="ticker-item"><img src="photos/Logos for host organizations/YICA-Logo-png-final.png" alt="YICA-SL" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/ACRG.png" alt="ACRG" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/TOURISM CLUB logo.png" alt="Tourism Hub" className="ticker-logo" /></span>
+      <span className="ticker-item"><img src="photos/Logos for host organizations/FAEICY.jpeg" alt="FAEICY" className="ticker-logo" /></span>
+      <span className="ticker-item"><img src="photos/Logos for host organizations/Dear Plastic.jpeg" alt="Dear Plastic" className="ticker-logo" /></span>
+      <span className="ticker-item"><img src="photos/Logos for host organizations/FYEA Logo.jpeg" alt="FYEA" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/YCC Sierra Leone Logo.png" alt="YCC-SL" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/YICA-Logo-png-final.png" alt="YICA-SL" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/ACRG.png" alt="ACRG" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/TOURISM CLUB logo.png" alt="Tourism Hub" className="ticker-logo" /></span>
-      <span className="ticker-item"><img src="photos/Logos for host organizations/YCC Sierra Leone Logo.png" alt="YCC-SL" className="ticker-logo" /></span>
-      <span className="ticker-item"><img src="photos/Logos for host organizations/YICA-Logo-png-final.png" alt="YICA-SL" className="ticker-logo" /></span>
-      <span className="ticker-item"><img src="photos/Logos for host organizations/ACRG.png" alt="ACRG" className="ticker-logo" /></span>
-      <span className="ticker-item"><img src="photos/Logos for host organizations/TOURISM CLUB logo.png" alt="Tourism Hub" className="ticker-logo" /></span>
+      <span className="ticker-item"><img src="photos/Logos for host organizations/FAEICY.jpeg" alt="FAEICY" className="ticker-logo" /></span>
+      <span className="ticker-item"><img src="photos/Logos for host organizations/Dear Plastic.jpeg" alt="Dear Plastic" className="ticker-logo" /></span>
+      <span className="ticker-item"><img src="photos/Logos for host organizations/FYEA Logo.jpeg" alt="FYEA" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/YCC Sierra Leone Logo.png" alt="YCC-SL" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/YICA-Logo-png-final.png" alt="YICA-SL" className="ticker-logo" /></span>
       <span className="ticker-item"><img src="photos/Logos for host organizations/ACRG.png" alt="ACRG" className="ticker-logo" /></span>
@@ -505,14 +507,14 @@ export default function App() {
         <div className="coalition-card reveal d3">
           <img src="photos/Logos for host organizations/TOURISM CLUB logo.png" alt="Eco-Tourism Hub" className="coalition-logo" />
         </div>
-        <div className="coalition-card coalition-plus reveal d1">
-          <h3>FAIECY-SL</h3>
+        <div className="coalition-card reveal d1">
+          <img src="photos/Logos for host organizations/FAEICY.jpeg" alt="FAEICY-SL" className="coalition-logo" />
         </div>
-        <div className="coalition-card coalition-plus reveal d2">
-          <h3>Dear Plastic</h3>
+        <div className="coalition-card reveal d2">
+          <img src="photos/Logos for host organizations/Dear Plastic.jpeg" alt="Dear Plastic" className="coalition-logo" />
         </div>
-        <div className="coalition-card coalition-plus reveal d3">
-          <h3>FYEA</h3>
+        <div className="coalition-card reveal d3">
+          <img src="photos/Logos for host organizations/FYEA Logo.jpeg" alt="FYEA" className="coalition-logo" />
         </div>
       </div>
     </div>
