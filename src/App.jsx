@@ -934,13 +934,13 @@ export default function App() {
   const STEERING = [
     { name: 'Hassan Hindolo Senesie', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Hassan Hindolo Senesie - Youth Climate Council Sierra Leone.jpeg' },
     { name: 'Foday Mark Kamara', role: 'Steering Committee Member', org: 'Youth Climate Council Global Alliance', photo: 'photos/Streering Committee/Foday Mark Kamara - Youth Climate Council Global Alliance.JPG' },
+    { name: 'Allieu Christopher Moiwa', role: 'Steering Committee Member', org: 'Action for Community Resilience Group', photo: 'photos/Streering Committee/Allieu Christopher Moiwa - Action for Community Resillience Group.jfif' },
     { name: 'Foday Kanneh', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Foday Kanneh - Youth Climate Council Sierra Leone.jfif' },
     { name: 'Esther Yealie Kamara', role: 'Steering Committee Member', org: 'Youth Initiative for Climate Action', photo: 'photos/Streering Committee/Esther Yealie Kamara - Youth Initiative for Climate Action.jpg' },
-    { name: 'Allieu Christopher Moiwa', role: 'Steering Committee Member', org: 'Action for Community Resilience Group', photo: 'photos/Streering Committee/Allieu Christopher Moiwa - Action for Community Resillience Group.jfif' },
     { name: 'Francis Magona Bassie', role: 'Steering Committee Member', org: 'Forum for Agriculture, Innovation and Empowerment for Children and Youth', photo: 'photos/Streering Committee/Francis Magona Bassie - Forum for Agriculture, Innovation and Empowerment for Children and Youth.jpeg' },
     { name: 'Joshua Damon Vandi', role: 'Steering Committee Member', org: 'Eco Tourism Hub', photo: 'photos/Streering Committee/Joshua Damon Vandi - Eco Tourism Hub.jpeg' },
     { name: 'Alpha Amadu Jalloh', role: 'Steering Committee Member', org: 'Dear Plastic', photo: 'photos/Streering Committee/Alpha Amadu Jalloh - Dear Plastic.jpeg' },
-    { name: 'Sydnella Latilewa Elizabeth Pratt', role: 'Steering Committee Member', org: 'Youth Climate Council Freetown Chapter', photo: 'photos/Streering Committee/Sydnella Latilewa Elizabeth Pratt - Youth Climate Council Freetown Chapter.JPG' },
+    { name: 'Sydnella L.E Pratt', role: 'Steering Committee Member', org: 'Youth Climate Council Freetown Chapter', photo: 'photos/Streering Committee/Sydnella Latilewa Elizabeth Pratt - Youth Climate Council Freetown Chapter.JPG' },
   ];
   const VOL_GROUPS = [
     { group: 'Programme & Policy', color: 'var(--blue)', members: [
