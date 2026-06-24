@@ -961,7 +961,7 @@ export default function App() {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 4844;
-    canvas.height = 6250;
+    canvas.height = 5400;
 
     const W = 4844, H = 6250, CX = W / 2;
 
@@ -1018,8 +1018,8 @@ export default function App() {
       const photo = new Image();
       photo.crossOrigin = 'anonymous';
       await new Promise((res, rej) => { photo.onload = res; photo.onerror = rej; photo.src = member.photo; });
-      const pw = 2400, ph = 3000;
-      const px = (W - pw) / 2, py = 1350;
+      const pw = 2800, ph = 3200;
+      const px = (W - pw) / 2, py = 1300;
       ctx.save();
       const pr = 180;
       ctx.beginPath();
@@ -1048,42 +1048,26 @@ export default function App() {
     }
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '800 220px Outfit';
+    ctx.font = '800 240px Outfit';
     ctx.textAlign = 'center';
-    ctx.fillText(member.name, CX, 4650);
-
-    ctx.fillStyle = '#FE9A02';
-    ctx.font = '600 150px Outfit';
-    ctx.fillText(member.role, CX, 4870);
+    ctx.fillText(member.name, CX, 4750);
 
     ctx.fillStyle = 'rgba(255,255,255,.7)';
-    ctx.font = '500 130px Outfit';
-    ctx.fillText(member.org, CX, 5060);
-
-    ctx.strokeStyle = 'rgba(255,255,255,.12)';
-    ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(1000, 5180); ctx.lineTo(3844, 5180); ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '800 140px Outfit';
-    ctx.fillText('LCOY SIERRA LEONE 2026', CX, 5380);
-
-    ctx.fillStyle = 'rgba(255,255,255,.7)';
-    ctx.font = '600 120px Outfit';
-    ctx.fillText('Freetown, Sierra Leone · 7–9 October 2026', CX, 5540);
+    ctx.font = '500 140px Outfit';
+    ctx.fillText(member.org, CX, 4960);
 
     ctx.fillStyle = '#FE9A02';
-    ctx.font = '900 110px Outfit';
-    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5750);
+    ctx.font = '900 120px Outfit';
+    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5220);
 
-    ctx.fillStyle = 'rgba(255,255,255,.4)';
-    ctx.font = '600 95px Outfit';
-    ctx.fillText('Inclusive Climate Action: Leaving No Youth Behind', CX, 5920);
-
-    const link = document.createElement('a');
-    link.download = member.name.replace(/\s+/g, '_') + '_LCOY2026.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = member.name.replace(/\s+/g, '_') + '_LCOY2026.png';
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }, 'image/png');
   };
 
   const Page_team = () => (<>
