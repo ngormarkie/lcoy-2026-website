@@ -196,8 +196,8 @@ select.dark-input option{background:var(--ink);color:#fff}
 .team-card:hover .team-avatar{border-color:var(--orange)}
 .team-avatar img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .team-card:hover .team-avatar img{transform:scale(1.08)}
-.team-avatar img[alt="Sydnella Latilewa Elizabeth Pratt"]{transform:scale(1.4)}
-.team-card:hover .team-avatar img[alt="Sydnella Latilewa Elizabeth Pratt"]{transform:scale(1.5)}
+.team-avatar img[alt="Sydnella L.E Pratt"]{transform:scale(1.4)}
+.team-card:hover .team-avatar img[alt="Sydnella L.E Pratt"]{transform:scale(1.5)}
 .team-avatar img[alt="Foday Kanneh"]{transform:scale(1.4)}
 .team-card:hover .team-avatar img[alt="Foday Kanneh"]{transform:scale(1.5)}
 .team-avatar img[alt="Foday Mark Kamara"]{transform:scale(1.15);object-position:center 35%}
