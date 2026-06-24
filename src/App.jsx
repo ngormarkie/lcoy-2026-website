@@ -979,7 +979,7 @@ export default function App() {
 
     const logo = new Image();
     logo.crossOrigin = 'anonymous';
-    await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/Logos for host organizations/LCOY-YOUNGO-Endored.png'; });
+    await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/LCOY-2026-Logo.png'; });
     const logoSize = 80;
     const logoX = (800 - logoSize) / 2;
     ctx.save();
