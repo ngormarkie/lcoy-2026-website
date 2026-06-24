@@ -181,15 +181,15 @@ section{padding:84px 0}
 .dark-input::placeholder{color:rgba(255,255,255,.4)!important}
 select.dark-input option{background:var(--ink);color:#fff}
 
-.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.team-card{background:none;border:none;text-align:center;transition:transform .4s}
+.team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.team-card{background:none;border:none;text-align:center;transition:transform .4s;padding:0}
 .team-card:hover{transform:translateY(-8px)}
-.team-card-info{background:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:8px 36px 8px 36px;padding:14px;margin-top:6px;transition:box-shadow .4s,border-color .4s}
+.team-card-info{background:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:6px 20px 6px 20px;padding:10px;margin-top:6px;transition:box-shadow .4s,border-color .4s}
 .team-card-info .team-name{color:#fff}
 .team-card-info .team-role{color:var(--orange)}
 .team-card-info .team-org{color:rgba(255,255,255,.6);font-size:.78rem}
 .team-card:hover .team-card-info{box-shadow:0 16px 40px -16px rgba(11,34,51,.2);border-color:var(--blue)}
-.team-avatar{width:70%;aspect-ratio:2/3;border-radius:8px 36px 8px 36px;background:var(--blue);color:#fff;display:grid;place-items:center;margin:0 auto 0;font-family:'Outfit';font-weight:800;font-size:1.4rem;overflow:hidden;border:5px solid var(--blue);transition:border-color .4s}
+.team-avatar{width:100%;aspect-ratio:2/3;border-radius:8px 28px 8px 28px;background:var(--blue);color:#fff;display:grid;place-items:center;margin:0 auto 0;font-family:'Outfit';font-weight:800;font-size:1.2rem;overflow:hidden;border:4px solid var(--blue);transition:border-color .4s}
 .team-card:hover .team-avatar{border-color:var(--orange)}
 .team-avatar img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .team-card:hover .team-avatar img{transform:scale(1.08)}
@@ -199,7 +199,7 @@ select.dark-input option{background:var(--ink);color:#fff}
 .team-card:hover .team-avatar img[alt="Foday Kanneh"]{transform:scale(1.5)}
 .team-avatar img[alt="Foday Mark Kamara"]{transform:scale(1.15);object-position:center 35%}
 .team-card:hover .team-avatar img[alt="Foday Mark Kamara"]{transform:scale(1.25)}
-.team-name{font-size:1.15rem;font-weight:700;margin-bottom:4px}
+.team-name{font-size:.95rem;font-weight:700;margin-bottom:3px}
 .team-role{font-family:'Outfit';font-weight:600;font-size:.85rem;color:var(--blue)}
 .team-org{font-size:.85rem;color:var(--slate);margin-top:4px}
 .vol-tabs{display:flex;justify-content:center;gap:8px;margin-bottom:32px;flex-wrap:wrap}
@@ -207,7 +207,7 @@ select.dark-input option{background:var(--ink);color:#fff}
 .vol-tab:hover{background:rgba(255,255,255,.1)}
 .vol-tab.active{background:rgba(255,255,255,.1)}
 .vol-panel{padding:0}
-.vol-group-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.vol-group-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
 .vol-card-item{text-align:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:28px 16px;transition:transform .3s,background .3s,box-shadow .3s}
 .vol-card-item:hover{transform:translateY(-8px);background:rgba(255,255,255,.12);box-shadow:0 16px 40px -16px rgba(0,0,0,.3)}
 .vol-card-photo{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;border:3px solid rgba(255,255,255,.2);transition:border-color .3s}
@@ -455,8 +455,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .hero{height:auto;min-height:560px;max-height:none}
   .hero-copy h1{font-size:3.12rem}
   .form-wrap,.contact-grid,.edition{grid-template-columns:1fr}
-  .g3,.g4,.stats,.partner-grid,.support-grid,.inclusion-grid,.ways-grid,.coalition-grid,.obj-grid,.reg-info-grid,.contact-info-grid,.team-grid{grid-template-columns:repeat(2,1fr)}
-  .vol-grid{grid-template-columns:repeat(2,1fr)}
+  .g3,.g4,.stats,.partner-grid,.support-grid,.inclusion-grid,.ways-grid,.coalition-grid,.obj-grid,.reg-info-grid,.contact-info-grid{grid-template-columns:repeat(2,1fr)}
+  .team-grid{grid-template-columns:repeat(3,1fr)}
+  .vol-group-cards{grid-template-columns:repeat(3,1fr)}
   .ed-gallery{grid-template-columns:repeat(2,1fr)}
   .ed-2024-stats{grid-template-columns:repeat(3,1fr)}
   .ed-2024-highlights{grid-template-columns:1fr}
@@ -524,8 +525,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .cd-box{min-width:65px;padding:10px 10px}
   .cd-box .n{font-size:1.6rem}
   .arrows{display:none}
-  .inclusion-grid,.ways-grid,.obj-grid,.theme-cards,.reg-info-grid,.contact-info-grid,.team-grid,.vol-groups{grid-template-columns:1fr}
-  .vol-group-cards{grid-template-columns:repeat(3,1fr)}
+  .inclusion-grid,.ways-grid,.obj-grid,.theme-cards,.reg-info-grid,.contact-info-grid,.vol-groups{grid-template-columns:1fr}
+  .team-grid{grid-template-columns:repeat(2,1fr)}
+  .vol-group-cards{grid-template-columns:repeat(2,1fr)}
   .coalition-grid{grid-template-columns:1fr}
   .inclusion-header .eyebrow{font-size:1.4rem}
   .inclusion-header h2{font-size:1.6rem}
