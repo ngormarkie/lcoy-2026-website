@@ -177,6 +177,7 @@ export default function App() {
   
   <section className="cd-band">
     <div className="wrap">
+      <div className="cd-location">FREETOWN, SIERRA LEONE · 7–9 OCTOBER 2026</div>
       <div className="cd-grid">
         <div className="cd-box"><div className="n">{cd.d}</div><div className="u">Days</div></div>
         <div className="cd-box"><div className="n">{cd.h}</div><div className="u">Hours</div></div>

@@ -108,7 +108,8 @@ section{padding:84px 0}
 .hero-location{position:absolute;left:0;right:0;bottom:80px;z-index:4}
 .hero-location .wrap{max-width:none;padding-left:5vw;font-family:'Outfit';font-weight:600;font-size:1.1rem;color:rgba(255,255,255,.85);letter-spacing:.04em}
 .cd-band{background:linear-gradient(120deg,var(--ink),var(--blue-deep) 70%,var(--green-deep));color:#fff;padding:0}
-.cd-band .wrap{display:flex;justify-content:center;padding:36px 24px}
+.cd-band .wrap{display:flex;flex-direction:column;align-items:center;padding:36px 24px;gap:20px}
+.cd-location{font-family:'Outfit';font-weight:900;font-size:1.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);text-align:center;text-shadow:0 2px 12px rgba(254,154,2,.3)}
 .cd-grid{display:flex;gap:20px}
 .cd-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:20px 28px;text-align:center;min-width:110px;transition:transform .25s}
 .cd-box:hover{transform:translateY(-4px)}
