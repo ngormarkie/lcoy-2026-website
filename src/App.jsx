@@ -932,12 +932,15 @@ export default function App() {
   </>);
 
   const STEERING = [
-    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
-    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
-    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
-    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
-    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
-    { name: 'Name Here', role: 'Role / Title', org: 'Organisation' },
+    { name: 'Hassan Hindolo Senesie', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Hassan Hindolo Senesie - Youth Climate Council Sierra Leone.jpeg' },
+    { name: 'Foday Mark Kamara', role: 'Steering Committee Member', org: 'Youth Climate Council Global Alliance', photo: 'photos/Streering Committee/Foday Mark Kamara - Youth Climate Council Global Alliance.JPG' },
+    { name: 'Foday Kanneh', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Foday Kanneh - Youth Climate Council Sierra Leone.jfif' },
+    { name: 'Esther Yealie Kamara', role: 'Steering Committee Member', org: 'Youth Initiative for Climate Action', photo: 'photos/Streering Committee/Esther Yealie Kamara - Youth Initiative for Climate Action.jpg' },
+    { name: 'Allieu Christopher Moiwa', role: 'Steering Committee Member', org: 'Action for Community Resilience Group', photo: 'photos/Streering Committee/Allieu Christopher Moiwa - Action for Community Resillience Group.jfif' },
+    { name: 'Francis Magona Bassie', role: 'Steering Committee Member', org: 'Forum for Agriculture, Innovation and Empowerment for Children and Youth', photo: 'photos/Streering Committee/Francis Magona Bassie - Forum for Agriculture, Innovation and Empowerment for Children and Youth.jpeg' },
+    { name: 'Joshua Damon Vandi', role: 'Steering Committee Member', org: 'Eco Tourism Hub', photo: 'photos/Streering Committee/Joshua Damon Vandi - Eco Tourism Hub.jpeg' },
+    { name: 'Alpha Amadu Jalloh', role: 'Steering Committee Member', org: 'Dear Plastic', photo: 'photos/Streering Committee/Alpha Amadu Jalloh - Dear Plastic.jpeg' },
+    { name: 'Sydnella Latilewa Elizabeth Pratt', role: 'Steering Committee Member', org: 'Youth Climate Council Freetown Chapter', photo: 'photos/Streering Committee/Sydnella Latilewa Elizabeth Pratt - Youth Climate Council Freetown Chapter.JPG' },
   ];
   const VOL_GROUPS = [
     { group: 'Programme & Policy', color: 'var(--blue)', members: [
@@ -977,10 +980,12 @@ export default function App() {
       <div className="team-grid">
         {STEERING.map((m,i)=>(
           <div className={"team-card reveal d"+(i%3+1)} key={i}>
-            <div className="team-avatar">{m.name.split(' ').map(w=>w[0]).join('')}</div>
-            <h3 className="team-name">{m.name}</h3>
-            <div className="team-role">{m.role}</div>
-            <div className="team-org">{m.org}</div>
+            <div className="team-avatar">{m.photo ? <img src={m.photo} alt={m.name} /> : m.name.split(' ').map(w=>w[0]).join('')}</div>
+            <div className="team-card-info">
+              <h3 className="team-name">{m.name}</h3>
+              <div className="team-role">{m.role}</div>
+              <div className="team-org">{m.org}</div>
+            </div>
           </div>
         ))}
       </div>
