@@ -978,25 +978,27 @@ export default function App() {
     const logo = new Image();
     logo.crossOrigin = 'anonymous';
     await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/LCOY-2026-Logo.png'; });
-    const logoSize = 500;
-    const logoPad = 40;
-    const logoX = (W - logoSize - logoPad * 2) / 2, logoY = 180;
+    const logoH = 500;
+    const logoW = logoH * 2;
+    const logoPad = 50;
+    const boxW = logoW + logoPad * 2, boxH = logoH + logoPad * 2;
+    const logoX = (W - boxW) / 2, logoY = 180;
     ctx.save();
     const lr = 80;
     ctx.beginPath();
-    ctx.moveTo(logoX + lr, logoY); ctx.lineTo(logoX + logoSize + logoPad * 2 - lr, logoY);
-    ctx.quadraticCurveTo(logoX + logoSize + logoPad * 2, logoY, logoX + logoSize + logoPad * 2, logoY + lr);
-    ctx.lineTo(logoX + logoSize + logoPad * 2, logoY + logoSize + logoPad * 2 - lr);
-    ctx.quadraticCurveTo(logoX + logoSize + logoPad * 2, logoY + logoSize + logoPad * 2, logoX + logoSize + logoPad * 2 - lr, logoY + logoSize + logoPad * 2);
-    ctx.lineTo(logoX + lr, logoY + logoSize + logoPad * 2);
-    ctx.quadraticCurveTo(logoX, logoY + logoSize + logoPad * 2, logoX, logoY + logoSize + logoPad * 2 - lr);
+    ctx.moveTo(logoX + lr, logoY); ctx.lineTo(logoX + boxW - lr, logoY);
+    ctx.quadraticCurveTo(logoX + boxW, logoY, logoX + boxW, logoY + lr);
+    ctx.lineTo(logoX + boxW, logoY + boxH - lr);
+    ctx.quadraticCurveTo(logoX + boxW, logoY + boxH, logoX + boxW - lr, logoY + boxH);
+    ctx.lineTo(logoX + lr, logoY + boxH);
+    ctx.quadraticCurveTo(logoX, logoY + boxH, logoX, logoY + boxH - lr);
     ctx.lineTo(logoX, logoY + lr);
     ctx.quadraticCurveTo(logoX, logoY, logoX + lr, logoY);
     ctx.closePath();
     ctx.fillStyle = '#ffffff';
     ctx.fill();
     ctx.clip();
-    ctx.drawImage(logo, logoX + logoPad, logoY + logoPad, logoSize, logoSize);
+    ctx.drawImage(logo, logoX + logoPad, logoY + logoPad, logoW, logoH);
     ctx.restore();
 
     ctx.fillStyle = '#FE9A02';
@@ -1051,32 +1053,32 @@ export default function App() {
     ctx.fillText(member.name, CX, 4650);
 
     ctx.fillStyle = '#FE9A02';
-    ctx.font = '600 110px Outfit';
-    ctx.fillText(member.role, CX, 4850);
+    ctx.font = '600 150px Outfit';
+    ctx.fillText(member.role, CX, 4870);
 
-    ctx.fillStyle = 'rgba(255,255,255,.6)';
-    ctx.font = '500 100px Outfit';
-    ctx.fillText(member.org, CX, 5020);
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.font = '500 130px Outfit';
+    ctx.fillText(member.org, CX, 5060);
 
-    ctx.strokeStyle = 'rgba(255,255,255,.1)';
-    ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(1200, 5150); ctx.lineTo(3644, 5150); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(1000, 5180); ctx.lineTo(3844, 5180); ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '700 90px Outfit';
-    ctx.fillText('LCOY SIERRA LEONE 2026', CX, 5320);
+    ctx.font = '800 140px Outfit';
+    ctx.fillText('LCOY SIERRA LEONE 2026', CX, 5380);
 
-    ctx.fillStyle = 'rgba(255,255,255,.6)';
-    ctx.font = '500 80px Outfit';
-    ctx.fillText('Freetown, Sierra Leone · 7–9 October 2026', CX, 5450);
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.font = '600 120px Outfit';
+    ctx.fillText('Freetown, Sierra Leone · 7–9 October 2026', CX, 5540);
 
     ctx.fillStyle = '#FE9A02';
-    ctx.font = '800 75px Outfit';
-    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5650);
+    ctx.font = '900 110px Outfit';
+    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5750);
 
-    ctx.fillStyle = 'rgba(255,255,255,.3)';
-    ctx.font = '500 65px Outfit';
-    ctx.fillText('Inclusive Climate Action: Leaving No Youth Behind', CX, 5800);
+    ctx.fillStyle = 'rgba(255,255,255,.4)';
+    ctx.font = '600 95px Outfit';
+    ctx.fillText('Inclusive Climate Action: Leaving No Youth Behind', CX, 5920);
 
     const link = document.createElement('a');
     link.download = member.name.replace(/\s+/g, '_') + '_LCOY2026.png';
