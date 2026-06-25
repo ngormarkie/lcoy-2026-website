@@ -192,8 +192,8 @@ select.dark-input option{background:var(--ink);color:#fff}
 .team-save-hint{font-size:.65rem;color:rgba(255,255,255,.3);margin-top:6px;transition:color .3s}
 .team-card:hover .team-save-hint{color:var(--orange)}
 .objectives-section .team-card-info{background:#fff;border:2px solid var(--orange)}
-.objectives-section .team-card-info .team-name{color:var(--ink)}
-.objectives-section .team-card-info .team-role{color:var(--blue)}
+.objectives-section .team-card-info .team-name{color:var(--ink);font-size:1rem;font-weight:800}
+.objectives-section .team-card-info .team-role{color:var(--orange);font-weight:700}
 .objectives-section .team-card-info .team-save-hint{color:rgba(0,0,0,.25)}
 .objectives-section .team-card:hover .team-card-info{box-shadow:0 8px 24px -8px rgba(254,154,2,.4)}
 .objectives-section .team-card:hover .team-save-hint{color:var(--orange)}
