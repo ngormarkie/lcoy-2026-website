@@ -942,9 +942,9 @@ export default function App() {
   const VOLUNTEERS = [
     { name: 'Fatmata Foday Kamara', group: 'Logistics', photo: 'photos/Streering Committee/Volunteers/Fatmata Foday Kamara - Logistics.jpeg' },
     { name: 'Mariama Sangarie', group: 'Logistics', photo: 'photos/Streering Committee/Volunteers/Mariama Sangarie - Logistics.jpeg' },
-    { name: 'Hawanatu Mary Smith', group: 'Partnerships', photo: 'photos/Streering Committee/Volunteers/Hawanatu Mary Smith - Partnerships.jpeg' },
-    { name: 'Kadijatu Bah', group: 'Partnerships', photo: 'photos/Streering Committee/Volunteers/Kadijatu Bah - Partnerships.jpeg' },
-    { name: 'Grace Lizzy Tatiana Sesay', group: 'Partnerships', photo: 'photos/Streering Committee/Volunteers/Grace Lizzy Tatiana Sesay - Partnerships.jpeg' },
+    { name: 'Hawanatu Mary Smith', group: 'Finance, Partnerships & Fundraising', photo: 'photos/Streering Committee/Volunteers/Hawanatu Mary Smith - Partnerships.jpeg' },
+    { name: 'Kadijatu Bah', group: 'Finance, Partnerships & Fundraising', photo: 'photos/Streering Committee/Volunteers/Kadijatu Bah - Partnerships.jpeg' },
+    { name: 'Grace Lizzy Tatiana Sesay', group: 'Finance, Partnerships & Fundraising', photo: 'photos/Streering Committee/Volunteers/Grace Lizzy Tatiana Sesay - Partnerships.jpeg' },
   ];
 
   const drawFlyer = async (canvas, ctx, member, heading1, heading2) => {
