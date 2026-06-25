@@ -931,8 +931,8 @@ export default function App() {
   const STEERING = [
     { name: 'Hassan Hindolo Senesie', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Hassan Hindolo Senesie - Youth Climate Council Sierra Leone.jpeg' },
     { name: 'Foday Mark Kamara', role: 'Steering Committee Member', org: 'Youth Climate Council Global Alliance', photo: 'photos/Streering Committee/Foday Mark Kamara - Youth Climate Council Global Alliance.JPG' },
-    { name: 'Allieu Christopher Moiwa', role: 'Steering Committee Member', org: 'Action for Community Resilience Group', photo: 'photos/Streering Committee/Allieu Christopher Moiwa - Action for Community Resillience Group.jfif' },
-    { name: 'Foday Kanneh', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Foday Kanneh - Youth Climate Council Sierra Leone.jfif' },
+    { name: 'Allieu Christopher Moiwa', role: 'Steering Committee Member', org: 'Action for Community Resilience Group', photo: 'photos/Streering Committee/Allieu Christopher Moiwa - Action for Community Resillience Group.jpg' },
+    { name: 'Foday Kanneh', role: 'Steering Committee Member', org: 'Youth Climate Council Sierra Leone', photo: 'photos/Streering Committee/Foday Kanneh - Youth Climate Council Sierra Leone.jpg' },
     { name: 'Esther Yealie Kamara', role: 'Steering Committee Member', org: 'Youth Initiative for Climate Action', photo: 'photos/Streering Committee/Esther Yealie Kamara - Youth Initiative for Climate Action.jpg' },
     { name: 'Francis Magona Bassie', role: 'Steering Committee Member', org: 'Forum for Agriculture, Innovation and Empowerment for Children and Youth', photo: 'photos/Streering Committee/Francis Magona Bassie - Forum for Agriculture, Innovation and Empowerment for Children and Youth.jpeg' },
     { name: 'Joshua Damon Vandi', role: 'Steering Committee Member', org: 'Eco Tourism Hub', photo: 'photos/Streering Committee/Joshua Damon Vandi - Eco Tourism Hub.jpeg' },
@@ -957,7 +957,7 @@ export default function App() {
     ]},
   ];
 
-  const saveFlyer = async (member) => {
+  const saveFlyer = async (member) => { try {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 4844;
@@ -1066,9 +1066,9 @@ export default function App() {
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     }, 'image/png');
-  };
+  } catch(e) { alert('Error: ' + e.message); } };
 
-  const saveVolFlyer = async (member, group) => {
+  const saveVolFlyer = async (member, group) => { try {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const W = 4844, H = 5400, CX = W / 2;
@@ -1169,7 +1169,7 @@ export default function App() {
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     }, 'image/png');
-  };
+  } catch(e) { alert('Error: ' + e.message); } };
 
   const Page_team = () => (<>
   <section className="about-hero">
