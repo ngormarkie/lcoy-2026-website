@@ -944,7 +944,7 @@ export default function App() {
       { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
     ]},
     { group: 'Logistics', color: 'var(--orange)', members: [
-      { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
+      { name: 'Fatmata Foday Kamara', photo: 'photos/Streering Committee/Volunteers/Fatmata Foday Kamara - Logistics.jpeg' },{ name: 'Mariama Sangarie', photo: 'photos/Streering Committee/Volunteers/Mariama Sangarie - Logistics.jpeg' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
     ]},
     { group: 'Registration & Protocol', color: '#2ecc71', members: [
       { name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' },{ name: 'Name Here', photo: '' }
@@ -976,7 +976,6 @@ export default function App() {
     ctx.beginPath(); ctx.arc(W * 0.2, H * 0.82, 1500, 0, Math.PI * 2); ctx.fill();
 
     const logo = new Image();
-    logo.crossOrigin = 'anonymous';
     await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/LCOY-2026-Logo.png'; });
     const logoH = 500;
     const logoW = logoH * 2;
@@ -1016,7 +1015,6 @@ export default function App() {
 
     if (member.photo) {
       const photo = new Image();
-      photo.crossOrigin = 'anonymous';
       await new Promise((res, rej) => { photo.onload = res; photo.onerror = rej; photo.src = member.photo; });
       const pw = 2800, ph = 3200;
       const px = (W - pw) / 2, py = 1300;
@@ -1059,6 +1057,109 @@ export default function App() {
     ctx.fillStyle = '#FE9A02';
     ctx.font = '900 120px Outfit';
     ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5220);
+
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = member.name.replace(/\s+/g, '_') + '_LCOY2026.png';
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }, 'image/png');
+  };
+
+  const saveVolFlyer = async (member, group) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 4844, H = 5400, CX = W / 2;
+
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#0B2233');
+    bg.addColorStop(1, '#005091');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = 'rgba(255,255,255,.04)';
+    ctx.beginPath(); ctx.arc(W * 0.8, H * 0.18, 1800, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W * 0.2, H * 0.82, 1500, 0, Math.PI * 2); ctx.fill();
+
+    const logo = new Image();
+    await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/LCOY-2026-Logo.png'; });
+    const logoH = 500;
+    const logoW = (logo.width / logo.height) * logoH;
+    const logoPad = 50;
+    const boxW = logoW + logoPad * 2, boxH = logoH + logoPad * 2;
+    const logoX = (W - boxW) / 2, logoY = 180;
+    ctx.save();
+    const lr = 80;
+    ctx.beginPath();
+    ctx.moveTo(logoX + lr, logoY); ctx.lineTo(logoX + boxW - lr, logoY);
+    ctx.quadraticCurveTo(logoX + boxW, logoY, logoX + boxW, logoY + lr);
+    ctx.lineTo(logoX + boxW, logoY + boxH - lr);
+    ctx.quadraticCurveTo(logoX + boxW, logoY + boxH, logoX + boxW - lr, logoY + boxH);
+    ctx.lineTo(logoX + lr, logoY + boxH);
+    ctx.quadraticCurveTo(logoX, logoY + boxH, logoX, logoY + boxH - lr);
+    ctx.lineTo(logoX, logoY + lr);
+    ctx.quadraticCurveTo(logoX, logoY, logoX + lr, logoY);
+    ctx.closePath();
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.clip();
+    ctx.drawImage(logo, logoX + logoPad, logoY + logoPad, logoW, logoH);
+    ctx.restore();
+
+    ctx.fillStyle = '#FE9A02';
+    ctx.font = '900 110px Outfit';
+    ctx.textAlign = 'center';
+    ctx.fillText('SUPPORT TEAM', CX, 920);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 140px Outfit';
+    ctx.fillText(group.toUpperCase(), CX, 1100);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.15)';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(1400, 1180); ctx.lineTo(3444, 1180); ctx.stroke();
+
+    if (member.photo) {
+      const photo = new Image();
+      await new Promise((res, rej) => { photo.onload = res; photo.onerror = rej; photo.src = member.photo; });
+      const pw = 2800, ph = 3200;
+      const px = (W - pw) / 2, py = 1280;
+      ctx.save();
+      const pr = 180;
+      ctx.beginPath();
+      ctx.moveTo(px + 50, py); ctx.lineTo(px + pw - pr, py);
+      ctx.quadraticCurveTo(px + pw, py, px + pw, py + pr);
+      ctx.lineTo(px + pw, py + ph - 50); ctx.lineTo(px + pw - 50, py + ph);
+      ctx.lineTo(px + pr, py + ph);
+      ctx.quadraticCurveTo(px, py + ph, px, py + ph - pr);
+      ctx.lineTo(px, py + 50); ctx.closePath();
+      ctx.clip();
+      const scale = Math.max(pw / photo.width, ph / photo.height);
+      const sw = photo.width * scale, sh = photo.height * scale;
+      ctx.drawImage(photo, px + (pw - sw) / 2, py + (ph - sh) / 2, sw, sh);
+      ctx.restore();
+      ctx.strokeStyle = '#0072C6';
+      ctx.lineWidth = 30;
+      ctx.beginPath();
+      ctx.moveTo(px + 50, py); ctx.lineTo(px + pw - pr, py);
+      ctx.quadraticCurveTo(px + pw, py, px + pw, py + pr);
+      ctx.lineTo(px + pw, py + ph - 50); ctx.lineTo(px + pw - 50, py + ph);
+      ctx.lineTo(px + pr, py + ph);
+      ctx.quadraticCurveTo(px, py + ph, px, py + ph - pr);
+      ctx.lineTo(px, py + 50); ctx.closePath();
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 240px Outfit';
+    ctx.textAlign = 'center';
+    ctx.fillText(member.name, CX, 4750);
+
+    ctx.fillStyle = '#FE9A02';
+    ctx.font = '900 120px Outfit';
+    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5020);
 
     canvas.toBlob((blob) => {
       const url = URL.createObjectURL(blob);
@@ -1117,9 +1218,9 @@ export default function App() {
       <div className="vol-panel">
         <div className="vol-group-cards">
           {VOL_GROUPS[volTab].members.map((m,mi)=>(
-            <div className="vol-card-item" key={mi}>
+            <div className="vol-card-item" key={mi} onClick={()=>saveVolFlyer(m,VOL_GROUPS[volTab].group)} style={{cursor:'pointer'}}>
               {m.photo ? <img src={m.photo} alt={m.name} className="vol-card-photo" /> : <div className="vol-card-avatar" style={{background:VOL_GROUPS[volTab].color}}>{m.name.split(' ').map(w=>w[0]).join('')}</div>}
-              <h4>{m.name}</h4>
+              <div className="vol-card-info"><h4>{m.name}</h4><div className="vol-save-hint">Tap to save flyer</div></div>
             </div>
           ))}
         </div>
