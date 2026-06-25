@@ -993,20 +993,21 @@ export default function App() {
     }
     ctx.fillStyle = '#fff'; ctx.font = '800 52px Outfit'; ctx.textAlign = 'center';
     ctx.fillText(member.name, CX, 1210);
-    ctx.fillStyle = '#FE9A02'; ctx.font = '600 24px Outfit';
-    ctx.fillText(heading2 + ' MEMBER', CX, 1250);
-    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '500 22px Outfit';
-    ctx.fillText(member.org || '', CX, 1285);
+    ctx.fillStyle = '#FE9A02'; ctx.font = '600 28px Outfit';
+    const roleText = heading1 === 'LEADERSHIP' ? heading2 + ' MEMBER' : heading2 + ' WORKING GROUP MEMBER';
+    ctx.fillText(roleText, CX, 1255);
+    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '500 26px Outfit';
+    ctx.fillText(member.org || '', CX, 1295);
     ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(350, 1310); ctx.lineTo(850, 1310); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.font = '700 20px Outfit';
-    ctx.fillText('LCOY SIERRA LEONE 2026', CX, 1345);
-    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '500 16px Outfit';
-    ctx.fillText('Freetown, Sierra Leone · 7–9 October 2026', CX, 1375);
-    ctx.fillStyle = '#FE9A02'; ctx.font = '900 14px Outfit';
-    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 1430);
-    ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.font = '500 13px Outfit';
-    ctx.fillText('Inclusive Climate Action: Leaving No Youth Behind', CX, 1460);
+    ctx.beginPath(); ctx.moveTo(300, 1325); ctx.lineTo(900, 1325); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '700 28px Outfit';
+    ctx.fillText('LCOY SIERRA LEONE 2026', CX, 1365);
+    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.font = '500 22px Outfit';
+    ctx.fillText('Freetown, Sierra Leone · 7–9 October 2026', CX, 1400);
+    ctx.fillStyle = '#FE9A02'; ctx.font = '900 20px Outfit';
+    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 1445);
+    ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '500 18px Outfit';
+    ctx.fillText('Inclusive Climate Action: Leaving No Youth Behind', CX, 1475);
   };
 
   const saveFlyer = async (member) => { try {
