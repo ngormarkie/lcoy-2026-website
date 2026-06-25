@@ -957,113 +957,58 @@ export default function App() {
     ]},
   ];
 
+  const drawFlyer = async (canvas, ctx, member, heading1, heading2) => {
+    const W = canvas.width, H = canvas.height, CX = W / 2;
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#0B2233'); bg.addColorStop(1, '#005091');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.04)';
+    ctx.beginPath(); ctx.arc(W * 0.8, H * 0.18, 400, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W * 0.2, H * 0.82, 350, 0, Math.PI * 2); ctx.fill();
+    const logo = new Image();
+    await new Promise((r, j) => { logo.onload = r; logo.onerror = j; logo.src = '/photos/LCOY-2026-Logo.png'; });
+    const lh = 100, lw = (logo.width / logo.height) * lh, lp = 12;
+    const bw = lw + lp * 2, bh = lh + lp * 2, lx = (W - bw) / 2, ly = 30;
+    ctx.save(); const lr = 14;
+    ctx.beginPath(); ctx.moveTo(lx+lr,ly); ctx.lineTo(lx+bw-lr,ly); ctx.quadraticCurveTo(lx+bw,ly,lx+bw,ly+lr); ctx.lineTo(lx+bw,ly+bh-lr); ctx.quadraticCurveTo(lx+bw,ly+bh,lx+bw-lr,ly+bh); ctx.lineTo(lx+lr,ly+bh); ctx.quadraticCurveTo(lx,ly+bh,lx,ly+bh-lr); ctx.lineTo(lx,ly+lr); ctx.quadraticCurveTo(lx,ly,lx+lr,ly); ctx.closePath();
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.clip();
+    ctx.drawImage(logo, lx + lp, ly + lp, lw, lh); ctx.restore();
+    ctx.fillStyle = '#FE9A02'; ctx.font = '900 22px Outfit'; ctx.textAlign = 'center';
+    ctx.fillText(heading1, CX, 192);
+    ctx.fillStyle = '#fff'; ctx.font = '700 30px Outfit';
+    ctx.fillText(heading2, CX, 228);
+    ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(300, 245); ctx.lineTo(900, 245); ctx.stroke();
+    if (member.photo) {
+      const ph = new Image();
+      await new Promise((r, j) => { ph.onload = r; ph.onerror = j; ph.src = member.photo; });
+      const pw = 680, pht = 850, px = (W - pw) / 2, py = 265;
+      ctx.save(); const pr = 36;
+      ctx.beginPath(); ctx.moveTo(px+10,py); ctx.lineTo(px+pw-pr,py); ctx.quadraticCurveTo(px+pw,py,px+pw,py+pr); ctx.lineTo(px+pw,py+pht-10); ctx.lineTo(px+pw-10,py+pht); ctx.lineTo(px+pr,py+pht); ctx.quadraticCurveTo(px,py+pht,px,py+pht-pr); ctx.lineTo(px,py+10); ctx.closePath(); ctx.clip();
+      const sc = Math.max(pw / ph.width, pht / ph.height);
+      ctx.drawImage(ph, px + (pw - ph.width * sc) / 2, py + (pht - ph.height * sc) / 2, ph.width * sc, ph.height * sc);
+      ctx.restore();
+      ctx.strokeStyle = '#0072C6'; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(px+10,py); ctx.lineTo(px+pw-pr,py); ctx.quadraticCurveTo(px+pw,py,px+pw,py+pr); ctx.lineTo(px+pw,py+pht-10); ctx.lineTo(px+pw-10,py+pht); ctx.lineTo(px+pr,py+pht); ctx.quadraticCurveTo(px,py+pht,px,py+pht-pr); ctx.lineTo(px,py+10); ctx.closePath(); ctx.stroke();
+    }
+    ctx.fillStyle = '#fff'; ctx.font = '800 52px Outfit'; ctx.textAlign = 'center';
+    ctx.fillText(member.name, CX, 1210);
+    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '500 26px Outfit';
+    ctx.fillText(member.org || '', CX, 1250);
+    ctx.fillStyle = '#FE9A02'; ctx.font = '900 16px Outfit';
+    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 1420);
+  };
+
   const saveFlyer = async (member) => { try {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 4844;
-    canvas.height = 5400;
-
-    const W = 4844, H = 6250, CX = W / 2;
-
-    const bg = ctx.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, '#0B2233');
-    bg.addColorStop(1, '#005091');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = 'rgba(255,255,255,.04)';
-    ctx.beginPath(); ctx.arc(W * 0.8, H * 0.18, 1800, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(W * 0.2, H * 0.82, 1500, 0, Math.PI * 2); ctx.fill();
-
-    const logo = new Image();
-    await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/LCOY-2026-Logo.png'; });
-    const logoH = 500;
-    const logoW = logoH * 2;
-    const logoPad = 50;
-    const boxW = logoW + logoPad * 2, boxH = logoH + logoPad * 2;
-    const logoX = (W - boxW) / 2, logoY = 180;
-    ctx.save();
-    const lr = 80;
-    ctx.beginPath();
-    ctx.moveTo(logoX + lr, logoY); ctx.lineTo(logoX + boxW - lr, logoY);
-    ctx.quadraticCurveTo(logoX + boxW, logoY, logoX + boxW, logoY + lr);
-    ctx.lineTo(logoX + boxW, logoY + boxH - lr);
-    ctx.quadraticCurveTo(logoX + boxW, logoY + boxH, logoX + boxW - lr, logoY + boxH);
-    ctx.lineTo(logoX + lr, logoY + boxH);
-    ctx.quadraticCurveTo(logoX, logoY + boxH, logoX, logoY + boxH - lr);
-    ctx.lineTo(logoX, logoY + lr);
-    ctx.quadraticCurveTo(logoX, logoY, logoX + lr, logoY);
-    ctx.closePath();
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.clip();
-    ctx.drawImage(logo, logoX + logoPad, logoY + logoPad, logoW, logoH);
-    ctx.restore();
-
-    ctx.fillStyle = '#FE9A02';
-    ctx.font = '900 110px Outfit';
-    ctx.textAlign = 'center';
-    ctx.fillText('LEADERSHIP', CX, 920);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 160px Outfit';
-    ctx.fillText('STEERING COMMITTEE', CX, 1120);
-
-    ctx.strokeStyle = 'rgba(255,255,255,.15)';
-    ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(1400, 1200); ctx.lineTo(3444, 1200); ctx.stroke();
-
-    if (member.photo) {
-      const photo = new Image();
-      await new Promise((res, rej) => { photo.onload = res; photo.onerror = rej; photo.src = member.photo; });
-      const pw = 2800, ph = 3200;
-      const px = (W - pw) / 2, py = 1300;
-      ctx.save();
-      const pr = 180;
-      ctx.beginPath();
-      ctx.moveTo(px + 50, py); ctx.lineTo(px + pw - pr, py);
-      ctx.quadraticCurveTo(px + pw, py, px + pw, py + pr);
-      ctx.lineTo(px + pw, py + ph - 50); ctx.lineTo(px + pw - 50, py + ph);
-      ctx.lineTo(px + pr, py + ph);
-      ctx.quadraticCurveTo(px, py + ph, px, py + ph - pr);
-      ctx.lineTo(px, py + 50); ctx.closePath();
-      ctx.clip();
-      const scale = Math.max(pw / photo.width, ph / photo.height);
-      const sw = photo.width * scale, sh = photo.height * scale;
-      ctx.drawImage(photo, px + (pw - sw) / 2, py + (ph - sh) / 2, sw, sh);
-      ctx.restore();
-
-      ctx.strokeStyle = '#0072C6';
-      ctx.lineWidth = 30;
-      ctx.beginPath();
-      ctx.moveTo(px + 50, py); ctx.lineTo(px + pw - pr, py);
-      ctx.quadraticCurveTo(px + pw, py, px + pw, py + pr);
-      ctx.lineTo(px + pw, py + ph - 50); ctx.lineTo(px + pw - 50, py + ph);
-      ctx.lineTo(px + pr, py + ph);
-      ctx.quadraticCurveTo(px, py + ph, px, py + ph - pr);
-      ctx.lineTo(px, py + 50); ctx.closePath();
-      ctx.stroke();
-    }
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '800 240px Outfit';
-    ctx.textAlign = 'center';
-    ctx.fillText(member.name, CX, 4750);
-
-    ctx.fillStyle = 'rgba(255,255,255,.7)';
-    ctx.font = '500 140px Outfit';
-    ctx.fillText(member.org, CX, 4960);
-
-    ctx.fillStyle = '#FE9A02';
-    ctx.font = '900 120px Outfit';
-    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5220);
-
+    canvas.width = 1200; canvas.height = 1500;
+    await drawFlyer(canvas, ctx, member, 'LEADERSHIP', 'STEERING COMMITTEE');
     canvas.toBlob((blob) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = member.name.replace(/\s+/g, '_') + '_LCOY2026.png';
-      link.href = url;
-      link.click();
+      link.href = url; link.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     }, 'image/png');
   } catch(e) { alert('Error: ' + e.message); } };
@@ -1071,102 +1016,13 @@ export default function App() {
   const saveVolFlyer = async (member, group) => { try {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const W = 4844, H = 5400, CX = W / 2;
-
-    const bg = ctx.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, '#0B2233');
-    bg.addColorStop(1, '#005091');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = 'rgba(255,255,255,.04)';
-    ctx.beginPath(); ctx.arc(W * 0.8, H * 0.18, 1800, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(W * 0.2, H * 0.82, 1500, 0, Math.PI * 2); ctx.fill();
-
-    const logo = new Image();
-    await new Promise((res, rej) => { logo.onload = res; logo.onerror = rej; logo.src = '/photos/LCOY-2026-Logo.png'; });
-    const logoH = 500;
-    const logoW = (logo.width / logo.height) * logoH;
-    const logoPad = 50;
-    const boxW = logoW + logoPad * 2, boxH = logoH + logoPad * 2;
-    const logoX = (W - boxW) / 2, logoY = 180;
-    ctx.save();
-    const lr = 80;
-    ctx.beginPath();
-    ctx.moveTo(logoX + lr, logoY); ctx.lineTo(logoX + boxW - lr, logoY);
-    ctx.quadraticCurveTo(logoX + boxW, logoY, logoX + boxW, logoY + lr);
-    ctx.lineTo(logoX + boxW, logoY + boxH - lr);
-    ctx.quadraticCurveTo(logoX + boxW, logoY + boxH, logoX + boxW - lr, logoY + boxH);
-    ctx.lineTo(logoX + lr, logoY + boxH);
-    ctx.quadraticCurveTo(logoX, logoY + boxH, logoX, logoY + boxH - lr);
-    ctx.lineTo(logoX, logoY + lr);
-    ctx.quadraticCurveTo(logoX, logoY, logoX + lr, logoY);
-    ctx.closePath();
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.clip();
-    ctx.drawImage(logo, logoX + logoPad, logoY + logoPad, logoW, logoH);
-    ctx.restore();
-
-    ctx.fillStyle = '#FE9A02';
-    ctx.font = '900 110px Outfit';
-    ctx.textAlign = 'center';
-    ctx.fillText('SUPPORT TEAM', CX, 920);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 140px Outfit';
-    ctx.fillText(group.toUpperCase(), CX, 1100);
-
-    ctx.strokeStyle = 'rgba(255,255,255,.15)';
-    ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(1400, 1180); ctx.lineTo(3444, 1180); ctx.stroke();
-
-    if (member.photo) {
-      const photo = new Image();
-      await new Promise((res, rej) => { photo.onload = res; photo.onerror = rej; photo.src = member.photo; });
-      const pw = 2800, ph = 3200;
-      const px = (W - pw) / 2, py = 1280;
-      ctx.save();
-      const pr = 180;
-      ctx.beginPath();
-      ctx.moveTo(px + 50, py); ctx.lineTo(px + pw - pr, py);
-      ctx.quadraticCurveTo(px + pw, py, px + pw, py + pr);
-      ctx.lineTo(px + pw, py + ph - 50); ctx.lineTo(px + pw - 50, py + ph);
-      ctx.lineTo(px + pr, py + ph);
-      ctx.quadraticCurveTo(px, py + ph, px, py + ph - pr);
-      ctx.lineTo(px, py + 50); ctx.closePath();
-      ctx.clip();
-      const scale = Math.max(pw / photo.width, ph / photo.height);
-      const sw = photo.width * scale, sh = photo.height * scale;
-      ctx.drawImage(photo, px + (pw - sw) / 2, py + (ph - sh) / 2, sw, sh);
-      ctx.restore();
-      ctx.strokeStyle = '#0072C6';
-      ctx.lineWidth = 30;
-      ctx.beginPath();
-      ctx.moveTo(px + 50, py); ctx.lineTo(px + pw - pr, py);
-      ctx.quadraticCurveTo(px + pw, py, px + pw, py + pr);
-      ctx.lineTo(px + pw, py + ph - 50); ctx.lineTo(px + pw - 50, py + ph);
-      ctx.lineTo(px + pr, py + ph);
-      ctx.quadraticCurveTo(px, py + ph, px, py + ph - pr);
-      ctx.lineTo(px, py + 50); ctx.closePath();
-      ctx.stroke();
-    }
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '800 240px Outfit';
-    ctx.textAlign = 'center';
-    ctx.fillText(member.name, CX, 4750);
-
-    ctx.fillStyle = '#FE9A02';
-    ctx.font = '900 120px Outfit';
-    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 5020);
-
+    canvas.width = 1200; canvas.height = 1500;
+    await drawFlyer(canvas, ctx, member, 'SUPPORT TEAM', group.toUpperCase());
     canvas.toBlob((blob) => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.download = member.name.replace(/\s+/g, '_') + '_LCOY2026.png';
-      link.href = url;
-      link.click();
+      link.href = url; link.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     }, 'image/png');
   } catch(e) { alert('Error: ' + e.message); } };
