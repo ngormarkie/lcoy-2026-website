@@ -191,6 +191,12 @@ select.dark-input option{background:var(--ink);color:#fff}
 .team-card-info .team-org{color:rgba(255,255,255,.6);font-size:.78rem}
 .team-save-hint{font-size:.65rem;color:rgba(255,255,255,.3);margin-top:6px;transition:color .3s}
 .team-card:hover .team-save-hint{color:var(--orange)}
+.objectives-section .team-card-info{background:#fff;border:2px solid var(--orange)}
+.objectives-section .team-card-info .team-name{color:var(--ink)}
+.objectives-section .team-card-info .team-role{color:var(--blue)}
+.objectives-section .team-card-info .team-save-hint{color:rgba(0,0,0,.25)}
+.objectives-section .team-card:hover .team-card-info{box-shadow:0 8px 24px -8px rgba(254,154,2,.4)}
+.objectives-section .team-card:hover .team-save-hint{color:var(--orange)}
 .team-card:hover .team-card-info{box-shadow:0 16px 40px -16px rgba(11,34,51,.2);border-color:var(--blue)}
 .team-avatar{width:100%;aspect-ratio:2/3;border-radius:8px 28px 8px 28px;background:var(--blue);color:#fff;display:grid;place-items:center;margin:0 auto 0;font-family:'Outfit';font-weight:800;font-size:1.2rem;overflow:hidden;border:4px solid var(--blue);transition:border-color .4s}
 .team-card:hover .team-avatar{border-color:var(--orange)}
