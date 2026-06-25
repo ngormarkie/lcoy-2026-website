@@ -968,21 +968,21 @@ export default function App() {
     const logo = new Image();
     await new Promise((r, j) => { logo.onload = r; logo.onerror = j; logo.src = '/photos/LCOY-2026-Logo.png'; });
     const lh = 100, lw = (logo.width / logo.height) * lh, lp = 12;
-    const bw = lw + lp * 2, bh = lh + lp * 2, lx = (W - bw) / 2, ly = 30;
+    const bw = lw + lp * 2, bh = lh + lp * 2, lx = (W - bw) / 2, ly = 55;
     ctx.save(); const lr = 14;
     ctx.beginPath(); ctx.moveTo(lx+lr,ly); ctx.lineTo(lx+bw-lr,ly); ctx.quadraticCurveTo(lx+bw,ly,lx+bw,ly+lr); ctx.lineTo(lx+bw,ly+bh-lr); ctx.quadraticCurveTo(lx+bw,ly+bh,lx+bw-lr,ly+bh); ctx.lineTo(lx+lr,ly+bh); ctx.quadraticCurveTo(lx,ly+bh,lx,ly+bh-lr); ctx.lineTo(lx,ly+lr); ctx.quadraticCurveTo(lx,ly,lx+lr,ly); ctx.closePath();
     ctx.fillStyle = '#fff'; ctx.fill(); ctx.clip();
     ctx.drawImage(logo, lx + lp, ly + lp, lw, lh); ctx.restore();
     ctx.fillStyle = '#FE9A02'; ctx.font = '900 22px Outfit'; ctx.textAlign = 'center';
-    ctx.fillText(heading1, CX, 192);
+    ctx.fillText(heading1, CX, 215);
     ctx.fillStyle = '#fff'; ctx.font = '700 30px Outfit';
-    ctx.fillText(heading2, CX, 228);
+    ctx.fillText(heading2, CX, 252);
     ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(300, 245); ctx.lineTo(900, 245); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(300, 268); ctx.lineTo(900, 268); ctx.stroke();
     if (member.photo) {
       const ph = new Image();
       await new Promise((r, j) => { ph.onload = r; ph.onerror = j; ph.src = member.photo; });
-      const pw = 680, pht = 850, px = (W - pw) / 2, py = 265;
+      const pw = 680, pht = 850, px = (W - pw) / 2, py = 285;
       ctx.save(); const pr = 36;
       ctx.beginPath(); ctx.moveTo(px+10,py); ctx.lineTo(px+pw-pr,py); ctx.quadraticCurveTo(px+pw,py,px+pw,py+pr); ctx.lineTo(px+pw,py+pht-10); ctx.lineTo(px+pw-10,py+pht); ctx.lineTo(px+pr,py+pht); ctx.quadraticCurveTo(px,py+pht,px,py+pht-pr); ctx.lineTo(px,py+10); ctx.closePath(); ctx.clip();
       const sc = Math.max(pw / ph.width, pht / ph.height);
@@ -993,10 +993,20 @@ export default function App() {
     }
     ctx.fillStyle = '#fff'; ctx.font = '800 52px Outfit'; ctx.textAlign = 'center';
     ctx.fillText(member.name, CX, 1210);
-    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '500 26px Outfit';
-    ctx.fillText(member.org || '', CX, 1250);
-    ctx.fillStyle = '#FE9A02'; ctx.font = '900 16px Outfit';
-    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 1420);
+    ctx.fillStyle = '#FE9A02'; ctx.font = '600 24px Outfit';
+    ctx.fillText(heading2 + ' MEMBER', CX, 1250);
+    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '500 22px Outfit';
+    ctx.fillText(member.org || '', CX, 1285);
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(350, 1310); ctx.lineTo(850, 1310); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '700 20px Outfit';
+    ctx.fillText('LCOY SIERRA LEONE 2026', CX, 1345);
+    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '500 16px Outfit';
+    ctx.fillText('Freetown, Sierra Leone · 7–9 October 2026', CX, 1375);
+    ctx.fillStyle = '#FE9A02'; ctx.font = '900 14px Outfit';
+    ctx.fillText('RECOGNISED BY YOUNGO UNDER THE UNFCCC', CX, 1430);
+    ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.font = '500 13px Outfit';
+    ctx.fillText('Inclusive Climate Action: Leaving No Youth Behind', CX, 1460);
   };
 
   const saveFlyer = async (member) => { try {
