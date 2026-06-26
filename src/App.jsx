@@ -942,9 +942,19 @@ export default function App() {
   const VOLUNTEERS = [
     { name: 'Fatmata Foday Kamara', group: 'Logistics', photo: 'photos/Streering Committee/Volunteers/Fatmata Foday Kamara - Logistics.jpeg' },
     { name: 'Mariama Sangarie', group: 'Logistics', photo: 'photos/Streering Committee/Volunteers/Mariama Sangarie - Logistics.jpeg' },
+    { name: 'Cornelius Taylor', group: 'Logistics', photo: 'photos/Streering Committee/Volunteers/Cornelius Taylor - Logistics.jpeg' },
+    { name: 'Rashidatu Umarr', group: 'Programme & Policy', photo: 'photos/Streering Committee/Volunteers/Rashidatu Umarr - Programmes and Policy.jpeg' },
+    { name: 'Abass Mohamed Sesay', group: 'Programme & Policy', photo: 'photos/Streering Committee/Volunteers/Abass Mohamed Sesay- Programmes and Policy.jpeg' },
+    { name: 'James Thullah', group: 'Programme & Policy', photo: 'photos/Streering Committee/Volunteers/James Thullah - Programmes and Policy.jpeg' },
     { name: 'Hawanatu Mary Smith', group: 'Finance, Partnerships & Fundraising', photo: 'photos/Streering Committee/Volunteers/Hawanatu Mary Smith - Partnerships.jpeg' },
     { name: 'Kadijatu Bah', group: 'Finance, Partnerships & Fundraising', photo: 'photos/Streering Committee/Volunteers/Kadijatu Bah - Partnerships.jpeg' },
     { name: 'Grace Lizzy Tatiana Sesay', group: 'Finance, Partnerships & Fundraising', photo: 'photos/Streering Committee/Volunteers/Grace Lizzy Tatiana Sesay - Partnerships.jpeg' },
+    { name: 'Francis Sahid Sao', group: 'Participation', photo: 'photos/Streering Committee/Volunteers/Francis Sahid Sao - Participation.jpeg' },
+    { name: 'Kadijatu J. Conteh', group: 'Participation', photo: 'photos/Streering Committee/Volunteers/Kadijatu J. Conteh - Participation.jpeg' },
+    { name: 'Alieu Barrie', group: 'Participation', photo: 'photos/Streering Committee/Volunteers/Alieu Barrie - Participation.jpeg' },
+    { name: 'Susie Hannah Bangura', group: 'Participation', photo: 'photos/Streering Committee/Volunteers/Susie Hannah Bangura - Participation.jpeg' },
+    { name: 'Steven Perry Nyandebo', group: 'Participation', photo: 'photos/Streering Committee/Volunteers/Steven Perry Nyandebo - Participation.jpeg' },
+    { name: 'Samantha Konneh', group: 'Participation', photo: 'photos/Streering Committee/Volunteers/Samantha Konneh - Participation.jpeg' },
   ];
 
   const drawFlyer = async (canvas, ctx, member, heading1, heading2) => {
@@ -1065,7 +1075,7 @@ export default function App() {
     <div className="wrap">
       <div className="section-head" style={{textAlign:'center',margin:'0 auto 36px',maxWidth:'none'}}>
         <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>Support team</span>
-        <h2 style={{color:'#fff',marginTop:'14px'}}>Volunteers</h2>
+        <h2 style={{color:'#fff',marginTop:'14px'}}>Working Group Volunteers</h2>
       </div>
       <div className="team-grid">
         {VOLUNTEERS.map((v,i)=>(
@@ -1073,7 +1083,7 @@ export default function App() {
             <div className="team-avatar">{v.photo ? <img src={v.photo} alt={v.name} /> : v.name.split(' ').map(w=>w[0]).join('')}</div>
             <div className="team-card-info">
               <h3 className="team-name">{v.name}</h3>
-              <div className="team-role">{v.group} Working Group</div>
+              <div className="team-role">{v.group}</div>
               <div className="team-save-hint">Tap to save flyer</div>
             </div>
           </div>
