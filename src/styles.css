@@ -192,8 +192,10 @@ select.dark-input option{background:var(--ink);color:#fff}
 .team-save-hint{font-size:.65rem;color:rgba(255,255,255,.3);margin-top:6px;transition:color .3s}
 .team-card:hover .team-save-hint{color:var(--orange)}
 .team-avatar img[alt="Abass Mohamed Sesay"]{object-position:center 25%;transform:scale(1.3)}
-.team-avatar img[alt="Samantha Konneh"]{object-position:center 35%;transform:scale(1.3)}
-.team-card:hover .team-avatar img[alt="Samantha Konneh"]{transform:scale(1.4)}
+.team-avatar img[alt="Samantha Konneh"]{object-position:center 50%;transform:scale(1.5)}
+.team-card:hover .team-avatar img[alt="Samantha Konneh"]{transform:scale(1.6)}
+.team-avatar img[alt="Susie Hannah Bangura"]{object-position:center 45%;transform:scale(1.4)}
+.team-card:hover .team-avatar img[alt="Susie Hannah Bangura"]{transform:scale(1.5)}
 .team-card:hover .team-avatar img[alt="Abass Mohamed Sesay"]{transform:scale(1.4)}
 .objectives-section .team-card-info{background:#fff;border:2px solid var(--orange)}
 .objectives-section .team-card-info .team-name{color:var(--ink);font-size:1rem;font-weight:800}
