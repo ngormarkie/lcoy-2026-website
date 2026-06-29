@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import AppShell from '../components/AppShell';
+import VerifyEntry from './organiser/VerifyEntry';
+import MealCheckin from './organiser/MealCheckin';
 import Placeholder from '../components/Placeholder';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -42,8 +44,8 @@ export default function CheckinHome() {
     <AppShell navItems={navItems}>
       <Routes>
         <Route path="/" element={<CheckinDashboard />} />
-        <Route path="/verify" element={<Placeholder title="Verify Entry" note="Coming next: scan QR or type 2-character badge code to verify entry." />} />
-        <Route path="/meals" element={<Placeholder title="Meal Check-In" note="Coming next: per-meal scanning with one-time redemption." />} />
+        <Route path="/verify" element={<VerifyEntry />} />
+        <Route path="/meals" element={<MealCheckin />} />
         <Route path="/supplies" element={<Placeholder title="Supply Check-In" note="Coming next: track supply distribution per attendee." />} />
         <Route path="*" element={<CheckinDashboard />} />
       </Routes>

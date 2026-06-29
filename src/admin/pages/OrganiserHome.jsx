@@ -5,6 +5,12 @@ import OrganiserDashboard from './organiser/Dashboard';
 import OrganiserUsersList from './organiser/UsersList';
 import OrganiserCreateUser from './organiser/CreateUser';
 import OrganiserUserDetail from './organiser/UserDetail';
+import VerifyEntry from './organiser/VerifyEntry';
+import MealCheckin from './organiser/MealCheckin';
+import Sessions from './organiser/Sessions';
+import Announcements from './organiser/Announcements';
+import Resources from './organiser/Resources';
+import Reports from './organiser/Reports';
 import Placeholder from '../components/Placeholder';
 
 export default function OrganiserHome() {
@@ -40,12 +46,12 @@ export default function OrganiserHome() {
         <Route path="/users" element={<OrganiserUsersList />} />
         <Route path="/users/new" element={<OrganiserCreateUser />} />
         <Route path="/users/:uid" element={<OrganiserUserDetail />} />
-        <Route path="/verify" element={<Placeholder title="Verify Entry" note="Coming next: scan QR or type 2-character badge code to verify entry." />} />
-        <Route path="/meals" element={<Placeholder title="Meal Check-In" note="Coming next: per-meal scanning with one-time redemption." />} />
-        <Route path="/sessions" element={<Placeholder title="Sessions" note="Coming next: create, edit, and manage agenda sessions." />} />
-        <Route path="/announcements" element={<Placeholder title="Announcements" note="Coming next: post broadcast announcements." />} />
-        <Route path="/resources" element={<Placeholder title="Resources" note="Coming next: upload documents and links." />} />
-        <Route path="/reports" element={<Placeholder title="Reports" note="Coming next: CSV exports for all data." />} />
+        <Route path="/verify" element={<VerifyEntry />} />
+        <Route path="/meals" element={<MealCheckin />} />
+        <Route path="/sessions" element={<Sessions />} />
+        <Route path="/announcements" element={<Announcements />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="*" element={<OrganiserDashboard />} />
       </Routes>
     </AppShell>
