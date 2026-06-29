@@ -29,42 +29,56 @@ export default function UsersList() {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   };
 
-  const downloadPeoplePDF = (list, label) => {
+  const downloadPeoplePDF = async (list, label) => {
     const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
 
-    doc.setFillColor(11, 34, 51);
-    doc.rect(0, 0, pageW, 42, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LCOY SIERRA LEONE 2026', 14, 18);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(label, 14, 28);
-    doc.setFontSize(8);
-    doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · ${list.length} people`, 14, 36);
-    doc.setTextColor(0, 0, 0);
+    let logoData = null;
+    try {
+      const resp = await fetch('/photos/LCOY-2026-Logo.png');
+      const blob = await resp.blob();
+      logoData = await new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => res(null); r.readAsDataURL(blob); });
+    } catch {}
+
+    const drawHeader = () => {
+      doc.setFillColor(11, 34, 51);
+      doc.rect(0, 0, pageW, 48, 'F');
+      if (logoData) doc.addImage(logoData, 'PNG', 10, 6, 36, 36);
+      const tx = logoData ? 52 : 14;
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+      doc.text('LCOY Sierra Leone 2026', tx, 18);
+      doc.setFontSize(12); doc.setFont('helvetica', 'normal');
+      doc.text(label, tx, 28);
+      doc.setFontSize(8); doc.setTextColor(180, 200, 220);
+      doc.text(`Freetown · 7–9 October 2026 · ${list.length} people`, tx, 36);
+      doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, tx, 42);
+      doc.setTextColor(0, 0, 0);
+    };
+
+    drawHeader();
 
     const headers = ['Name', 'Email', 'Phone', 'Organisation', 'Category', 'Badge Code', 'Location'];
     const rows = list.map(u => [u.name, u.email, u.phone, u.org, u.category, u.code, [u.city, u.district, u.region].filter(Boolean).join(', ')]);
     autoTable(doc, {
-      head: [headers], body: rows, startY: 48,
-      styles: { fontSize: 7.5, cellPadding: 3 },
+      head: [headers], body: rows, startY: 54,
+      styles: { fontSize: 7.5, cellPadding: 3.5, lineColor: [220, 220, 220], lineWidth: 0.1 },
       headStyles: { fillColor: [0, 114, 198], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
       alternateRowStyles: { fillColor: [244, 248, 246] },
       margin: { left: 14, right: 14 },
-      didDrawPage: () => {
+      didDrawPage: (data) => {
+        if (data.pageNumber > 1) drawHeader();
         const pageH = doc.internal.pageSize.getHeight();
+        doc.setDrawColor(200, 200, 200); doc.line(14, pageH - 14, pageW - 14, pageH - 14);
         doc.setFontSize(7); doc.setTextColor(140, 140, 140);
         doc.text('LCOY Sierra Leone 2026 · Inclusive Climate Action: Leaving No Youth Behind', 14, pageH - 8);
-        doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber}`, pageW - 14, pageH - 8, { align: 'right' });
+        doc.text(`Page ${data.pageNumber}`, pageW - 14, pageH - 8, { align: 'right' });
       },
     });
     doc.save(`lcoy2026_${label.replace(/\s+/g, '_')}.pdf`);
   };
 
-  const handlePeopleDownload = (val, fmt) => {
+  const handlePeopleDownload = async (val, fmt) => {
     if (!val) return;
     let list = [], label = '';
     if (val === 'all') { list = users; label = 'All People'; }
@@ -72,7 +86,7 @@ export default function UsersList() {
     else if (val === 'organisers') { list = users.filter(u => u.role === 'organiser' || u.role === 'superadmin'); label = 'Organisers'; }
     else { list = users.filter(u => u.category === val); label = val; }
     if (list.length === 0) { alert('No people for this filter.'); return; }
-    if (fmt === 'pdf') downloadPeoplePDF(list, label);
+    if (fmt === 'pdf') await downloadPeoplePDF(list, label);
     else downloadPeopleCSV(list, label);
   };
 
