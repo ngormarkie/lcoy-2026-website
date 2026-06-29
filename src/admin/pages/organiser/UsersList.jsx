@@ -31,12 +31,37 @@ export default function UsersList() {
 
   const downloadPeoplePDF = (list, label) => {
     const doc = new jsPDF({ orientation: 'landscape' });
-    doc.setFontSize(16); doc.text(`LCOY 2026 — ${label}`, 14, 20);
-    doc.setFontSize(9); doc.text(`Generated ${new Date().toLocaleDateString()} · ${list.length} people`, 14, 28);
+    const pageW = doc.internal.pageSize.getWidth();
+
+    doc.setFillColor(11, 34, 51);
+    doc.rect(0, 0, pageW, 42, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LCOY SIERRA LEONE 2026', 14, 18);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, 14, 28);
+    doc.setFontSize(8);
+    doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · ${list.length} people`, 14, 36);
+    doc.setTextColor(0, 0, 0);
+
     const headers = ['Name', 'Email', 'Phone', 'Organisation', 'Category', 'Badge Code', 'Location'];
     const rows = list.map(u => [u.name, u.email, u.phone, u.org, u.category, u.code, [u.city, u.district, u.region].filter(Boolean).join(', ')]);
-    autoTable(doc, { head: [headers], body: rows, startY: 34, styles: { fontSize: 7 }, headStyles: { fillColor: [11, 34, 51] } });
-    doc.save(`lcoy2026_${label}.pdf`);
+    autoTable(doc, {
+      head: [headers], body: rows, startY: 48,
+      styles: { fontSize: 7.5, cellPadding: 3 },
+      headStyles: { fillColor: [0, 114, 198], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+      alternateRowStyles: { fillColor: [244, 248, 246] },
+      margin: { left: 14, right: 14 },
+      didDrawPage: () => {
+        const pageH = doc.internal.pageSize.getHeight();
+        doc.setFontSize(7); doc.setTextColor(140, 140, 140);
+        doc.text('LCOY Sierra Leone 2026 · Inclusive Climate Action: Leaving No Youth Behind', 14, pageH - 8);
+        doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber}`, pageW - 14, pageH - 8, { align: 'right' });
+      },
+    });
+    doc.save(`lcoy2026_${label.replace(/\s+/g, '_')}.pdf`);
   };
 
   const handlePeopleDownload = (val, fmt) => {

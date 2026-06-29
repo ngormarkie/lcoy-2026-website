@@ -20,12 +20,44 @@ function download(filename, csv) {
 }
 
 function downloadPDF(title, headers, rows, filename) {
-  const doc = new jsPDF({ orientation: rows[0]?.length > 6 ? 'landscape' : 'portrait' });
-  doc.setFontSize(16);
-  doc.text(title, 14, 20);
-  doc.setFontSize(9);
-  doc.text(`LCOY Sierra Leone 2026 — Generated ${new Date().toLocaleDateString()}`, 14, 28);
-  autoTable(doc, { head: [headers], body: rows, startY: 34, styles: { fontSize: 8 }, headStyles: { fillColor: [11, 34, 51] } });
+  const isWide = headers.length > 6;
+  const doc = new jsPDF({ orientation: isWide ? 'landscape' : 'portrait' });
+  const pageW = doc.internal.pageSize.getWidth();
+
+  doc.setFillColor(11, 34, 51);
+  doc.rect(0, 0, pageW, 42, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('LCOY SIERRA LEONE 2026', 14, 18);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(title, 14, 28);
+
+  doc.setFontSize(8);
+  doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · ${rows.length} records`, 14, 36);
+
+  doc.setTextColor(0, 0, 0);
+
+  autoTable(doc, {
+    head: [headers],
+    body: rows,
+    startY: 48,
+    styles: { fontSize: 7.5, cellPadding: 3 },
+    headStyles: { fillColor: [0, 114, 198], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+    alternateRowStyles: { fillColor: [244, 248, 246] },
+    margin: { left: 14, right: 14 },
+    didDrawPage: (data) => {
+      const pageH = doc.internal.pageSize.getHeight();
+      doc.setFontSize(7);
+      doc.setTextColor(140, 140, 140);
+      doc.text('LCOY Sierra Leone 2026 · Inclusive Climate Action: Leaving No Youth Behind', 14, pageH - 8);
+      doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber}`, pageW - 14, pageH - 8, { align: 'right' });
+    },
+  });
+
   doc.save(filename);
 }
 
