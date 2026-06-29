@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { downloadBadgesBatch } from '../../utils/badge';
 import './UsersList.css';
 
 const ROLE_LABELS = { superadmin: 'Super-admin', organiser: 'Organiser', attendee: 'Attendee' };
@@ -12,6 +13,7 @@ export default function UsersList() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [batchBusy, setBatchBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +49,31 @@ export default function UsersList() {
           <h1>Registered persons</h1>
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>All organisers, attendees, and special guests on file.</p>
         </div>
-        <Link to="/admin/users/new" className="btn btn-primary">＋ Add person</Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ position: 'relative' }}>
+            <select className="select" style={{ minWidth: 150 }} disabled={batchBusy} onChange={async (e) => {
+              const val = e.target.value;
+              e.target.value = '';
+              if (!val) return;
+              setBatchBusy(true);
+              let batch = [];
+              if (val === 'all') batch = users.filter(u => u.code);
+              else if (val === 'attendees') batch = users.filter(u => u.role === 'attendee' && u.code);
+              else if (val === 'organisers') batch = users.filter(u => (u.role === 'organiser' || u.role === 'superadmin') && u.code);
+              else batch = users.filter(u => u.category === val && u.code);
+              if (batch.length === 0) { alert('No badges to download for this filter.'); setBatchBusy(false); return; }
+              await downloadBadgesBatch(batch);
+              setBatchBusy(false);
+            }}>
+              <option value="">{batchBusy ? 'Downloading…' : 'Download badges…'}</option>
+              <option value="all">All badges</option>
+              <option value="attendees">All attendees</option>
+              <option value="organisers">All organisers</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <Link to="/admin/users/new" className="btn btn-primary">＋ Add person</Link>
+        </div>
       </header>
       <div className="users-controls">
         <input type="search" className="input" placeholder="Search name, email, organisation, code…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: '2 1 200px' }} />

@@ -5,6 +5,7 @@ import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { REGIONS, getDistricts, WORKING_GROUPS } from '../../utils/locations';
 import PhotoInput from '../../components/PhotoInput';
+import { downloadBadge } from '../../utils/badge';
 import './UserDetail.css';
 
 const ATTENDEE_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media', 'VIP'];
@@ -69,6 +70,7 @@ export default function UserDetail() {
       <div className="user-detail-back">
         <Link to="/admin/users" className="btn btn-ghost btn-sm">← All people</Link>
         {canEdit && !editing && <button className="btn btn-secondary btn-sm" onClick={startEdit}>Edit</button>}
+        {!editing && user?.code && <button className="btn btn-secondary btn-sm" onClick={() => downloadBadge(user)}>Download Badge</button>}
         {editing && (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)} disabled={busy}>Cancel</button>

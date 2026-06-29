@@ -7,6 +7,7 @@ import { createUserAccount, findUserByEmail } from '../../services/userManagemen
 import { generateUniqueBadgeCode, isValidEmail } from '../../utils/badgeCode';
 import PhotoInput from '../../components/PhotoInput';
 import { REGIONS, getDistricts, WORKING_GROUPS } from '../../utils/locations';
+import { downloadBadge } from '../../utils/badge';
 import './CreateUser.css';
 
 const ATTENDEE_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media', 'VIP'];
@@ -63,7 +64,7 @@ export default function CreateUser() {
       };
       await createUserAccount({ email, password, profile });
       setExistingCodes((prev) => new Set([...prev, code]));
-      setResult({ name: name.trim(), email: email.trim().toLowerCase(), code, loginPassword: accountType === 'organiser' ? orgPassword : code, type: accountType });
+      setResult({ name: name.trim(), email: email.trim().toLowerCase(), code, loginPassword: accountType === 'organiser' ? orgPassword : code, type: accountType, category, org: org.trim(), city: city.trim(), district, region });
       setName(''); setEmail(''); setPhone(''); setOrg(''); setBio(''); setPhotoURL(null); setOrgPassword(''); setRegion(''); setDistrict(''); setCity(''); setWorkingGroup('');
     } catch (err) {
       const msg = err.code === 'auth/email-already-in-use' ? 'An account with that email already exists.' : err.code === 'auth/weak-password' ? 'Password is too weak.' : err.code === 'permission-denied' ? 'You do not have permission.' : 'Could not create account. Please try again.';
@@ -89,6 +90,7 @@ export default function CreateUser() {
             <div className="result-full"><span className="result-label">Login password</span><span className="result-value font-mono">{result.type === 'organiser' ? '(the password you set)' : result.code}</span></div>
           </div>
           <div className="result-actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadBadge(result)}>Download Badge</button>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => { const t = result.type === 'organiser' ? `Welcome to LCOY Sierra Leone 2026!\n\nEmail: ${result.email}\nPassword: (the password we agreed)\nBadge code: ${result.code}` : `Welcome to LCOY Sierra Leone 2026!\n\nEmail: ${result.email}\nPassword: ${result.code}    (also your badge code)\n\nBring this code with you.`; navigator.clipboard?.writeText(t); }}>Copy login instructions</button>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setResult(null)}>Dismiss</button>
           </div>
