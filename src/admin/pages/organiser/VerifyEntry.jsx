@@ -11,7 +11,7 @@ export default function VerifyEntry() {
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [scanning, setScanning] = useState(false);
+  const [scanning, setScanning] = useState(true);
   const inputRef = useRef(null);
 
   useEffect(() => {

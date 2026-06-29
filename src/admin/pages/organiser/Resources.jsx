@@ -1,6 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { collection, getDocs, addDoc, doc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function Resources() {
   const [items, setItems] = useState([]);
@@ -8,10 +17,13 @@ export default function Resources() {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const fileRef = useRef(null);
 
-  const fetch = async () => {
+  const fetchAll = async () => {
     try {
       const snap = await getDocs(collection(db, 'resources'));
       const list = [];
@@ -22,23 +34,58 @@ export default function Resources() {
     setLoading(false);
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetchAll(); }, []);
+
+  const handleFileChange = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { setError('File must be under 5MB.'); return; }
+    try {
+      const base64 = await readFileAsBase64(f);
+      setFile(base64);
+      setFileName(f.name);
+      if (!title) setTitle(f.name.replace(/\.[^.]+$/, ''));
+    } catch (err) { setError('Could not read file.'); }
+  };
 
   const submit = async (e) => {
     e.preventDefault(); setError('');
     if (!title.trim()) return setError('Title is required.');
+    if (!url.trim() && !file) return setError('Please add a URL or upload a file.');
     setBusy(true);
     try {
-      await addDoc(collection(db, 'resources'), { title: title.trim(), url: url.trim(), description: description.trim(), createdAt: serverTimestamp() });
-      setTitle(''); setUrl(''); setDescription('');
-      await fetch();
-    } catch (err) { setError('Could not add resource.'); }
+      const data = {
+        title: title.trim(),
+        url: url.trim(),
+        description: description.trim(),
+        createdAt: serverTimestamp(),
+      };
+      if (file) {
+        data.fileData = file;
+        data.fileName = fileName;
+      }
+      await addDoc(collection(db, 'resources'), data);
+      setTitle(''); setUrl(''); setDescription(''); setFile(null); setFileName('');
+      if (fileRef.current) fileRef.current.value = '';
+      await fetchAll();
+    } catch (err) {
+      console.error(err);
+      setError(err.message?.includes('bytes') ? 'File too large for Firestore. Use a smaller file or provide a URL instead.' : 'Could not add resource.');
+    }
     finally { setBusy(false); }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this resource?')) return;
-    try { await deleteDoc(doc(db, 'resources', id)); await fetch(); } catch (e) { console.error(e); }
+    try { await deleteDoc(doc(db, 'resources', id)); await fetchAll(); } catch (e) { console.error(e); }
+  };
+
+  const downloadFile = (item) => {
+    if (!item.fileData) return;
+    const a = document.createElement('a');
+    a.href = item.fileData;
+    a.download = item.fileName || item.title || 'download';
+    a.click();
   };
 
   return (
@@ -49,7 +96,17 @@ export default function Resources() {
         {error && <div className="alert alert-error" style={{ marginTop: '0.5rem' }}>{error}</div>}
         <form onSubmit={submit} style={{ marginTop: '0.75rem', display: 'grid', gap: '0.75rem' }}>
           <div className="field"><label className="field-label">Title</label><input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. NDC 3.0 Summary" required /></div>
-          <div className="field"><label className="field-label">URL / Link</label><input className="input" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." /></div>
+          <div className="field"><label className="field-label">URL / Link (optional if uploading file)</label><input className="input" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." /></div>
+          <div className="field">
+            <label className="field-label">Upload file (max 5MB)</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => fileRef.current?.click()} disabled={busy}>
+                {fileName || 'Choose file'}
+              </button>
+              {fileName && <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setFile(null); setFileName(''); if (fileRef.current) fileRef.current.value = ''; }}>Remove</button>}
+            </div>
+            <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png" onChange={handleFileChange} style={{ display: 'none' }} />
+          </div>
           <div className="field"><label className="field-label">Description (optional)</label><textarea className="textarea" value={description} onChange={e => setDescription(e.target.value)} rows={2} /></div>
           <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Adding…' : 'Add resource'}</button>
         </form>
@@ -58,12 +115,16 @@ export default function Resources() {
         <p className="text-muted" style={{ textAlign: 'center', padding: '2rem' }}>No resources yet.</p>
       ) : items.map(r => (
         <div key={r.id} className="card-elevated" style={{ padding: '1rem', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700 }}>{r.title}</div>
             {r.url && <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem', wordBreak: 'break-all' }}>{r.url}</a>}
+            {r.fileName && <div style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: '0.15rem' }}>📎 {r.fileName}</div>}
             {r.description && <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginTop: '0.25rem' }}>{r.description}</p>}
           </div>
-          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--crimson)', flexShrink: 0 }} onClick={() => handleDelete(r.id)}>Delete</button>
+          <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
+            {r.fileData && <button className="btn btn-secondary btn-sm" onClick={() => downloadFile(r)}>Download</button>}
+            <button className="btn btn-ghost btn-sm" style={{ color: 'var(--crimson)' }} onClick={() => handleDelete(r.id)}>Delete</button>
+          </div>
         </div>
       ))}
     </div>

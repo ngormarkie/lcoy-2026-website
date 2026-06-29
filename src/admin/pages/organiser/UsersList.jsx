@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { downloadBadgesBatch } from '../../utils/badge';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './UsersList.css';
 
 const ROLE_LABELS = { superadmin: 'Super-admin', organiser: 'Organiser', attendee: 'Attendee' };
@@ -14,6 +16,40 @@ export default function UsersList() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [batchBusy, setBatchBusy] = useState(false);
+  const [dlBusy, setDlBusy] = useState(false);
+
+  const downloadPeopleCSV = (list, label) => {
+    const headers = ['Name', 'Email', 'Phone', 'Organisation', 'Category', 'Role', 'Badge Code', 'Region', 'District', 'City'];
+    const rows = list.map(u => [u.name, u.email, u.phone, u.org, u.category, u.role, u.code, u.region, u.district, u.city]);
+    const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = [headers.map(escape).join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `lcoy2026_${label}.csv`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  };
+
+  const downloadPeoplePDF = (list, label) => {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(16); doc.text(`LCOY 2026 — ${label}`, 14, 20);
+    doc.setFontSize(9); doc.text(`Generated ${new Date().toLocaleDateString()} · ${list.length} people`, 14, 28);
+    const headers = ['Name', 'Email', 'Phone', 'Organisation', 'Category', 'Badge Code', 'Location'];
+    const rows = list.map(u => [u.name, u.email, u.phone, u.org, u.category, u.code, [u.city, u.district, u.region].filter(Boolean).join(', ')]);
+    autoTable(doc, { head: [headers], body: rows, startY: 34, styles: { fontSize: 7 }, headStyles: { fillColor: [11, 34, 51] } });
+    doc.save(`lcoy2026_${label}.pdf`);
+  };
+
+  const handlePeopleDownload = (val, fmt) => {
+    if (!val) return;
+    let list = [], label = '';
+    if (val === 'all') { list = users; label = 'All People'; }
+    else if (val === 'attendees') { list = users.filter(u => u.role === 'attendee'); label = 'Attendees'; }
+    else if (val === 'organisers') { list = users.filter(u => u.role === 'organiser' || u.role === 'superadmin'); label = 'Organisers'; }
+    else { list = users.filter(u => u.category === val); label = val; }
+    if (list.length === 0) { alert('No people for this filter.'); return; }
+    if (fmt === 'pdf') downloadPeoplePDF(list, label);
+    else downloadPeopleCSV(list, label);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -49,30 +85,45 @@ export default function UsersList() {
           <h1>Registered persons</h1>
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>All organisers, attendees, and special guests on file.</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <div style={{ position: 'relative' }}>
-            <select className="select" style={{ minWidth: 150 }} disabled={batchBusy} onChange={async (e) => {
-              const val = e.target.value;
-              e.target.value = '';
-              if (!val) return;
-              setBatchBusy(true);
-              let batch = [];
-              if (val === 'all') batch = users.filter(u => u.code);
-              else if (val === 'attendees') batch = users.filter(u => u.role === 'attendee' && u.code);
-              else if (val === 'organisers') batch = users.filter(u => (u.role === 'organiser' || u.role === 'superadmin') && u.code);
-              else batch = users.filter(u => u.category === val && u.code);
-              if (batch.length === 0) { alert('No badges to download for this filter.'); setBatchBusy(false); return; }
-              await downloadBadgesBatch(batch);
-              setBatchBusy(false);
-            }}>
-              <option value="">{batchBusy ? 'Downloading…' : 'Download badges…'}</option>
-              <option value="all">All badges</option>
-              <option value="attendees">All attendees</option>
-              <option value="organisers">All organisers</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <Link to="/admin/users/new" className="btn btn-primary">＋ Add person</Link>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <select className="select" style={{ minWidth: 140 }} disabled={batchBusy} onChange={async (e) => {
+            const val = e.target.value; e.target.value = '';
+            if (!val) return;
+            setBatchBusy(true);
+            let batch = [];
+            if (val === 'all') batch = users.filter(u => u.code);
+            else if (val === 'attendees') batch = users.filter(u => u.role === 'attendee' && u.code);
+            else if (val === 'organisers') batch = users.filter(u => (u.role === 'organiser' || u.role === 'superadmin') && u.code);
+            else batch = users.filter(u => u.category === val && u.code);
+            if (batch.length === 0) { alert('No badges for this filter.'); setBatchBusy(false); return; }
+            await downloadBadgesBatch(batch);
+            setBatchBusy(false);
+          }}>
+            <option value="">{batchBusy ? 'Downloading…' : 'Badges…'}</option>
+            <option value="all">All badges</option>
+            <option value="attendees">Attendee badges</option>
+            <option value="organisers">Organiser badges</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select className="select" style={{ minWidth: 140 }} onChange={(e) => {
+            const [filter, fmt] = (e.target.value || '').split('|'); e.target.value = '';
+            if (filter) handlePeopleDownload(filter, fmt);
+          }}>
+            <option value="">Download list…</option>
+            <optgroup label="CSV">
+              <option value="all|csv">All people (CSV)</option>
+              <option value="attendees|csv">Attendees (CSV)</option>
+              <option value="organisers|csv">Organisers (CSV)</option>
+              {categories.map(c => <option key={c+'csv'} value={c+'|csv'}>{c} (CSV)</option>)}
+            </optgroup>
+            <optgroup label="PDF">
+              <option value="all|pdf">All people (PDF)</option>
+              <option value="attendees|pdf">Attendees (PDF)</option>
+              <option value="organisers|pdf">Organisers (PDF)</option>
+              {categories.map(c => <option key={c+'pdf'} value={c+'|pdf'}>{c} (PDF)</option>)}
+            </optgroup>
+          </select>
+          <Link to="/admin/users/new" className="btn btn-primary">＋ Add</Link>
         </div>
       </header>
       <div className="users-controls">
