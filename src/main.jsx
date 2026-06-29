@@ -1,11 +1,24 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
 import './styles.css'
 
+import { AuthProvider } from './admin/contexts/AuthContext'
+import AdminApp from './admin/AdminApp'
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/admin/*" element={
+          <AuthProvider>
+            <AdminApp />
+          </AuthProvider>
+        } />
+        <Route path="*" element={<App />} />
+      </Routes>
+    </BrowserRouter>
   </React.StrictMode>
 )
 

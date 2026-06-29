@@ -1,0 +1,151 @@
+.user-detail-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.user-detail-back {
+  margin-bottom: 1rem;
+}
+
+.user-detail-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-detail-photo {
+  width: 180px;
+  height: 180px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--paper);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.user-detail-photo::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--paper-dark);
+  border-radius: calc(var(--radius-lg) + 4px);
+  z-index: -1;
+}
+
+.user-detail-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-detail-photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--green-light);
+}
+
+.user-detail-info {
+  min-width: 0;
+}
+
+.user-detail-tags {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.user-detail-name {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.user-detail-org {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-detail-meta {
+  border-top: 1px solid var(--paper-dark);
+  padding-top: 1rem;
+}
+
+.meta-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--paper-dark);
+}
+.meta-row:last-child {
+  border-bottom: none;
+}
+.meta-row-bio {
+  align-items: start;
+}
+
+.meta-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  align-self: center;
+}
+
+.meta-value {
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.user-detail-admin {
+  margin-top: 1.5rem;
+}
+
+.admin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .user-detail-card {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+  .user-detail-photo {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+  }
+  .user-detail-info {
+    text-align: center;
+  }
+  .user-detail-tags {
+    justify-content: center;
+  }
+  .meta-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    text-align: left;
+  }
+  .meta-label {
+    text-align: left;
+  }
+}

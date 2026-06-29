@@ -1,0 +1,241 @@
+.welcome-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.welcome-header {
+  margin-bottom: 2rem;
+}
+
+.welcome-header h1 {
+  margin-top: 0.5rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.welcome-header h1 em {
+  font-style: italic;
+  color: var(--green-light);
+  font-weight: 600;
+}
+
+.welcome-sub {
+  color: var(--ink-soft);
+  margin-top: 0.75rem;
+  font-size: 1.05rem;
+  max-width: 38em;
+}
+
+/* BADGE CARD */
+.badge-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(15, 46, 36, 0.15), 0 4px 12px rgba(15, 46, 36, 0.06);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--paper-dark);
+  position: relative;
+}
+
+.badge-card::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+}
+
+.badge-header {
+  background: linear-gradient(135deg, #0a1f18, #0f2e24, #1a4d3e);
+  color: var(--paper);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+.badge-header > span:first-child {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.badge-header > span:last-child {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.badge-body {
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.badge-photo {
+  width: 110px;
+  height: 110px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper);
+  flex-shrink: 0;
+  border: 3px solid var(--paper-dark);
+}
+
+.badge-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge-photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--green-light);
+}
+
+.badge-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--green-deepest);
+  line-height: 1.15;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.badge-org {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.badge-cat {
+  font-size: 0.75rem;
+}
+
+.badge-code-section {
+  background: var(--paper);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 2px dashed var(--paper-dark);
+}
+
+.badge-code-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.badge-code-value {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--green-deep);
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .badge-body {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  .badge-photo {
+    width: 90px;
+    height: 90px;
+  }
+  .badge-name {
+    font-size: 1.2rem;
+  }
+  .badge-code-value {
+    font-size: 2rem;
+  }
+}
+
+/* TIP */
+.welcome-tip {
+  background: rgba(45, 122, 95, 0.06);
+  border-left: 4px solid var(--green-light);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+}
+
+.welcome-tip h3 {
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+  color: var(--green-deep);
+}
+
+.welcome-tip p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+/* TILE GRID */
+.welcome-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.welcome-tile {
+  background: white;
+  border: 1px solid var(--paper-dark);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: all 0.15s;
+}
+
+.welcome-tile:hover {
+  border-color: var(--green-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.welcome-tile-icon {
+  font-size: 1.75rem;
+  color: var(--green-light);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.welcome-tile-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--green-deepest);
+}
+
+.welcome-tile-sub {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
