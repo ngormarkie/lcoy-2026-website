@@ -74,12 +74,11 @@ export default function Reports() {
     setBusy('supplies');
     try {
       const snap = await getDocs(collection(db, 'users'));
-      const headers = ['Name', 'Badge Code', 'Category', 'Badge & Lanyard', 'Conference Bag', 'Notebook & Pen', 'T-Shirt', 'Cap', 'Water Bottle'];
+      const headers = ['Name', 'Badge Code', 'Category', 'Supplies Issued'];
       const rows = [];
       snap.forEach(d => {
         const u = d.data();
-        const s = u.supplies || {};
-        rows.push([u.name, u.code, u.category, s.badge || '', s.bag || '', s.notebook || '', s.tshirt || '', s.cap || '', s.bottle || '']);
+        rows.push([u.name, u.code, u.category, u.suppliesIssued || '']);
       });
       download('lcoy2026_supplies.csv', toCSV(headers, rows));
     } catch (e) { console.error(e); alert('Export failed.'); }
