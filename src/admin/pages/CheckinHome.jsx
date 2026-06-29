@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import VerifyEntry from './organiser/VerifyEntry';
 import MealCheckin from './organiser/MealCheckin';
+import SupplyCheckin from './organiser/SupplyCheckin';
 import Placeholder from '../components/Placeholder';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -46,7 +47,7 @@ export default function CheckinHome() {
         <Route path="/" element={<CheckinDashboard />} />
         <Route path="/verify" element={<VerifyEntry />} />
         <Route path="/meals" element={<MealCheckin />} />
-        <Route path="/supplies" element={<Placeholder title="Supply Check-In" note="Coming next: track supply distribution per attendee." />} />
+        <Route path="/supplies" element={<SupplyCheckin />} />
         <Route path="*" element={<CheckinDashboard />} />
       </Routes>
     </AppShell>

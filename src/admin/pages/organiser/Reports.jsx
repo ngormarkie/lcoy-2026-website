@@ -70,6 +70,22 @@ export default function Reports() {
     setBusy('');
   };
 
+  const exportSupplies = async () => {
+    setBusy('supplies');
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const headers = ['Name', 'Badge Code', 'Category', 'Badge & Lanyard', 'Conference Bag', 'Notebook & Pen', 'T-Shirt', 'Cap', 'Water Bottle'];
+      const rows = [];
+      snap.forEach(d => {
+        const u = d.data();
+        const s = u.supplies || {};
+        rows.push([u.name, u.code, u.category, s.badge || '', s.bag || '', s.notebook || '', s.tshirt || '', s.cap || '', s.bottle || '']);
+      });
+      download('lcoy2026_supplies.csv', toCSV(headers, rows));
+    } catch (e) { console.error(e); alert('Export failed.'); }
+    setBusy('');
+  };
+
   const exportSessions = async () => {
     setBusy('sessions');
     try {
@@ -89,6 +105,7 @@ export default function Reports() {
     { id: 'reg', label: 'All registrations', desc: 'Name, email, phone, organisation, category, role, badge code, location, working group.', fn: exportRegistrations },
     { id: 'entries', label: 'Entry log', desc: 'Every verified entry with timestamp.', fn: exportEntries },
     { id: 'meals', label: 'Meal collection', desc: 'Per-person meal collection status for all 4 meals.', fn: exportMeals },
+    { id: 'supplies', label: 'Supply distribution', desc: 'Per-person supply issue status for all items.', fn: exportSupplies },
     { id: 'sessions', label: 'Sessions / agenda', desc: 'Full programme export with details.', fn: exportSessions },
   ];
 
