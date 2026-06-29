@@ -43,8 +43,12 @@ export default function UsersList() {
     const drawHeader = () => {
       doc.setFillColor(11, 34, 51);
       doc.rect(0, 0, pageW, 48, 'F');
-      if (logoData) doc.addImage(logoData, 'PNG', 10, 6, 36, 36);
-      const tx = logoData ? 52 : 14;
+      if (logoData) {
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(8, 5, 40, 22, 4, 4, 'F');
+        doc.addImage(logoData, 'PNG', 10, 7, 36, 18);
+      }
+      const tx = logoData ? 54 : 14;
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(20); doc.setFont('helvetica', 'bold');
       doc.text('LCOY Sierra Leone 2026', tx, 18);
@@ -81,7 +85,7 @@ export default function UsersList() {
   const handlePeopleDownload = async (val, fmt) => {
     if (!val) return;
     let list = [], label = '';
-    if (val === 'all') { list = users; label = 'All People'; }
+    if (val === 'all') { list = users; label = 'All Participants'; }
     else if (val === 'attendees') { list = users.filter(u => u.role === 'attendee'); label = 'Attendees'; }
     else if (val === 'organisers') { list = users.filter(u => u.role === 'organiser' || u.role === 'superadmin'); label = 'Organisers'; }
     else { list = users.filter(u => u.category === val); label = val; }

@@ -43,10 +43,14 @@ async function downloadPDF(title, headers, rows, filename) {
     doc.rect(0, 0, pageW, 48, 'F');
 
     if (logoData) {
-      doc.addImage(logoData, 'PNG', 10, 6, 36, 36);
+      // White rounded background for logo
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(8, 5, 40, 22, 4, 4, 'F');
+      // Logo at 2:1 ratio (width:height)
+      doc.addImage(logoData, 'PNG', 10, 7, 36, 18);
     }
 
-    const textX = logoData ? 52 : 14;
+    const textX = logoData ? 54 : 14;
 
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(20);
