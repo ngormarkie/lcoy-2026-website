@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { normalizeCode } from '../../utils/badgeCode';
+import QRScanner from '../../components/QRScanner';
 import './VerifyEntry.css';
 
 export default function SupplyCheckin() {
@@ -10,6 +11,7 @@ export default function SupplyCheckin() {
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -25,8 +27,8 @@ export default function SupplyCheckin() {
     return () => { c = true; };
   }, []);
 
-  const lookup = async () => {
-    const normalized = normalizeCode(code);
+  const lookup = async (overrideCode) => {
+    const normalized = normalizeCode(overrideCode || code);
     if (!normalized) return;
     setBusy(true);
     setResult(null);
@@ -72,23 +74,18 @@ export default function SupplyCheckin() {
       </header>
 
       <div className="verify-card card-elevated">
-        <form onSubmit={handleSubmit} className="verify-form">
-          <input
-            ref={inputRef}
-            type="text"
-            className="verify-input"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="Badge code"
-            maxLength={3}
-            autoFocus
-            autoComplete="off"
-            disabled={busy}
-          />
-          <button type="submit" className="btn btn-primary btn-lg" disabled={busy || !code.trim()}>
-            {busy ? 'Checking…' : 'Issue'}
-          </button>
-        </form>
+        <div className="verify-mode-toggle">
+          <button type="button" className={`meal-btn ${scanning ? 'active' : ''}`} onClick={() => setScanning(true)}>Scan QR</button>
+          <button type="button" className={`meal-btn ${!scanning ? 'active' : ''}`} onClick={() => setScanning(false)}>Type Code</button>
+        </div>
+        {scanning ? (
+          <QRScanner active={scanning} onScan={(val) => { setScanning(false); setCode(val); lookup(val); }} />
+        ) : (
+          <form onSubmit={handleSubmit} className="verify-form" style={{ marginTop: '0.75rem' }}>
+            <input ref={inputRef} type="text" className="verify-input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Badge code" maxLength={3} autoFocus autoComplete="off" disabled={busy} />
+            <button type="submit" className="btn btn-primary btn-lg" disabled={busy || !code.trim()}>{busy ? 'Checking…' : 'Issue'}</button>
+          </form>
+        )}
         {!loaded && <div style={{ textAlign: 'center', padding: '1rem' }}><div className="loader" /></div>}
       </div>
 
