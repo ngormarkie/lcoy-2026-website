@@ -133,13 +133,13 @@ export default function UsersList() {
             const val = e.target.value; e.target.value = '';
             if (!val) return;
             setBatchBusy(true);
-            let batch = [];
-            if (val === 'all') batch = users.filter(u => u.code);
-            else if (val === 'attendees') batch = users.filter(u => u.role === 'attendee' && u.code);
-            else if (val === 'organisers') batch = users.filter(u => (u.role === 'organiser' || u.role === 'superadmin') && u.code);
-            else batch = users.filter(u => u.category === val && u.code);
+            let batch = [], zipName = 'all';
+            if (val === 'all') { batch = users.filter(u => u.code); zipName = 'all'; }
+            else if (val === 'attendees') { batch = users.filter(u => u.role === 'attendee' && u.code); zipName = 'attendees'; }
+            else if (val === 'organisers') { batch = users.filter(u => (u.role === 'organiser' || u.role === 'superadmin') && u.code); zipName = 'organisers'; }
+            else { batch = users.filter(u => u.category === val && u.code); zipName = val; }
             if (batch.length === 0) { alert('No badges for this filter.'); setBatchBusy(false); return; }
-            await downloadBadgesBatch(batch);
+            try { await downloadBadgesBatch(batch, zipName); } catch (err) { console.error(err); alert('Could not build the ZIP.'); }
             setBatchBusy(false);
           }}>
             <option value="">{batchBusy ? 'Downloading…' : 'Badges…'}</option>

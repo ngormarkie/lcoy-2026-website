@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import JSZip from 'jszip';
 
 export async function generateBadge(user) {
   const W = 1200, H = 700;
@@ -81,11 +82,30 @@ export async function downloadBadge(user) {
   }, 'image/png');
 }
 
-export async function downloadBadgesBatch(users, filename) {
-  // Download individually for now — ZIP would require a library
+function canvasToBlob(canvas) {
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+}
+
+export async function downloadBadgesBatch(users, zipName = 'badges') {
+  const zip = new JSZip();
+  const usedNames = new Set();
+
   for (const user of users) {
-    await downloadBadge(user);
-    // Small delay to avoid browser blocking multiple downloads
-    await new Promise(r => setTimeout(r, 300));
+    const canvas = await generateBadge(user);
+    const blob = await canvasToBlob(canvas);
+    let base = `${(user.name || 'user').replace(/\s+/g, '_')}_${user.code || ''}`;
+    let name = `${base}.png`;
+    let i = 2;
+    while (usedNames.has(name)) { name = `${base}_${i++}.png`; }
+    usedNames.add(name);
+    zip.file(name, blob);
   }
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.download = `lcoy2026_${zipName.replace(/\s+/g, '_')}_badges.zip`;
+  a.href = url;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
 }
