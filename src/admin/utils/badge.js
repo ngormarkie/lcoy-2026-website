@@ -95,7 +95,7 @@ export async function generateBadge(user) {
   }
 
   // ---- Location ----
-  const location = [user.city, user.district, user.region].filter(Boolean).join(', ');
+  const location = [user.district, user.region].filter(Boolean).join(', ');
   if (location) {
     y += 52;
     const locPx = fitFont(ctx, location, 700, 36, FAMILY, textWidth, 22);
