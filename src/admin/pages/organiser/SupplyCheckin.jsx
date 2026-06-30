@@ -3,6 +3,7 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { normalizeCode } from '../../utils/badgeCode';
 import QRScanner from '../../components/QRScanner';
+import VerifyResult from '../../components/VerifyResult';
 import './VerifyEntry.css';
 
 export default function SupplyCheckin() {
@@ -89,29 +90,7 @@ export default function SupplyCheckin() {
         {!loaded && <div style={{ textAlign: 'center', padding: '1rem' }}><div className="loader" /></div>}
       </div>
 
-      {result && (
-        <div className={`verify-result verify-result-${result.type}`}>
-          <div className="verify-result-banner">
-            <span className="verify-result-icon">{result.type === 'success' ? '✓' : result.type === 'warning' ? '⚠' : '✕'}</span>
-            <span>{result.message}</span>
-          </div>
-          {result.user && (
-            <>
-              <div className="verify-result-photo-large">
-                {result.user.photoURL ? <img src={result.user.photoURL} alt={result.user.name} /> : <div className="verify-photo-fallback-large">{(result.user.name || '?')[0]}</div>}
-              </div>
-              <div className="verify-result-details">
-                <div className="verify-result-name">{result.user.name}</div>
-                {result.user.org && <div className="verify-result-org">{result.user.org}</div>}
-                <div className="verify-result-meta">
-                  <span className={`pill cat-${result.user.category}`}>{result.user.category}</span>
-                  <span className="verify-result-code">{result.user.code}</span>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      <VerifyResult result={result} action="Supplies" />
 
       <div className="verify-stats">
         <div className="verify-stat">

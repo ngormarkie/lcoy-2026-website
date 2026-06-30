@@ -12,6 +12,7 @@ import Sessions from './organiser/Sessions';
 import Announcements from './organiser/Announcements';
 import Resources from './organiser/Resources';
 import Reports from './organiser/Reports';
+import Settings from './organiser/Settings';
 import Placeholder from '../components/Placeholder';
 
 export default function OrganiserHome() {
@@ -39,6 +40,9 @@ export default function OrganiserHome() {
       { to: '/admin/resources', label: 'Resources', icon: '◇' },
     ] : []),
     { to: '/admin/reports', label: 'Reports', icon: '◌' },
+    ...(isSuperAdmin ? [
+      { to: '/admin/settings', label: 'Settings', icon: '⚙' },
+    ] : []),
   ];
 
   return (
@@ -55,6 +59,7 @@ export default function OrganiserHome() {
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<OrganiserDashboard />} />
       </Routes>
     </AppShell>

@@ -1,11 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { normalizeCode } from '../../utils/badgeCode';
 import QRScanner from '../../components/QRScanner';
+import VerifyResult from '../../components/VerifyResult';
 import './VerifyEntry.css';
 
+const DAYS = [
+  { id: 'day1', label: 'Day 1 — 7 Oct' },
+  { id: 'day2', label: 'Day 2 — 8 Oct' },
+];
+
 export default function VerifyEntry() {
+  const [day, setDay] = useState(DAYS[0].id);
   const [code, setCode] = useState('');
   const [users, setUsers] = useState([]);
   const [result, setResult] = useState(null);
@@ -40,21 +47,9 @@ export default function VerifyEntry() {
       return;
     }
 
-    const alreadyToday = (found.entries || []).some(e => {
-      if (!e?.timestamp) return false;
-      const t = e.timestamp.toDate ? e.timestamp.toDate() : new Date(e.timestamp);
-      const now = new Date();
-      return t.toDateString() === now.toDateString();
-    });
-
-    if (alreadyToday) {
-      setResult({ type: 'warning', user: found, message: `${found.name} has already checked in today.` });
-      setBusy(false);
-      return;
-    }
-
+    // Entry is allowed multiple times — people can come and go freely.
     try {
-      const entry = { timestamp: new Date().toISOString(), type: 'entry' };
+      const entry = { timestamp: new Date().toISOString(), day, type: 'entry' };
       await updateDoc(doc(db, 'users', found.id), { entries: arrayUnion(entry) });
       const updated = { ...found, entries: [...(found.entries || []), entry] };
       setUsers(prev => prev.map(u => u.id === found.id ? updated : u));
@@ -69,6 +64,8 @@ export default function VerifyEntry() {
   };
 
   const handleSubmit = (e) => { e.preventDefault(); lookup(); };
+  const dayLabel = DAYS.find(d => d.id === day)?.label || day;
+  const enteredToday = users.filter(u => (u.entries || []).some(e => e.day === day)).length;
 
   return (
     <div className="verify-page">
@@ -77,20 +74,27 @@ export default function VerifyEntry() {
           <span className="dashboard-eyebrow">Conference day</span>
           <h1>Verify Entry</h1>
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>
-            Type or scan the 2-character badge code to verify a person's entry.
+            Select the day, then scan or type the badge code. People may enter multiple times.
           </p>
         </div>
       </header>
 
       <div className="verify-card card-elevated">
-        <div className="verify-mode-toggle">
+        <div className="meal-select" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          {DAYS.map(d => (
+            <button key={d.id} type="button" className={`meal-btn ${day === d.id ? 'active' : ''}`} onClick={() => { setDay(d.id); setResult(null); }}>
+              {d.label}
+            </button>
+          ))}
+        </div>
+        <div className="verify-mode-toggle" style={{ marginTop: '1rem' }}>
           <button type="button" className={`meal-btn ${scanning ? 'active' : ''}`} onClick={() => setScanning(true)}>Scan QR</button>
           <button type="button" className={`meal-btn ${!scanning ? 'active' : ''}`} onClick={() => setScanning(false)}>Type Code</button>
         </div>
         {scanning ? (
           <QRScanner active={scanning} onScan={(val) => { setScanning(false); setCode(val); lookup(val); }} />
         ) : (
-          <form onSubmit={handleSubmit} className="verify-form" style={{ marginTop: '1rem' }}>
+          <form onSubmit={handleSubmit} className="verify-form" style={{ marginTop: '0.75rem' }}>
             <input
               ref={inputRef}
               type="text"
@@ -111,34 +115,12 @@ export default function VerifyEntry() {
         {!loaded && <div style={{ textAlign: 'center', padding: '1rem' }}><div className="loader" /></div>}
       </div>
 
-      {result && (
-        <div className={`verify-result verify-result-${result.type}`}>
-          <div className="verify-result-banner">
-            <span className="verify-result-icon">{result.type === 'success' ? '✓' : result.type === 'warning' ? '⚠' : '✕'}</span>
-            <span>{result.message}</span>
-          </div>
-          {result.user && (
-            <>
-              <div className="verify-result-photo-large">
-                {result.user.photoURL ? <img src={result.user.photoURL} alt={result.user.name} /> : <div className="verify-photo-fallback-large">{(result.user.name || '?')[0]}</div>}
-              </div>
-              <div className="verify-result-details">
-                <div className="verify-result-name">{result.user.name}</div>
-                {result.user.org && <div className="verify-result-org">{result.user.org}</div>}
-                <div className="verify-result-meta">
-                  <span className={`pill cat-${result.user.category}`}>{result.user.category}</span>
-                  <span className="verify-result-code">{result.user.code}</span>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      <VerifyResult result={result} action={`Entry · ${dayLabel}`} />
 
       <div className="verify-stats">
         <div className="verify-stat">
-          <div className="verify-stat-num">{users.filter(u => (u.entries || []).length > 0).length}</div>
-          <div className="verify-stat-label">Checked in</div>
+          <div className="verify-stat-num">{enteredToday}</div>
+          <div className="verify-stat-label">{dayLabel} entered</div>
         </div>
         <div className="verify-stat">
           <div className="verify-stat-num">{users.filter(u => u.role === 'attendee').length}</div>
