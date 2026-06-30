@@ -91,26 +91,25 @@ export default function SupplyCheckin() {
 
       {result && (
         <div className={`verify-result verify-result-${result.type}`}>
-          <div className="verify-result-icon">
-            {result.type === 'success' ? '✓' : result.type === 'warning' ? '⚠' : '✕'}
+          <div className="verify-result-banner">
+            <span className="verify-result-icon">{result.type === 'success' ? '✓' : result.type === 'warning' ? '⚠' : '✕'}</span>
+            <span>{result.message}</span>
           </div>
-          <div className="verify-result-body">
-            <div className="verify-result-msg">{result.message}</div>
-            {result.user && (
-              <div className="verify-result-user">
-                <div className="verify-result-photo">
-                  {result.user.photoURL ? <img src={result.user.photoURL} alt="" /> : <div className="verify-photo-fallback">{(result.user.name || '?')[0]}</div>}
-                </div>
-                <div>
-                  <div className="verify-result-name">{result.user.name}</div>
-                  <div className="verify-result-meta">
-                    <span className={`pill cat-${result.user.category}`}>{result.user.category}</span>
-                    <span className="verify-result-code">{result.user.code}</span>
-                  </div>
+          {result.user && (
+            <>
+              <div className="verify-result-photo-large">
+                {result.user.photoURL ? <img src={result.user.photoURL} alt={result.user.name} /> : <div className="verify-photo-fallback-large">{(result.user.name || '?')[0]}</div>}
+              </div>
+              <div className="verify-result-details">
+                <div className="verify-result-name">{result.user.name}</div>
+                {result.user.org && <div className="verify-result-org">{result.user.org}</div>}
+                <div className="verify-result-meta">
+                  <span className={`pill cat-${result.user.category}`}>{result.user.category}</span>
+                  <span className="verify-result-code">{result.user.code}</span>
                 </div>
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       )}
 
