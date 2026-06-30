@@ -69,3 +69,19 @@
 @keyframes lb-spin { to { transform: rotate(360deg); } }
 
 .lb-foot { text-align: center; color: #8a8a8a; font-size: 0.8rem; margin-top: 1.5rem; padding: 0 1rem; }
+
+.lb-modal-overlay {
+  position: fixed; inset: 0; z-index: 100; background: rgba(11,34,51,0.6);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.lb-modal {
+  background: #fff; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 380px;
+  box-shadow: 0 20px 50px -12px rgba(0,0,0,0.4);
+}
+.lb-modal-icon {
+  width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 1.8rem; color: #fff; margin: 0 auto 0.75rem;
+}
+.lb-modal-ok { background: #10b981; }
+.lb-modal-wait { background: #f59e0b; }
+.lb-modal-err { background: #ef4444; }

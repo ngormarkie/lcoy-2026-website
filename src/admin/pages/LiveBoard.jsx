@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../services/firebase';
 import './LiveBoard.css';
 
 const DAY_ORDER = ['Day 1 — 7 October', 'Day 2 — 8 October', 'Day 3 — 9 October'];
@@ -18,6 +19,12 @@ export default function LiveBoard() {
   const [fbBusy, setFbBusy] = useState(false);
   const [fbDone, setFbDone] = useState(false);
   const [fbErr, setFbErr] = useState('');
+
+  // Workshop registration
+  const [regFor, setRegFor] = useState(null); // session being registered for
+  const [regPhone, setRegPhone] = useState('');
+  const [regBusy, setRegBusy] = useState(false);
+  const [regResult, setRegResult] = useState(null); // { ok, status, already, name } or { error }
 
   useEffect(() => {
     (async () => {
@@ -63,6 +70,37 @@ export default function LiveBoard() {
   const grouped = DAY_ORDER.map(day => ({ day, items: sessions.filter(s => s.day === day) }))
     .filter(g => g.items.length > 0);
 
+  const workshops = sessions.filter(s => s.allowRegistration);
+
+  const doRegister = async (e) => {
+    e.preventDefault();
+    setRegBusy(true); setRegResult(null);
+    try {
+      const call = httpsCallable(functions, 'registerForWorkshop');
+      const res = await call({ phone: regPhone, sessionId: regFor.id, origin: window.location.origin });
+      const d = res.data || {};
+      if (!d.ok) {
+        const msg = d.reason === 'not_recognized'
+          ? 'That phone number is not recognised. Please use the number you registered with, or contact an organiser.'
+          : d.reason === 'invalid_phone' ? 'Please enter a valid phone number.'
+          : 'Could not register. Please try again.';
+        setRegResult({ error: msg });
+      } else {
+        setRegResult(d);
+        // refresh session counts
+        const ssnap = await getDocs(collection(db, 'sessions'));
+        const sl = []; ssnap.forEach(x => sl.push({ id: x.id, ...x.data() }));
+        setSessions(sl);
+      }
+    } catch (err) {
+      console.error(err);
+      setRegResult({ error: 'Could not reach the registration service. Please try again.' });
+    }
+    setRegBusy(false);
+  };
+
+  const closeReg = () => { setRegFor(null); setRegPhone(''); setRegResult(null); };
+
   return (
     <div className="lb">
       <header className="lb-top">
@@ -74,7 +112,7 @@ export default function LiveBoard() {
       </header>
 
       <nav className="lb-tabs">
-        {[['announcements', 'Announcements'], ['agenda', 'Agenda'], ['resources', 'Resources'], ['feedback', 'Feedback']].map(([id, label]) => (
+        {[['announcements', 'Announcements'], ['agenda', 'Agenda'], ['workshops', 'Workshops'], ['resources', 'Resources'], ['feedback', 'Feedback']].map(([id, label]) => (
           <button key={id} className={`lb-tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>{label}</button>
         ))}
       </nav>
@@ -113,6 +151,33 @@ export default function LiveBoard() {
               ))
             )}
 
+            {tab === 'workshops' && (
+              workshops.length === 0 ? <p className="lb-empty">No workshops open for registration yet.</p> :
+              workshops.map(s => {
+                const cap = Number(s.capacity) || 0;
+                const conf = Number(s.regConfirmed) || 0;
+                const spotsLeft = cap > 0 ? Math.max(0, cap - conf) : null;
+                const full = cap > 0 && conf >= cap;
+                return (
+                  <div className="lb-card" key={s.id}>
+                    <div className="lb-sess-head">
+                      {s.type && <span className="lb-pill">{s.type}</span>}
+                      {s.day && <span className="lb-time">{s.day.replace(/ —.*/, '')}</span>}
+                      {s.time && <span className="lb-room">· {s.time}</span>}
+                    </div>
+                    <div className="lb-card-title">{s.title}</div>
+                    {s.speakers && <div className="lb-speakers">{s.speakers}</div>}
+                    <div className="lb-card-meta">
+                      {cap > 0 ? (full ? 'Full — join the waitlist' : `${spotsLeft} place${spotsLeft === 1 ? '' : 's'} left`) : 'Open for registration'}
+                    </div>
+                    <button className="lb-btn" style={{ marginTop: '0.7rem', width: 'auto', padding: '0.55rem 1.1rem' }} onClick={() => { setRegFor(s); setRegPhone(''); setRegResult(null); }}>
+                      {full ? 'Join waitlist' : 'Register'}
+                    </button>
+                  </div>
+                );
+              })
+            )}
+
             {tab === 'resources' && (
               resources.length === 0 ? <p className="lb-empty">No resources shared yet.</p> :
               resources.map(r => (
@@ -149,6 +214,44 @@ export default function LiveBoard() {
       </main>
 
       <footer className="lb-foot">Inclusive Climate Action: Leaving No Youth Behind</footer>
+
+      {regFor && (
+        <div className="lb-modal-overlay" onClick={closeReg}>
+          <div className="lb-modal" onClick={e => e.stopPropagation()}>
+            {!regResult ? (
+              <form onSubmit={doRegister}>
+                <div className="lb-card-title">{regFor.title}</div>
+                <p className="lb-card-body" style={{ marginTop: '0.3rem', marginBottom: '0.9rem' }}>
+                  Enter the phone number you registered for LCOY with. We'll confirm your place and email you.
+                </p>
+                <input className="lb-input" type="tel" inputMode="tel" placeholder="e.g. 076 123456" value={regPhone} onChange={e => setRegPhone(e.target.value)} autoFocus />
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="button" className="lb-btn-ghost" style={{ flex: 1 }} onClick={closeReg}>Cancel</button>
+                  <button type="submit" className="lb-btn" style={{ flex: 2 }} disabled={regBusy || !regPhone.trim()}>{regBusy ? 'Checking…' : 'Confirm'}</button>
+                </div>
+              </form>
+            ) : regResult.error ? (
+              <div style={{ textAlign: 'center' }}>
+                <div className="lb-modal-icon lb-modal-err">✕</div>
+                <p className="lb-card-body">{regResult.error}</p>
+                <button className="lb-btn" style={{ marginTop: '0.8rem' }} onClick={() => setRegResult(null)}>Try again</button>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                <div className={`lb-modal-icon ${regResult.status === 'confirmed' ? 'lb-modal-ok' : 'lb-modal-wait'}`}>{regResult.status === 'confirmed' ? '✓' : '⏳'}</div>
+                <div className="lb-card-title">{regResult.already ? 'Already registered' : regResult.status === 'confirmed' ? "You're confirmed!" : "You're on the waitlist"}</div>
+                <p className="lb-card-body" style={{ marginTop: '0.4rem' }}>
+                  {regResult.name ? `${regResult.name}, ` : ''}
+                  {regResult.status === 'confirmed'
+                    ? 'show your badge at the door to be admitted. A confirmation email is on its way.'
+                    : "we'll email you if a place opens up."}
+                </p>
+                <button className="lb-btn" style={{ marginTop: '0.8rem' }} onClick={closeReg}>Done</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

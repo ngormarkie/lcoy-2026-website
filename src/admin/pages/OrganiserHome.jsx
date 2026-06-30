@@ -8,6 +8,7 @@ import OrganiserUserDetail from './organiser/UserDetail';
 import VerifyEntry from './organiser/VerifyEntry';
 import MealCheckin from './organiser/MealCheckin';
 import SupplyCheckin from './organiser/SupplyCheckin';
+import WorkshopEntry from './organiser/WorkshopEntry';
 import Sessions from './organiser/Sessions';
 import Announcements from './organiser/Announcements';
 import Resources from './organiser/Resources';
@@ -33,6 +34,7 @@ export default function OrganiserHome() {
     { to: '/admin/verify', label: 'Verify entry', icon: '◐' },
     { to: '/admin/meals', label: 'Meal check-in', icon: '◍' },
     { to: '/admin/supplies', label: 'Supplies', icon: '◇' },
+    { to: '/admin/workshop-entry', label: 'Workshop entry', icon: '◫' },
     ...(canManageProgramme ? [
       { to: '/admin/sessions', label: 'Sessions', icon: '◎' },
     ] : []),
@@ -57,6 +59,7 @@ export default function OrganiserHome() {
         <Route path="/verify" element={<VerifyEntry />} />
         <Route path="/meals" element={<MealCheckin />} />
         <Route path="/supplies" element={<SupplyCheckin />} />
+        <Route path="/workshop-entry" element={<WorkshopEntry />} />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/resources" element={<Resources />} />

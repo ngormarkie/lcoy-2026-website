@@ -70,6 +70,16 @@ service cloud.firestore {
     match /sessions/{id} {
       allow read: if true;
       allow write: if isOrganiser();
+
+      // Workshop registrations. They are CREATED only by the Cloud Function
+      // (Admin SDK, which bypasses rules) so attendee data is never exposed.
+      // Staff read the lists and mark attendance; organisers promote/remove.
+      match /registrations/{regId} {
+        allow read: if isSignedIn();
+        allow create: if false;
+        allow update: if isOrganiser() || isCheckin();
+        allow delete: if isOrganiser();
+      }
     }
 
     // ---------- ANNOUNCEMENTS ----------

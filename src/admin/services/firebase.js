@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFunctions } from 'firebase/functions';
 import {
   initializeFirestore,
   persistentLocalCache,
@@ -20,6 +21,7 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig, 'lcoy-admin');
 export const auth = getAuth(app);
+export const functions = getFunctions(app, 'us-central1');
 
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({

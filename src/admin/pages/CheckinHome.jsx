@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import VerifyEntry from './organiser/VerifyEntry';
 import MealCheckin from './organiser/MealCheckin';
 import SupplyCheckin from './organiser/SupplyCheckin';
+import WorkshopEntry from './organiser/WorkshopEntry';
 import Placeholder from '../components/Placeholder';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -26,6 +27,7 @@ function CheckinDashboard() {
             <Link to="/admin/verify" className="action-tile"><span className="action-tile-icon">◐</span><span className="action-tile-label">Verify entry</span></Link>
             <Link to="/admin/meals" className="action-tile"><span className="action-tile-icon">◍</span><span className="action-tile-label">Meal check-in</span></Link>
             <Link to="/admin/supplies" className="action-tile"><span className="action-tile-icon">◇</span><span className="action-tile-label">Supply check-in</span></Link>
+            <Link to="/admin/workshop-entry" className="action-tile"><span className="action-tile-icon">◫</span><span className="action-tile-label">Workshop entry</span></Link>
           </div>
         </div>
       </section>
@@ -39,6 +41,7 @@ export default function CheckinHome() {
     { to: '/admin/verify', label: 'Verify entry', icon: '◐' },
     { to: '/admin/meals', label: 'Meal check-in', icon: '◍' },
     { to: '/admin/supplies', label: 'Supply check-in', icon: '◇' },
+    { to: '/admin/workshop-entry', label: 'Workshop entry', icon: '◫' },
   ];
 
   return (
@@ -48,6 +51,7 @@ export default function CheckinHome() {
         <Route path="/verify" element={<VerifyEntry />} />
         <Route path="/meals" element={<MealCheckin />} />
         <Route path="/supplies" element={<SupplyCheckin />} />
+        <Route path="/workshop-entry" element={<WorkshopEntry />} />
         <Route path="*" element={<CheckinDashboard />} />
       </Routes>
     </AppShell>
