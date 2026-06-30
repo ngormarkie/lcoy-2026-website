@@ -30,7 +30,10 @@ export function generateUniqueBadgeCode(existingCodes) {
 }
 
 export function normalizeCode(code) {
-  return (code || '').trim().toUpperCase();
+  // Strip everything except A–Z and 0–9. QR scanners often append a trailing
+  // newline / carriage-return, and stray whitespace can sneak in — this makes
+  // scanned and typed codes compare identically.
+  return (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
 export function isValidEmail(email) {

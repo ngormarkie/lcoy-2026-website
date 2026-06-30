@@ -41,7 +41,7 @@ export default function MealCheckin() {
     setBusy(true);
     setResult(null);
 
-    const found = users.find(u => (u.code || '').toUpperCase() === normalized);
+    const found = users.find(u => normalizeCode(u.code) === normalized);
     if (!found) {
       setResult({ type: 'error', message: `No person found with code "${normalized}".` });
       setBusy(false);
