@@ -34,7 +34,16 @@ export default function SupplyCheckin() {
     setBusy(true);
     setResult(null);
 
-    const found = users.find(u => normalizeCode(u.code) === normalized);
+    let found = users.find(u => normalizeCode(u.code) === normalized);
+    if (!found) {
+      try {
+        const snap = await getDocs(collection(db, 'users'));
+        const list = [];
+        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+        setUsers(list);
+        found = list.find(u => normalizeCode(u.code) === normalized);
+      } catch (e) { console.error(e); }
+    }
     if (!found) {
       setResult({ type: 'error', message: `No person found with code "${normalized}".` });
       setBusy(false);
@@ -90,7 +99,12 @@ export default function SupplyCheckin() {
         {!loaded && <div style={{ textAlign: 'center', padding: '1rem' }}><div className="loader" /></div>}
       </div>
 
-      <VerifyResult result={result} action="Supplies" />
+      <VerifyResult
+        result={result}
+        action="Supplies"
+        onClose={() => setResult(null)}
+        onNext={() => { setResult(null); setCode(''); setScanning(true); }}
+      />
 
       <div className="verify-stats">
         <div className="verify-stat">
