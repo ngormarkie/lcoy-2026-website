@@ -5,6 +5,7 @@ import {
   signOut as fbSignOut,
   createUserWithEmailAndPassword,
   updatePassword,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -67,6 +68,8 @@ export function AuthProvider({ children }) {
 
   const signOut = () => fbSignOut(auth);
 
+  const resetPassword = (email) => sendPasswordResetEmail(auth, email.trim().toLowerCase());
+
   const changePassword = async (newPassword) => {
     if (!auth.currentUser) throw new Error('Not signed in');
     await updatePassword(auth.currentUser, newPassword);
@@ -101,6 +104,7 @@ export function AuthProvider({ children }) {
     isAttendee: profile?.role === 'attendee',
     signIn,
     signOut,
+    resetPassword,
     changePassword,
     createAccount,
   };

@@ -145,6 +145,21 @@
   font-size: 1rem;
 }
 
+.login-forgot {
+  display: block;
+  margin-top: 0.5rem;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #0072C6;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.login-forgot:hover { text-decoration: underline; }
+.login-forgot:disabled { opacity: 0.5; cursor: default; }
+
 .login-footer {
   margin-top: 2rem;
   padding-top: 1.5rem;

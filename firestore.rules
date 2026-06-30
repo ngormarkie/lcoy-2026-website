@@ -1,0 +1,92 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function profileExists() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function myRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isSuperAdmin() {
+      return profileExists() && myRole() == 'superadmin';
+    }
+    function isOrganiser() {
+      return profileExists() && (myRole() == 'organiser' || myRole() == 'superadmin');
+    }
+    function isCheckin() {
+      return profileExists() && myRole() == 'checkin';
+    }
+    // Only these fields may be touched by check-in staff.
+    function onlyCheckinFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['entries', 'meals', 'suppliesIssued']);
+    }
+    function roleUnchanged() {
+      return request.resource.data.role == resource.data.role;
+    }
+
+    // ---------- USERS ----------
+    match /users/{uid} {
+      // Any signed-in staff member can read the directory (needed to look up
+      // people by badge code at verification). Unauthenticated reads are blocked
+      // (the first-run check handles the rejection gracefully).
+      allow read: if isSignedIn();
+
+      // Super-admin can create anyone; an organiser can only create attendees.
+      // First-run super-admin bootstrap must be done with rules temporarily
+      // relaxed in the Firebase console (the super-admin already exists).
+      allow create: if isSuperAdmin()
+        || (isOrganiser() && request.resource.data.role == 'attendee');
+
+      // A person can edit their own profile but never their role / code / email.
+      allow update: if isSelf(uid)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['role', 'code', 'email']);
+
+      // Organisers can edit anyone; only a super-admin may change a role.
+      allow update: if isOrganiser()
+        && (roleUnchanged() || isSuperAdmin());
+
+      // Check-in staff may only write entry / meal / supply records.
+      allow update: if isCheckin() && onlyCheckinFields();
+
+      // Only a super-admin can delete people.
+      allow delete: if isSuperAdmin();
+    }
+
+    // ---------- SESSIONS ----------
+    match /sessions/{id} {
+      allow read: if isSignedIn();
+      allow write: if isOrganiser();
+    }
+
+    // ---------- ANNOUNCEMENTS ----------
+    match /announcements/{id} {
+      allow read: if isSignedIn();
+      allow write: if isOrganiser();
+    }
+
+    // ---------- RESOURCES ----------
+    match /resources/{id} {
+      allow read: if isSignedIn();
+      allow write: if isOrganiser();
+    }
+
+    // ---------- FEEDBACK ----------
+    match /feedback/{id} {
+      allow create: if isSignedIn();
+      allow read, delete: if isOrganiser();
+    }
+
+    // Everything else is denied by default.
+  }
+}

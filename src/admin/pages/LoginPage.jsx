@@ -4,15 +4,16 @@ import { isValidEmail } from '../utils/badgeCode';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError(''); setNotice('');
     if (!isValidEmail(email)) return setError('Please enter a valid email address.');
     if (!password) return setError('Please enter your password.');
     setBusy(true);
@@ -29,6 +30,22 @@ export default function LoginPage() {
           ? 'Network error. Please check your connection.'
           : `Could not sign in: ${err.code || err.message}`;
       setError(msg);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const forgot = async () => {
+    setError(''); setNotice('');
+    if (!isValidEmail(email)) return setError('Enter your email above, then tap "Forgot password" again.');
+    setBusy(true);
+    try {
+      await resetPassword(email);
+      setNotice('Password reset email sent. Check your inbox (and spam folder).');
+    } catch (err) {
+      console.error('Reset error:', err.code, err.message);
+      // Don't reveal whether an account exists.
+      setNotice('If an account exists for that email, a reset link has been sent.');
     } finally {
       setBusy(false);
     }
@@ -58,6 +75,7 @@ export default function LoginPage() {
           <h2 className="login-form-title">Organiser Sign In</h2>
           <p className="login-form-sub">Enter your credentials to access the conference management portal.</p>
           {error && <div className="alert alert-error">{error}</div>}
+          {notice && <div className="alert alert-success">{notice}</div>}
           <form onSubmit={submit}>
             <div className="field">
               <label className="field-label" htmlFor="email">Email address</label>
@@ -66,6 +84,7 @@ export default function LoginPage() {
             <div className="field">
               <label className="field-label" htmlFor="password">Password</label>
               <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" autoComplete="current-password" required />
+              <button type="button" className="login-forgot" onClick={forgot} disabled={busy}>Forgot password?</button>
             </div>
             <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={busy}>
               {busy ? <span className="loader" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> : 'Sign in'}
