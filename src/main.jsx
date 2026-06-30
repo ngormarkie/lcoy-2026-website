@@ -6,6 +6,7 @@ import './styles.css'
 
 import { AuthProvider } from './admin/contexts/AuthContext'
 import AdminApp from './admin/AdminApp'
+import LiveBoard from './admin/pages/LiveBoard'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -16,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <AdminApp />
           </AuthProvider>
         } />
+        <Route path="/live" element={<LiveBoard />} />
         <Route path="*" element={<App />} />
       </Routes>
     </BrowserRouter>

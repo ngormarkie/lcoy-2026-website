@@ -107,10 +107,17 @@ export default function Reports() {
   };
 
   const exportEntries = async (fmt) => {
+    const dayLabels = { day1: 'Day 1', day2: 'Day 2' };
     const snap = await getDocs(collection(db, 'users'));
-    const headers = ['Name', 'Badge Code', 'Category', 'Entry Time'];
+    const headers = ['Name', 'Badge Code', 'Category', 'Day', 'Entry Time'];
     const rows = [];
-    snap.forEach(d => { const u = d.data(); (u.entries || []).forEach(e => rows.push([u.name, u.code, u.category, e.timestamp || ''])); });
+    snap.forEach(d => {
+      const u = d.data();
+      (u.entries || []).forEach(e => {
+        const t = e.timestamp ? new Date(e.timestamp).toLocaleString('en-GB') : '';
+        rows.push([u.name, u.code, u.category, dayLabels[e.day] || e.day || '', t]);
+      });
+    });
     if (fmt === 'pdf') await downloadPDF('Entry Log', headers, rows, 'lcoy2026_entries.pdf');
     else download('lcoy2026_entries.csv', toCSV(headers, rows));
   };
@@ -153,13 +160,6 @@ export default function Reports() {
     } catch (e) { console.error(e); alert('Export failed.'); }
     setBusy('');
   };
-
-  // Patch export functions to accept format
-  const origReg = exportRegistrations;
-  const origEntries = exportEntries;
-  const origMeals = exportMeals;
-  const origSupplies = exportSupplies;
-  const origSessions = exportSessions;
 
   const reports = [
     { id: 'reg', label: 'All registrations', desc: 'Name, email, phone, organisation, category, role, badge code, location.' },

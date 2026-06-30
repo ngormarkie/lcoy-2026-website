@@ -63,28 +63,39 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // Broadcast content is publicly readable so the attendee Live board
+    // (/live) works without anyone logging in. Writes stay organiser-only.
+
     // ---------- SESSIONS ----------
     match /sessions/{id} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isOrganiser();
     }
 
     // ---------- ANNOUNCEMENTS ----------
     match /announcements/{id} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isOrganiser();
     }
 
     // ---------- RESOURCES ----------
     match /resources/{id} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isOrganiser();
     }
 
     // ---------- FEEDBACK ----------
+    // Anyone can submit from the public board; only organisers can read/remove.
     match /feedback/{id} {
-      allow create: if isSignedIn();
+      allow create: if true;
       allow read, delete: if isOrganiser();
+    }
+
+    // ---------- MAIL (Firebase "Trigger Email" extension) ----------
+    // Organisers queue emails; the extension reads server-side.
+    match /mail/{id} {
+      allow create: if isOrganiser();
+      allow read, update, delete: if false;
     }
 
     // Everything else is denied by default.

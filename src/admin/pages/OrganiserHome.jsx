@@ -11,6 +11,7 @@ import SupplyCheckin from './organiser/SupplyCheckin';
 import Sessions from './organiser/Sessions';
 import Announcements from './organiser/Announcements';
 import Resources from './organiser/Resources';
+import Feedback from './organiser/Feedback';
 import Reports from './organiser/Reports';
 import Settings from './organiser/Settings';
 import Placeholder from '../components/Placeholder';
@@ -38,6 +39,7 @@ export default function OrganiserHome() {
     ...(canManageComms ? [
       { to: '/admin/announcements', label: 'Announcements', icon: '◈' },
       { to: '/admin/resources', label: 'Resources', icon: '◇' },
+      { to: '/admin/feedback', label: 'Feedback', icon: '✦' },
     ] : []),
     { to: '/admin/reports', label: 'Reports', icon: '◌' },
     ...(isSuperAdmin ? [
@@ -58,6 +60,7 @@ export default function OrganiserHome() {
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/feedback" element={<Feedback />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<OrganiserDashboard />} />
