@@ -66,6 +66,21 @@
   transform: scale(0.998);
 }
 
+.user-row-dl {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--blue, #0072C6);
+  background: #fff;
+  color: var(--blue, #0072C6);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.user-row-dl:hover { background: var(--blue, #0072C6); color: #fff; }
+
 .user-row-photo {
   width: 48px;
   height: 48px;

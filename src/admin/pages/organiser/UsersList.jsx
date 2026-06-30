@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { downloadBadgesBatch } from '../../utils/badge';
+import { downloadBadge, downloadBadgesBatch } from '../../utils/badge';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './UsersList.css';
@@ -196,6 +196,13 @@ export default function UsersList() {
                 {u.code && <span className="user-row-code font-mono">{u.code}</span>}
                 {u.category && <span className={`pill cat-${u.category}`}>{u.category}</span>}
                 <span className="pill" style={{ background: u.role === 'superadmin' || u.role === 'organiser' ? 'var(--green-deep)' : 'var(--paper-dark)', color: u.role === 'superadmin' || u.role === 'organiser' ? 'var(--paper)' : 'var(--ink-soft)' }}>{ROLE_LABELS[u.role] || 'No role'}</span>
+                {u.code && (
+                  <button
+                    className="user-row-dl"
+                    title="Download badge"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadBadge(u); }}
+                  >⤓ Badge</button>
+                )}
               </div>
             </Link>
           ))}
