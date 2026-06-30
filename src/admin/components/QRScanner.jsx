@@ -6,54 +6,58 @@ let scannerCounter = 0;
 export default function QRScanner({ onScan, active }) {
   const idRef = useRef('qr-reader-' + (++scannerCounter));
   const scannerRef = useRef(null);
+  const runningRef = useRef(false);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
-    if (!active) {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-        scannerRef.current = null;
-      }
-      return;
-    }
+    if (!active) return;
 
     let cancelled = false;
     setStarting(true);
     setError('');
 
+    // Camera (getUserMedia) only works over HTTPS or on localhost.
+    const secure = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (!secure || !navigator.mediaDevices?.getUserMedia) {
+      setStarting(false);
+      setError('Camera needs a secure (HTTPS) connection. Use "Type Code" below, or open this page over HTTPS.');
+      return;
+    }
+
     const startScanner = async () => {
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 250));
       if (cancelled) return;
 
       const el = document.getElementById(idRef.current);
-      if (!el) { setError('Scanner container not found.'); setStarting(false); return; }
+      if (!el) { setStarting(false); return; }
 
-      const scanner = new Html5Qrcode(idRef.current);
+      const scanner = new Html5Qrcode(idRef.current, { verbose: false });
       scannerRef.current = scanner;
 
+      const config = { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1 };
+      const onDecode = (text) => {
+        if (cancelled) return;
+        onScan(text.trim().toUpperCase());
+      };
+
       try {
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1 },
-          (decodedText) => {
-            onScan(decodedText.trim().toUpperCase());
-          },
-          () => {}
-        );
+        await scanner.start({ facingMode: 'environment' }, config, onDecode, () => {});
+        runningRef.current = true;
       } catch (err) {
-        console.error('QR Scanner error:', err);
-        if (!cancelled) {
-          try {
-            await scanner.start(
-              { facingMode: 'user' },
-              { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1 },
-              (decodedText) => { onScan(decodedText.trim().toUpperCase()); },
-              () => {}
-            );
-          } catch (err2) {
-            console.error('QR Scanner fallback error:', err2);
-            setError('Could not access camera. Please allow camera permission or use "Type Code" instead.');
+        console.error('QR back-camera error:', err);
+        if (cancelled) return;
+        try {
+          await scanner.start({ facingMode: 'user' }, config, onDecode, () => {});
+          runningRef.current = true;
+        } catch (err2) {
+          console.error('QR front-camera error:', err2);
+          if (!cancelled) {
+            const denied = String(err2?.message || err2).toLowerCase().includes('permission') ||
+                           String(err2?.name || '').toLowerCase().includes('notallowed');
+            setError(denied
+              ? 'Camera permission denied. Enable it in your browser settings, or use "Type Code".'
+              : 'Could not start the camera. Use "Type Code" instead.');
           }
         }
       }
@@ -64,9 +68,11 @@ export default function QRScanner({ onScan, active }) {
 
     return () => {
       cancelled = true;
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-        scannerRef.current = null;
+      const scanner = scannerRef.current;
+      scannerRef.current = null;
+      if (scanner && runningRef.current) {
+        runningRef.current = false;
+        scanner.stop().then(() => { try { scanner.clear(); } catch {} }).catch(() => {});
       }
     };
   }, [active]);
@@ -80,15 +86,17 @@ export default function QRScanner({ onScan, active }) {
         style={{
           width: '100%',
           maxWidth: 400,
-          minHeight: 320,
+          minHeight: error ? 0 : 320,
           margin: '0 auto',
           borderRadius: 12,
           overflow: 'hidden',
-          background: '#111',
+          background: error ? 'transparent' : '#111',
         }}
       />
       {starting && <p style={{ textAlign: 'center', color: 'var(--ink-muted)', fontSize: '0.85rem', marginTop: '0.5rem' }}>Starting camera…</p>}
-      {error && <p style={{ color: 'var(--crimson)', fontSize: '0.85rem', textAlign: 'center', marginTop: '0.5rem' }}>{error}</p>}
+      {error && (
+        <div className="alert alert-error" style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{error}</div>
+      )}
     </div>
   );
 }
