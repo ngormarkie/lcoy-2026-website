@@ -124,16 +124,18 @@ export default function LiveBoard() {
           <>
             {tab === 'announcements' && (
               ann.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◈</div>No announcements yet. Check back soon.</div> :
-              ann.map((a, i) => (
-                <div className="lb-card lb-ann" key={a.id}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    {i === 0 && <span className="lb-ann-new">Latest</span>}
-                    <span className="lb-card-title">{a.title}</span>
+              <div className="lb-grid">
+                {ann.map((a, i) => (
+                  <div className="lb-card lb-ann" key={a.id}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {i === 0 && <span className="lb-ann-new">Latest</span>}
+                      <span className="lb-card-title">{a.title}</span>
+                    </div>
+                    {a.body && <p className="lb-card-body">{a.body}</p>}
+                    <div className="lb-card-meta">{a.author || 'Organisers'} · {fmtDate(a.createdAt)}</div>
                   </div>
-                  {a.body && <p className="lb-card-body">{a.body}</p>}
-                  <div className="lb-card-meta">{a.author || 'Organisers'} · {fmtDate(a.createdAt)}</div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
 
             {tab === 'agenda' && (
@@ -141,64 +143,70 @@ export default function LiveBoard() {
               grouped.map(g => (
                 <div key={g.day} className="lb-day">
                   <h3 className="lb-day-title">{g.day}</h3>
-                  {g.items.map(s => (
-                    <div className="lb-card" key={s.id}>
-                      <div className="lb-sess-head">
-                        {s.type && <span className="lb-pill">{s.type}</span>}
-                        {s.time && <span className="lb-time">{s.time}</span>}
-                        {s.room && <span className="lb-room">· {s.room}</span>}
+                  <div className="lb-grid">
+                    {g.items.map(s => (
+                      <div className="lb-card" key={s.id}>
+                        <div className="lb-sess-head">
+                          {s.type && <span className="lb-pill">{s.type}</span>}
+                          {s.time && <span className="lb-time">{s.time}</span>}
+                          {s.room && <span className="lb-room">· {s.room}</span>}
+                        </div>
+                        <div className="lb-card-title">{s.title}</div>
+                        {s.speakers && <div className="lb-speakers">{s.speakers}</div>}
                       </div>
-                      <div className="lb-card-title">{s.title}</div>
-                      {s.speakers && <div className="lb-speakers">{s.speakers}</div>}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               ))
             )}
 
             {tab === 'workshops' && (
               workshops.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◫</div>No workshops open for registration yet.</div> :
-              workshops.map(s => {
-                const cap = Number(s.capacity) || 0;
-                const conf = Number(s.regConfirmed) || 0;
-                const spotsLeft = cap > 0 ? Math.max(0, cap - conf) : null;
-                const full = cap > 0 && conf >= cap;
-                return (
-                  <div className="lb-card lb-card-accent" key={s.id}>
-                    <div className="lb-sess-head">
-                      {s.type && <span className="lb-pill">{s.type}</span>}
-                      {s.day && <span className="lb-time">{s.day.replace(/ —.*/, '')}</span>}
-                      {s.time && <span className="lb-room">· {s.time}</span>}
+              <div className="lb-grid">
+                {workshops.map(s => {
+                  const cap = Number(s.capacity) || 0;
+                  const conf = Number(s.regConfirmed) || 0;
+                  const spotsLeft = cap > 0 ? Math.max(0, cap - conf) : null;
+                  const full = cap > 0 && conf >= cap;
+                  return (
+                    <div className="lb-card lb-card-accent" key={s.id}>
+                      <div className="lb-sess-head">
+                        {s.type && <span className="lb-pill">{s.type}</span>}
+                        {s.day && <span className="lb-time">{s.day.replace(/ —.*/, '')}</span>}
+                        {s.time && <span className="lb-room">· {s.time}</span>}
+                      </div>
+                      <div className="lb-card-title">{s.title}</div>
+                      {s.speakers && <div className="lb-speakers">{s.speakers}</div>}
+                      <div className="lb-card-meta">
+                        <span className={`lb-spots ${full ? 'full' : 'open'}`}>
+                          {cap > 0 ? (full ? 'Full — join the waitlist' : `${spotsLeft} place${spotsLeft === 1 ? '' : 's'} left`) : 'Open for registration'}
+                        </span>
+                      </div>
+                      <button className={`lb-reg-btn ${full ? 'wait' : ''}`} onClick={() => { setRegFor(s); setRegPhone(''); setRegResult(null); }}>
+                        {full ? 'Join waitlist' : 'Register'}
+                      </button>
                     </div>
-                    <div className="lb-card-title">{s.title}</div>
-                    {s.speakers && <div className="lb-speakers">{s.speakers}</div>}
-                    <div className="lb-card-meta">
-                      <span className={`lb-spots ${full ? 'full' : 'open'}`}>
-                        {cap > 0 ? (full ? 'Full — join the waitlist' : `${spotsLeft} place${spotsLeft === 1 ? '' : 's'} left`) : 'Open for registration'}
-                      </span>
-                    </div>
-                    <button className={`lb-reg-btn ${full ? 'wait' : ''}`} onClick={() => { setRegFor(s); setRegPhone(''); setRegResult(null); }}>
-                      {full ? 'Join waitlist' : 'Register'}
-                    </button>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
 
             {tab === 'resources' && (
               resources.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◇</div>No resources shared yet.</div> :
-              resources.map(r => (
-                <div className="lb-card" key={r.id}>
-                  <div className="lb-card-title">{r.title}</div>
-                  {r.description && <p className="lb-card-body">{r.description}</p>}
-                  {r.url && <a className="lb-link" href={r.url} target="_blank" rel="noopener noreferrer">Open link →</a>}
-                  {r.fileData && <a className="lb-link" href={r.fileData} download={r.fileName || r.title}>Download {r.fileName || 'file'} ↓</a>}
-                </div>
-              ))
+              <div className="lb-grid">
+                {resources.map(r => (
+                  <div className="lb-card" key={r.id}>
+                    <div className="lb-card-title">{r.title}</div>
+                    {r.description && <p className="lb-card-body">{r.description}</p>}
+                    {r.url && <a className="lb-link" href={r.url} target="_blank" rel="noopener noreferrer">Open link →</a>}
+                    {r.fileData && <a className="lb-link" href={r.fileData} download={r.fileName || r.title}>Download {r.fileName || 'file'} ↓</a>}
+                  </div>
+                ))}
+              </div>
             )}
 
             {tab === 'feedback' && (
-              <div className="lb-card">
+              <div className="lb-card" style={{ maxWidth: 560, margin: '0 auto' }}>
                 {fbDone ? (
                   <div className="lb-thanks">
                     <div className="lb-thanks-icon">✓</div>
@@ -220,7 +228,7 @@ export default function LiveBoard() {
         )}
       </main>
 
-      <footer className="lb-foot">Inclusive Climate Action: Leaving No Youth Behind</footer>
+      <div className="lb-foot">Inclusive Climate Action: Leaving No Youth Behind</div>
 
       {regFor && (
         <div className="lb-modal-overlay" onClick={closeReg}>

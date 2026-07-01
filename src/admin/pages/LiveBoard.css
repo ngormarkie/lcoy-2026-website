@@ -1,12 +1,13 @@
 .lb {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background:
     radial-gradient(1200px 500px at 80% -10%, rgba(0,114,198,.10), transparent 60%),
     radial-gradient(900px 500px at -10% 10%, rgba(0,71,0,.08), transparent 55%),
     #F4F8F6;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   color: #0B2233;
-  padding-bottom: 4rem;
 }
 .lb * { box-sizing: border-box; }
 
@@ -53,7 +54,20 @@
 .lb-tab:hover { color: #0072C6; }
 .lb-tab.active { background: #0072C6; color: #fff; box-shadow: 0 6px 16px -6px rgba(0,114,198,.6); }
 
-.lb-main { max-width: 640px; margin: 0 auto; padding: 1.1rem 1rem; }
+.lb-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.4rem 1.25rem 2.5rem;
+}
+/* Cards flow into columns on wider screens so content fills the page */
+.lb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 0.85rem;
+  align-items: start;
+}
 
 /* ---------- Cards ---------- */
 .lb-card {
@@ -120,7 +134,7 @@
 .lb-loader { width: 30px; height: 30px; border: 3px solid #E2EBE6; border-top-color: #0072C6; border-radius: 50%; margin: 3.5rem auto; animation: lb-spin 0.8s linear infinite; }
 @keyframes lb-spin { to { transform: rotate(360deg); } }
 
-.lb-foot { text-align: center; color: #8a98a0; font-size: 0.82rem; margin-top: 1.5rem; padding: 0 1rem; font-family: 'Outfit', sans-serif; letter-spacing: .02em; }
+.lb-foot { text-align: center; color: #8a98a0; font-size: 0.82rem; padding: 1.5rem 1rem 2rem; font-family: 'Outfit', sans-serif; letter-spacing: .02em; background: none; }
 
 /* ---------- Registration modal ---------- */
 .lb-modal-overlay {
