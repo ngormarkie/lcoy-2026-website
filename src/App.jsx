@@ -95,6 +95,7 @@ export default function App() {
               <div className="nav-sub">{sub.map(([sid,slabel])=>(<a key={sid} className={page===sid?"active":""} onClick={()=>nav(sid)}>{slabel}</a>))}</div>
             </div>
           ) : (<a key={id} className={page===id?"active":""} onClick={()=>nav(id)}>{label}</a>))}
+          <a href="/live" className="nav-live"><span className="nav-live-dot"></span>Live</a>
         </nav>
         <div className="nav-cta">
           <a className="btn btn-blue" onClick={()=>nav('register')}>Register</a>

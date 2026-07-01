@@ -104,10 +104,12 @@ export default function LiveBoard() {
   return (
     <div className="lb">
       <header className="lb-top">
-        <img src="/photos/LCOY-2026-Logo.png" alt="LCOY" className="lb-logo" />
-        <div>
-          <div className="lb-title">LCOY Sierra Leone 2026</div>
-          <div className="lb-sub">Live Board · Freetown · 7–9 October</div>
+        <div className="lb-top-inner">
+          <img src="/photos/LCOY-2026-Logo.png" alt="LCOY" className="lb-logo" />
+          <div>
+            <div className="lb-title">LCOY Sierra Leone 2026</div>
+            <span className="lb-live-badge"><span className="lb-live-dot"></span>Live · Freetown · 7–9 Oct</span>
+          </div>
         </div>
       </header>
 
@@ -121,10 +123,13 @@ export default function LiveBoard() {
         {loading ? <div className="lb-loader" /> : (
           <>
             {tab === 'announcements' && (
-              ann.length === 0 ? <p className="lb-empty">No announcements yet. Check back soon.</p> :
-              ann.map(a => (
-                <div className="lb-card" key={a.id}>
-                  <div className="lb-card-title">{a.title}</div>
+              ann.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◈</div>No announcements yet. Check back soon.</div> :
+              ann.map((a, i) => (
+                <div className="lb-card lb-ann" key={a.id}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    {i === 0 && <span className="lb-ann-new">Latest</span>}
+                    <span className="lb-card-title">{a.title}</span>
+                  </div>
                   {a.body && <p className="lb-card-body">{a.body}</p>}
                   <div className="lb-card-meta">{a.author || 'Organisers'} · {fmtDate(a.createdAt)}</div>
                 </div>
@@ -132,7 +137,7 @@ export default function LiveBoard() {
             )}
 
             {tab === 'agenda' && (
-              grouped.length === 0 ? <p className="lb-empty">The agenda will appear here.</p> :
+              grouped.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◎</div>The agenda will appear here.</div> :
               grouped.map(g => (
                 <div key={g.day} className="lb-day">
                   <h3 className="lb-day-title">{g.day}</h3>
@@ -152,14 +157,14 @@ export default function LiveBoard() {
             )}
 
             {tab === 'workshops' && (
-              workshops.length === 0 ? <p className="lb-empty">No workshops open for registration yet.</p> :
+              workshops.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◫</div>No workshops open for registration yet.</div> :
               workshops.map(s => {
                 const cap = Number(s.capacity) || 0;
                 const conf = Number(s.regConfirmed) || 0;
                 const spotsLeft = cap > 0 ? Math.max(0, cap - conf) : null;
                 const full = cap > 0 && conf >= cap;
                 return (
-                  <div className="lb-card" key={s.id}>
+                  <div className="lb-card lb-card-accent" key={s.id}>
                     <div className="lb-sess-head">
                       {s.type && <span className="lb-pill">{s.type}</span>}
                       {s.day && <span className="lb-time">{s.day.replace(/ —.*/, '')}</span>}
@@ -168,9 +173,11 @@ export default function LiveBoard() {
                     <div className="lb-card-title">{s.title}</div>
                     {s.speakers && <div className="lb-speakers">{s.speakers}</div>}
                     <div className="lb-card-meta">
-                      {cap > 0 ? (full ? 'Full — join the waitlist' : `${spotsLeft} place${spotsLeft === 1 ? '' : 's'} left`) : 'Open for registration'}
+                      <span className={`lb-spots ${full ? 'full' : 'open'}`}>
+                        {cap > 0 ? (full ? 'Full — join the waitlist' : `${spotsLeft} place${spotsLeft === 1 ? '' : 's'} left`) : 'Open for registration'}
+                      </span>
                     </div>
-                    <button className="lb-btn" style={{ marginTop: '0.7rem', width: 'auto', padding: '0.55rem 1.1rem' }} onClick={() => { setRegFor(s); setRegPhone(''); setRegResult(null); }}>
+                    <button className={`lb-reg-btn ${full ? 'wait' : ''}`} onClick={() => { setRegFor(s); setRegPhone(''); setRegResult(null); }}>
                       {full ? 'Join waitlist' : 'Register'}
                     </button>
                   </div>
@@ -179,7 +186,7 @@ export default function LiveBoard() {
             )}
 
             {tab === 'resources' && (
-              resources.length === 0 ? <p className="lb-empty">No resources shared yet.</p> :
+              resources.length === 0 ? <div className="lb-empty"><div className="lb-empty-icon">◇</div>No resources shared yet.</div> :
               resources.map(r => (
                 <div className="lb-card" key={r.id}>
                   <div className="lb-card-title">{r.title}</div>
