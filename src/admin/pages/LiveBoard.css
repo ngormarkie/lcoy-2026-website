@@ -40,6 +40,7 @@
 /* ---------- Tabs ---------- */
 .lb-tabs {
   display: flex; gap: 0.4rem; padding: 0.55rem 0.75rem;
+  justify-content: center;
   position: sticky; top: 0; z-index: 5;
   background: rgba(255,255,255,.85); backdrop-filter: blur(8px);
   border-bottom: 1px solid #E2EBE6; overflow-x: auto;
