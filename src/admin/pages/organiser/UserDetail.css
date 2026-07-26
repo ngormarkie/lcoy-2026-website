@@ -37,6 +37,16 @@
   z-index: -1;
 }
 
+/* In edit mode the box must expand so the upload controls are visible. */
+.user-detail-photo.editing {
+  width: 240px;
+  height: auto;
+  overflow: visible;
+  background: none;
+  border-radius: 0;
+}
+.user-detail-photo.editing::before { display: none; }
+
 .user-detail-photo img {
   width: 100%;
   height: 100%;
@@ -133,6 +143,11 @@
     width: 140px;
     height: 140px;
     margin: 0 auto;
+  }
+  .user-detail-photo.editing {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
   }
   .user-detail-info {
     text-align: center;

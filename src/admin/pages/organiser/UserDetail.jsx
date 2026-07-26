@@ -82,7 +82,7 @@ export default function UserDetail() {
       {error && <div className="alert alert-error">{error}</div>}
 
       <div className="user-detail-card">
-        <div className="user-detail-photo">
+        <div className={`user-detail-photo ${editing ? 'editing' : ''}`}>
           {editing ? (
             <PhotoInput value={form.photoURL} onChange={(v) => setField('photoURL', v)} disabled={busy} />
           ) : user.photoURL ? (
