@@ -1,5 +1,5 @@
 node_modules
-functions/node_modules
+firebase/functions/node_modules
 dist
 .env.local
 .env*.local
