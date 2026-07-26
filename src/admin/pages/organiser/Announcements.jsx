@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, addDoc, doc, deleteDoc, serverTimestamp, orderBy, query } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db, auth } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Announcements() {
@@ -37,44 +37,44 @@ export default function Announcements() {
       let emailNote = '';
       if (emailToo) {
         try {
-          // Gather all attendee emails.
-          const usersSnap = await getDocs(collection(db, 'users'));
-          const emails = [];
-          usersSnap.forEach(d => { const u = d.data(); if (u.role === 'attendee' && u.email) emails.push(u.email); });
-
-          if (emails.length > 0) {
-            const boardUrl = `${window.location.origin}/live`;
-            const safeBody = (body.trim() || '').replace(/</g, '&lt;');
-            const html = `
-              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
-                <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0">
-                  <h2 style="margin:0;font-size:18px">LCOY Sierra Leone 2026</h2>
-                  <p style="margin:4px 0 0;opacity:.8;font-size:13px">New announcement</p>
-                </div>
-                <div style="border:1px solid #e2ebe6;border-top:none;padding:20px;border-radius:0 0 12px 12px">
-                  <h3 style="margin:0 0 8px;color:#0B2233">${title.trim().replace(/</g, '&lt;')}</h3>
-                  <p style="color:#3e5160;white-space:pre-wrap;line-height:1.5">${safeBody}</p>
-                  <a href="${boardUrl}" style="display:inline-block;margin-top:12px;background:#0072C6;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:bold">View the live board</a>
-                  <p style="color:#8a8a8a;font-size:12px;margin-top:18px">Inclusive Climate Action: Leaving No Youth Behind</p>
-                </div>
-              </div>`;
-            // Document for the Firebase "Trigger Email" extension.
-            await addDoc(collection(db, 'mail'), {
-              bcc: emails,
-              message: {
-                subject: `LCOY 2026: ${title.trim()}`,
-                html,
-                text: `${title.trim()}\n\n${body.trim()}\n\nView the live board: ${boardUrl}`,
-              },
-              createdAt: serverTimestamp(),
-            });
-            emailNote = ` Email queued to ${emails.length} attendee${emails.length === 1 ? '' : 's'}.`;
+          const boardUrl = `${window.location.origin}/live`;
+          const safeTitle = title.trim().replace(/</g, '&lt;');
+          const safeBody = (body.trim() || '').replace(/</g, '&lt;');
+          const html = `
+            <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
+              <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0">
+                <h2 style="margin:0;font-size:18px">LCOY Sierra Leone 2026</h2>
+                <p style="margin:4px 0 0;opacity:.8;font-size:13px">New announcement</p>
+              </div>
+              <div style="border:1px solid #e2ebe6;border-top:none;padding:20px;border-radius:0 0 12px 12px">
+                <h3 style="margin:0 0 8px;color:#0B2233">${safeTitle}</h3>
+                <p style="color:#3e5160;white-space:pre-wrap;line-height:1.5">${safeBody}</p>
+                <a href="${boardUrl}" style="display:inline-block;margin-top:12px;background:#0072C6;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:bold">View the live board</a>
+                <p style="color:#8a8a8a;font-size:12px;margin-top:18px">Inclusive Climate Action: Leaving No Youth Behind</p>
+              </div>
+            </div>`;
+          const idToken = await auth.currentUser.getIdToken();
+          const res = await window.fetch('/api/send-announcement', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              idToken,
+              subject: `LCOY 2026: ${title.trim()}`,
+              html,
+              text: `${title.trim()}\n\n${body.trim()}\n\nView the live board: ${boardUrl}`,
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.ok) {
+            emailNote = data.sent > 0 ? ` Emailed ${data.sent} attendee${data.sent === 1 ? '' : 's'}.` : ' No attendee emails on file to notify.';
+          } else if (data.error === 'email_not_configured') {
+            emailNote = ' (Email service not configured yet.)';
           } else {
-            emailNote = ' No attendee emails on file to notify.';
+            emailNote = ' (Posted, but the email could not be sent.)';
           }
         } catch (mailErr) {
           console.error(mailErr);
-          emailNote = ' (Posted, but the email could not be queued.)';
+          emailNote = ' (Posted, but the email could not be sent.)';
         }
       }
 
