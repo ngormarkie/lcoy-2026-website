@@ -61,6 +61,7 @@ export default function CreateUser() {
         category, photoURL: photoURL || null, role, code, entries: [], meals: {},
         region, district, city: city.trim(),
         ...(role === 'organiser' ? { accessLevel, workingGroup } : {}),
+        ...(role === 'attendee' ? { mustSetPassword: true } : {}),
       };
       await createUserAccount({ email, password, profile });
       setExistingCodes((prev) => new Set([...prev, code]));

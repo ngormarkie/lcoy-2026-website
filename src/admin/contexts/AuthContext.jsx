@@ -73,9 +73,9 @@ export function AuthProvider({ children }) {
   const changePassword = async (newPassword) => {
     if (!auth.currentUser) throw new Error('Not signed in');
     await updatePassword(auth.currentUser, newPassword);
-    await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-      passwordChangedAt: serverTimestamp(),
-    });
+    const updates = { passwordChangedAt: serverTimestamp(), mustSetPassword: false };
+    await updateDoc(doc(db, 'users', auth.currentUser.uid), updates);
+    setProfile((p) => (p ? { ...p, mustSetPassword: false } : p));
   };
 
   const createAccount = async ({ email, password, profileData }) => {

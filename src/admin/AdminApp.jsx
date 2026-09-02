@@ -1,8 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
+import AutoLogin from './pages/AutoLogin';
+import SetPasswordPage from './pages/SetPasswordPage';
 import OrganiserHome from './pages/OrganiserHome';
 import CheckinHome from './pages/CheckinHome';
+import AttendeeHome from './pages/AttendeeHome';
 import FirstRunSetup from './pages/FirstRunSetup';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import { useEffect, useState } from 'react';
@@ -15,7 +18,7 @@ function FullLoader() {
 }
 
 export default function AdminApp() {
-  const { user, profile, loading, isOrganiser, isCheckin } = useAuth();
+  const { user, profile, loading, isOrganiser, isCheckin, isAttendee } = useAuth();
   const [hasUsers, setHasUsers] = useState(null);
 
   useEffect(() => {
@@ -47,7 +50,19 @@ export default function AdminApp() {
     return (
       <Routes>
         <Route path="login" element={<LoginPage />} />
+        <Route path="auto-login" element={<AutoLogin />} />
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
+      </Routes>
+    );
+  }
+
+  // First login after being auto-created with a badge-code password (new
+  // delegates accepted from an application, or attendees added manually) —
+  // block everything else until they've chosen their own password.
+  if (profile.mustSetPassword) {
+    return (
+      <Routes>
+        <Route path="*" element={<SetPasswordPage />} />
       </Routes>
     );
   }
@@ -66,6 +81,15 @@ export default function AdminApp() {
       <Routes>
         <Route path="change-password" element={<ChangePasswordPage />} />
         <Route path="*" element={<CheckinHome />} />
+      </Routes>
+    );
+  }
+
+  if (isAttendee) {
+    return (
+      <Routes>
+        <Route path="change-password" element={<ChangePasswordPage />} />
+        <Route path="*" element={<AttendeeHome />} />
       </Routes>
     );
   }

@@ -88,7 +88,8 @@ export default function Applications() {
     });
   }, [applications, statusFilter, regionFilter, search]);
 
-  const toNotifyAccepted = useMemo(() => applications.filter(a => a.status === 'accepted' && !a.notifiedAt), [applications]);
+  const toNotifyAccepted = useMemo(() => applications.filter(a => a.status === 'accepted' && !a.notifiedAt && a.assignedCode), [applications]);
+  const missingCodeAccepted = useMemo(() => applications.filter(a => a.status === 'accepted' && !a.notifiedAt && !a.assignedCode), [applications]);
   const toNotifyRejected = useMemo(() => applications.filter(a => a.status === 'rejected' && !a.notifiedAt), [applications]);
 
   const patchApp = (id, patch) => setApplications(prev => prev.map(a => a.id === id ? { ...a, ...patch } : a));
@@ -114,9 +115,18 @@ export default function Applications() {
     try {
       const existingUser = await findUserByEmail(app.email);
       if (existingUser) {
-        await updateDoc(doc(db, 'applications', app.id), { status: 'accepted', migratedUserId: existingUser.id, assignedCode: existingUser.code || '', migratedAt: serverTimestamp() });
-        patchApp(app.id, { status: 'accepted', migratedUserId: existingUser.id, assignedCode: existingUser.code || '' });
-        setAcceptResult({ name: app.fullName, email: app.email, code: existingUser.code, alreadyExisted: true });
+        // Defensive: an existing account (e.g. added manually before this
+        // person applied) may not have a badge code yet. Never send a blank
+        // password in the acceptance email — generate one now if needed.
+        let code = existingUser.code || '';
+        if (!code) {
+          code = generateUniqueBadgeCode(existingCodes);
+          await updateDoc(doc(db, 'users', existingUser.id), { code });
+          setExistingCodes(prev => new Set([...prev, code]));
+        }
+        await updateDoc(doc(db, 'applications', app.id), { status: 'accepted', migratedUserId: existingUser.id, assignedCode: code, migratedAt: serverTimestamp() });
+        patchApp(app.id, { status: 'accepted', migratedUserId: existingUser.id, assignedCode: code });
+        setAcceptResult({ name: app.fullName, email: app.email, code, alreadyExisted: true });
       } else {
         const code = generateUniqueBadgeCode(existingCodes);
         const password = deriveAttendeePassword(code);
@@ -125,6 +135,7 @@ export default function Applications() {
           category: 'Delegate', photoURL: null, role: 'attendee', code, entries: [], meals: {},
           region: app.region, district: app.district, city: '',
           gender: app.gender || '', dob: app.dob || '', applicationId: app.id,
+          mustSetPassword: true,
         };
         const uid = await createUserAccount({ email: app.email, password, profile });
         setExistingCodes(prev => new Set([...prev, code]));
@@ -136,6 +147,18 @@ export default function Applications() {
       console.error(e);
       alert('Could not create the delegate account. ' + (e.message || ''));
     }
+    setBusyId('');
+  };
+
+  const fixMissingCode = async (app) => {
+    setBusyId(app.id);
+    try {
+      const code = generateUniqueBadgeCode(existingCodes);
+      if (app.migratedUserId) await updateDoc(doc(db, 'users', app.migratedUserId), { code });
+      await updateDoc(doc(db, 'applications', app.id), { assignedCode: code });
+      setExistingCodes(prev => new Set([...prev, code]));
+      patchApp(app.id, { assignedCode: code });
+    } catch (e) { console.error(e); alert('Could not assign a badge code.'); }
     setBusyId('');
   };
 
@@ -189,6 +212,20 @@ export default function Applications() {
           <div className="result-actions">
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadBadge(acceptResult)}>Download badge (with QR)</button>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAcceptResult(null)}>Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {missingCodeAccepted.length > 0 && (
+        <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
+          <strong>{missingCodeAccepted.length} accepted applicant{missingCodeAccepted.length === 1 ? '' : 's'} missing a badge code</strong> — they won't be included in the email below until fixed.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.6rem' }}>
+            {missingCodeAccepted.map(a => (
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
+                <span>{a.fullName} ({a.email})</span>
+                <button className="btn btn-secondary btn-sm" disabled={busyId === a.id} onClick={() => fixMissingCode(a)}>{busyId === a.id ? '…' : 'Assign badge code'}</button>
+              </div>
+            ))}
           </div>
         </div>
       )}

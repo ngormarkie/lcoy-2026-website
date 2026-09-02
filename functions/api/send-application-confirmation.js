@@ -24,10 +24,12 @@ const HEAR_BACK_DATE = '20 September 2026';
 
 export async function onRequestPost({ request, env }) {
   try {
-    const { name, email } = await request.json();
+    const { name, email, origin } = await request.json();
 
     const safeName = String(name || '').trim().slice(0, 200);
     const safeEmail = String(email || '').trim().slice(0, 200).toLowerCase();
+    const safeOrigin = origin ? String(origin).slice(0, 200).replace(/[^a-zA-Z0-9:/._-]/g, '') : '';
+    const logoUrl = safeOrigin ? `${safeOrigin}/photos/LCOY-2026-Logo.png` : '';
 
     if (!safeName) return json({ ok: false, error: 'missing_name' }, 400);
     if (!EMAIL_RE.test(safeEmail)) return json({ ok: false, error: 'invalid_email' }, 400);
@@ -39,7 +41,8 @@ export async function onRequestPost({ request, env }) {
 
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
-        <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0">
+        <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center">
+          ${logoUrl ? `<img src="${logoUrl}" alt="LCOY Sierra Leone 2026" width="56" height="56" style="display:block;margin:0 auto 10px;border-radius:12px" />` : ''}
           <h2 style="margin:0;font-size:18px">LCOY Sierra Leone 2026</h2>
           <p style="margin:4px 0 0;opacity:.8;font-size:13px">Application received</p>
         </div>
@@ -51,6 +54,7 @@ export async function onRequestPost({ request, env }) {
           </div>
           <p style="color:#3e5160;line-height:1.6">No further action is needed from you right now. If your details change before then (email, phone), please let the organising team know.</p>
           <p style="color:#8a8a8a;font-size:12px;margin-top:22px">Inclusive Climate Action: Leaving No Youth Behind</p>
+          <p style="color:#8a8a8a;font-size:11px;margin-top:14px">Tip: add this address to your contacts so future emails from us land in your inbox.</p>
         </div>
       </div>`;
     const text = `Thank you for applying to LCOY Sierra Leone 2026 (Freetown, 7-9 October 2026). Your application has been received and will go through a two-stage review. You will hear from us by ${HEAR_BACK_DATE}, whatever the outcome.`;

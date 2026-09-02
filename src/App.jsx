@@ -288,7 +288,7 @@ function ApplicationForm() {
         await window.fetch('/api/send-application-confirmation', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name: f.fullName.trim(), email: f.email.trim().toLowerCase() }),
+          body: JSON.stringify({ name: f.fullName.trim(), email: f.email.trim().toLowerCase(), origin: window.location.origin }),
         });
       } catch (mailErr) { console.error(mailErr); }
     } catch (err) {
