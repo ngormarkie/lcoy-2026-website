@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from './admin/services/firebase'
 import { REGIONS, getDistricts } from './admin/utils/locations'
 import { isValidEmail } from './admin/utils/badgeCode'
@@ -197,6 +197,7 @@ function ApplicationForm() {
   const [f, setF] = useState(BLANK_APPLICATION);
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [done, setDone] = useState(false);
   const topRef = useRef(null);
@@ -218,9 +219,25 @@ function ApplicationForm() {
   };
   const scrollUp = () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const goNext = () => {
+  const goNext = async () => {
     const e = validateApplicationStep(step, f);
     if (Object.keys(e).length) { setErrors(e); return; }
+    if (step === 0) {
+      setCheckingEmail(true);
+      try {
+        const snap = await getDoc(doc(db, 'applicationEmails', f.email.trim().toLowerCase()));
+        if (snap.exists()) {
+          setCheckingEmail(false);
+          setErrors({ email: 'An application has already been submitted with this email address. If you believe this is a mistake, please contact the organisers.' });
+          return;
+        }
+      } catch (err) {
+        console.error(err);
+        // If the check itself can't run (e.g. offline), don't block progress —
+        // the server still enforces one application per email at submit time.
+      }
+      setCheckingEmail(false);
+    }
     setErrors({});
     setStep(s => Math.min(s + 1, APPLICATION_STEPS.length - 1));
     scrollUp();
@@ -245,7 +262,12 @@ function ApplicationForm() {
     try {
       const age = calcAgeAt(Number(f.dobDay), Number(f.dobMonth), Number(f.dobYear), CONFERENCE_DATE);
       const pad = (n) => String(n).padStart(2, '0');
-      await addDoc(collection(db, 'applications'), {
+      const normalizedEmail = f.email.trim().toLowerCase();
+      // Keyed by email, not a random id: a second submission from the same
+      // address hits an existing document, which Firestore treats as an
+      // "update" rather than a "create" — and the rules only let organisers
+      // update, so a resubmission is rejected server-side.
+      await setDoc(doc(db, 'applications', normalizedEmail), {
         fullName: f.fullName.trim(),
         gender: f.gender,
         dob: `${f.dobYear}-${pad(f.dobMonth)}-${pad(f.dobDay)}`,
@@ -282,20 +304,25 @@ function ApplicationForm() {
         status: 'pending',
         submittedAt: serverTimestamp(),
       });
+      // Mark the email as used, for the early-warning check on future
+      // attempts. Best-effort: the write above is already the real
+      // enforcement, so a failure here just means a future resubmission
+      // won't be flagged until the very end instead of on step 1.
+      try { await setDoc(doc(db, 'applicationEmails', normalizedEmail), { submittedAt: serverTimestamp() }); } catch (markErr) { console.error(markErr); }
       setDone(true);
       // Best-effort confirmation email — the application is already saved either way.
       try {
         await window.fetch('/api/send-application-confirmation', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name: f.fullName.trim(), email: f.email.trim().toLowerCase(), origin: window.location.origin }),
+          body: JSON.stringify({ name: f.fullName.trim(), email: normalizedEmail, origin: window.location.origin }),
         });
       } catch (mailErr) { console.error(mailErr); }
     } catch (err) {
       console.error(err);
       const code = err && err.code;
       const msg = code === 'permission-denied'
-        ? 'The application system is not accepting submissions right now. Please try again shortly, or contact the organisers if this continues.'
+        ? "It looks like an application has already been submitted with this email address. If you believe this is a mistake, please contact the organisers."
         : code === 'unavailable'
         ? 'Could not reach the server. Please check your connection and try again.'
         : 'Could not submit your application. Please try again, or contact the organisers if this continues.';
@@ -495,9 +522,9 @@ function ApplicationForm() {
         {submitError && <div className="apply-error apply-error-block">{submitError}</div>}
 
         <div className="apply-nav">
-          {step > 0 ? <button type="button" className="btn btn-ghost" onClick={goBack} disabled={busy}>← Back</button> : <span />}
+          {step > 0 ? <button type="button" className="btn btn-ghost" onClick={goBack} disabled={busy || checkingEmail}>← Back</button> : <span />}
           {step < APPLICATION_STEPS.length - 1
-            ? <button type="button" className="btn btn-primary" onClick={goNext}>Continue →</button>
+            ? <button type="button" className="btn btn-primary" onClick={goNext} disabled={checkingEmail}>{checkingEmail ? 'Checking…' : 'Continue →'}</button>
             : <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Submitting…' : 'Submit application'}</button>}
         </div>
       </form>

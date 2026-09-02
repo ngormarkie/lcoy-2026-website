@@ -104,9 +104,26 @@ service cloud.firestore {
     // ---------- APPLICATIONS ----------
     // Anyone can submit the public application form. Only organisers can
     // read the pool, move applicants through screening, or remove one.
+    // The document id is the applicant's own (lowercased) email, so a
+    // second submission from the same address is a Firestore "update" of
+    // an existing doc rather than a "create" of a new one — and only
+    // organisers may update, so the resubmission is rejected server-side.
     match /applications/{id} {
       allow create: if true;
       allow read, update, delete: if isOrganiser();
+    }
+
+    // Lightweight public existence check ("has this email already applied?")
+    // so the form can warn someone before they fill in all 24 questions,
+    // without granting read access to the applications collection itself
+    // (which holds essays and personal details). Holds nothing but a
+    // timestamp; `list` stays denied so the set of emails can't be
+    // enumerated, only checked one at a time by someone who already has
+    // that exact address. Same create/update trick prevents overwrites.
+    match /applicationEmails/{email} {
+      allow get: if true;
+      allow create: if true;
+      allow list, update, delete: if false;
     }
 
     // ---------- MAIL (Firebase "Trigger Email" extension) ----------
