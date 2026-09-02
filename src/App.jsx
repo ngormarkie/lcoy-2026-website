@@ -201,8 +201,21 @@ function ApplicationForm() {
   const [done, setDone] = useState(false);
   const topRef = useRef(null);
 
-  const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
-  const toggleMulti = (k, value) => setF(prev => ({ ...prev, [k]: prev[k].includes(value) ? prev[k].filter(x => x !== value) : [...prev[k], value] }));
+  const DECLARATION_KEYS = ['declAccurate', 'declNoGuarantee', 'declCodeOfConduct'];
+  const clearErrors = (...keys) => setErrors(prev => {
+    if (!keys.some(k => prev[k])) return prev;
+    const next = { ...prev };
+    keys.forEach(k => delete next[k]);
+    return next;
+  });
+  const set = (k, v) => {
+    setF(prev => ({ ...prev, [k]: v }));
+    clearErrors(k, ...(DECLARATION_KEYS.includes(k) ? ['declaration'] : []));
+  };
+  const toggleMulti = (k, value) => {
+    setF(prev => ({ ...prev, [k]: prev[k].includes(value) ? prev[k].filter(x => x !== value) : [...prev[k], value] }));
+    clearErrors(k);
+  };
   const scrollUp = () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const goNext = () => {
@@ -221,6 +234,7 @@ function ApplicationForm() {
       if (next.dobDay && Number(next.dobDay) > max) next.dobDay = '';
       return next;
     });
+    clearErrors('dob');
   };
 
   const submit = async (e) => {
@@ -271,7 +285,13 @@ function ApplicationForm() {
       setDone(true);
     } catch (err) {
       console.error(err);
-      setSubmitError('Could not submit your application. Please check your connection and try again.');
+      const code = err && err.code;
+      const msg = code === 'permission-denied'
+        ? 'The application system is not accepting submissions right now. Please try again shortly, or contact the organisers if this continues.'
+        : code === 'unavailable'
+        ? 'Could not reach the server. Please check your connection and try again.'
+        : 'Could not submit your application. Please try again, or contact the organisers if this continues.';
+      setSubmitError(code ? `${msg} (error: ${code})` : msg);
     } finally {
       setBusy(false);
     }
