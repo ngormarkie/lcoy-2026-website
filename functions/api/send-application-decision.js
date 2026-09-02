@@ -18,12 +18,10 @@ function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function header(logoUrl, tagline) {
+function header(logoUrl) {
   return `
-      <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center">
-        ${logoUrl ? `<div style="display:inline-block;background:#fff;padding:10px 18px;border-radius:10px;margin-bottom:12px"><img src="${logoUrl}" alt="LCOY Sierra Leone 2026 — officially endorsed by YOUNGO" width="260" style="display:block;max-width:260px;height:auto" /></div>` : ''}
-        <h2 style="margin:0;font-size:18px">LCOY Sierra Leone 2026</h2>
-        <p style="margin:4px 0 0;opacity:.8;font-size:13px">${tagline}</p>
+      <div style="background:#0B2233;padding:24px;border-radius:12px 12px 0 0;text-align:center">
+        ${logoUrl ? `<div style="display:inline-block;background:#fff;padding:10px 18px;border-radius:10px"><img src="${logoUrl}" alt="LCOY Sierra Leone 2026 — officially endorsed by YOUNGO" width="260" style="display:block;max-width:260px;height:auto" /></div>` : ''}
       </div>`;
 }
 
@@ -33,7 +31,7 @@ function acceptedEmail({ name, email, code, autoLoginUrl, manualLoginUrl, whatsa
   const subject = "You're selected — LCOY Sierra Leone 2026";
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
-      ${header(logoUrl, "You've been selected as a delegate")}
+      ${header(logoUrl)}
       <div style="border:1px solid #e2ebe6;border-top:none;padding:20px;border-radius:0 0 12px 12px">
         <p style="color:#3e5160;line-height:1.6">Dear ${esc(name)},</p>
         <p style="color:#3e5160;line-height:1.6">Congratulations — you have been selected as a delegate for <strong>LCOY Sierra Leone 2026</strong> in Freetown, 7&ndash;9 October 2026. Welcome to the coalition.</p>
@@ -53,7 +51,7 @@ function rejectedEmail({ name, logoUrl }) {
   const subject = 'Update on your LCOY Sierra Leone 2026 application';
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
-      ${header(logoUrl, 'Application update')}
+      ${header(logoUrl)}
       <div style="border:1px solid #e2ebe6;border-top:none;padding:20px;border-radius:0 0 12px 12px">
         <p style="color:#3e5160;line-height:1.6">Dear ${esc(name)},</p>
         <p style="color:#3e5160;line-height:1.6">Thank you for applying to LCOY Sierra Leone 2026 and for your interest in youth climate action. Applications this year far exceeded the places available, and after careful review we are unable to offer you a place at this year's conference.</p>

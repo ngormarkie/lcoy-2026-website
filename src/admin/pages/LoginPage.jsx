@@ -4,7 +4,7 @@ import { isValidEmail } from '../utils/badgeCode';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const { signIn, resetPassword } = useAuth();
+  const { signIn, resetPassword, authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -74,7 +74,7 @@ export default function LoginPage() {
           </div>
           <h2 className="login-form-title">Organiser Sign In</h2>
           <p className="login-form-sub">Enter your credentials to access the conference management portal.</p>
-          {error && <div className="alert alert-error">{error}</div>}
+          {(error || authError) && <div className="alert alert-error">{error || authError}</div>}
           {notice && <div className="alert alert-success">{notice}</div>}
           <form onSubmit={submit}>
             <div className="field">

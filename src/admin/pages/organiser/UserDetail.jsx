@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { auth, db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { REGIONS, getDistricts, WORKING_GROUPS } from '../../utils/locations';
 import PhotoInput from '../../components/PhotoInput';
@@ -14,10 +14,11 @@ const ALL_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media',
 export default function UserDetail() {
   const { uid } = useParams();
   const navigate = useNavigate();
-  const { profile: me, isSuperAdmin, isOrganiser } = useAuth();
+  const { profile: me, isSuperAdmin, isOrganiser, resetPassword } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -33,6 +34,30 @@ export default function UserDetail() {
   const updateRole = async (newRole) => { if (!user) return; setBusy(true); setError(''); try { await updateDoc(doc(db, 'users', uid), { role: newRole, roleUpdatedAt: serverTimestamp() }); setUser({ ...user, role: newRole }); setForm({ ...form, role: newRole }); } catch (e) { setError('Could not update role.'); } finally { setBusy(false); } };
 
   const handleDelete = async () => { setBusy(true); setError(''); try { await deleteDoc(doc(db, 'users', uid)); navigate('/admin/users'); } catch (e) { setError('Could not delete.'); setBusy(false); } };
+
+  // There's no way to recover or resend an original password from the
+  // client SDK, so "resend" means: trigger Firebase's own password-reset
+  // email for this address, plus our own branded heads-up telling them to
+  // look out for it (they're often unrelated senders in the inbox).
+  const resendLogin = async () => {
+    setBusy(true); setError(''); setNotice('');
+    try {
+      await resetPassword(user.email);
+      const idToken = await auth.currentUser.getIdToken();
+      const res = await window.fetch('/api/send-login-reminder', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ idToken, name: user.name, email: user.email, origin: window.location.origin }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setNotice(res.ok && data.ok
+        ? `Login access resent to ${user.email} — a password reset link and a reminder email are on their way.`
+        : `A password reset link was sent to ${user.email}, but the reminder email could not be sent.`);
+    } catch (e) {
+      console.error(e);
+      setError('Could not resend login access. Please try again.');
+    } finally { setBusy(false); }
+  };
 
   const startEdit = () => { setForm({ ...user }); setEditing(true); };
 
@@ -71,6 +96,9 @@ export default function UserDetail() {
         <Link to="/admin/users" className="btn btn-ghost btn-sm">← All people</Link>
         {canEdit && !editing && <button className="btn btn-secondary btn-sm" onClick={startEdit}>Edit</button>}
         {!editing && user?.code && <button className="btn btn-secondary btn-sm" onClick={() => downloadBadge(user)}>Download Badge</button>}
+        {canEdit && !editing && !isMe && (user.role === 'organiser' || user.role === 'checkin') && (
+          <button className="btn btn-secondary btn-sm" onClick={resendLogin} disabled={busy}>{busy ? '…' : 'Resend login access'}</button>
+        )}
         {editing && (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)} disabled={busy}>Cancel</button>
@@ -80,6 +108,7 @@ export default function UserDetail() {
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
+      {notice && <div className="alert alert-success">{notice}</div>}
 
       <div className="user-detail-card">
         <div className={`user-detail-photo ${editing ? 'editing' : ''}`}>

@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 // signed in without typing anything. AdminApp then forces a "set your own
 // password" step before they can go anywhere else.
 export default function AutoLogin() {
-  const { signIn } = useAuth();
+  const { signIn, authError } = useAuth();
   const [params] = useSearchParams();
   const [error, setError] = useState('');
 
@@ -26,13 +26,14 @@ export default function AutoLogin() {
     return () => { cancelled = true; };
   }, []);
 
-  if (error) {
+  const shown = error || authError;
+  if (shown) {
     return (
       <div className="login-page">
         <main className="login-form-area" style={{ width: '100%' }}>
           <div className="login-form-card">
             <h2 className="login-form-title">Could not sign you in automatically</h2>
-            <p className="login-form-sub">{error} Please sign in with your email address and badge code instead.</p>
+            <p className="login-form-sub">{shown} Please sign in with your email address and badge code instead.</p>
             <Link to="/admin/login" className="btn btn-primary btn-block btn-lg">Go to sign in</Link>
           </div>
         </main>
