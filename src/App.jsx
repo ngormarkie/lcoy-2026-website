@@ -283,6 +283,14 @@ function ApplicationForm() {
         submittedAt: serverTimestamp(),
       });
       setDone(true);
+      // Best-effort confirmation email — the application is already saved either way.
+      try {
+        await window.fetch('/api/send-application-confirmation', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ name: f.fullName.trim(), email: f.email.trim().toLowerCase() }),
+        });
+      } catch (mailErr) { console.error(mailErr); }
     } catch (err) {
       console.error(err);
       const code = err && err.code;
@@ -302,7 +310,7 @@ function ApplicationForm() {
       <div className="apply-success reveal in" ref={topRef}>
         <div className="apply-success-icon">✓</div>
         <h3>Application received</h3>
-        <p>Thank you, {f.fullName.split(' ')[0]} — your application for LCOY Sierra Leone 2026 has been submitted. Applications are shortlisted in two stages, and successful applicants will be contacted by email at {f.email}.</p>
+        <p>Thank you, {f.fullName.split(' ')[0]} — your application for LCOY Sierra Leone 2026 has been submitted, and a confirmation has been sent to {f.email}. Applications are shortlisted in two stages, and you will hear from us by <strong>20 September 2026</strong>, whatever the outcome.</p>
         <button type="button" className="btn btn-primary" onClick={() => { setF(BLANK_APPLICATION); setStep(0); setDone(false); setErrors({}); }}>Submit another response</button>
       </div>
     );
