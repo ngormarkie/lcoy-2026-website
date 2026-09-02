@@ -1290,9 +1290,9 @@ export default function App() {
     <div className="about-hero-bg" style={{backgroundImage:"url('photos/F94A2211.jpg')",backgroundPosition:'center 55%'}}></div>
     <div className="about-hero-overlay"></div>
     <div className="wrap" style={{position:'relative',zIndex:3}}>
-      <span className="eyebrow" style={{color:'var(--orange)',fontSize:'1.4rem'}}>Registration</span>
-      <h2 className="about-title">Reserve your place at <em className="script-em">LCOY-SL 2026</em></h2>
-      <p className="about-lead">Participation is 100% free. Delegate places are limited to 150 and allocated with inclusion quotas.</p>
+      <span className="eyebrow" style={{color:'var(--orange)',fontSize:'1.4rem'}}>Application</span>
+      <h2 className="about-title">Apply for a place at <em className="script-em">LCOY-SL 2026</em></h2>
+      <p className="about-lead">Participation is 100% free. Delegate places are limited to 150 and allocated with inclusion quotas, following a two-stage shortlisting process.</p>
     </div>
   </section>
 
@@ -1325,12 +1325,12 @@ export default function App() {
 
   <section className="objectives-section">
     <div className="wrap">
-      <div style={{textAlign:'center',padding:'40px 0'}}>
-        <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>Registration</span>
-        <h2 style={{color:'#fff',marginTop:'14px',fontSize:'2.4rem'}}>Coming <em className="script-em">soon</em></h2>
-        <p style={{color:'rgba(255,255,255,.7)',fontSize:'1.1rem',maxWidth:'600px',margin:'16px auto 0'}}>Registration will open shortly. Follow our channels for updates or contact the team to express your interest.</p>
-        <a className="btn btn-primary" style={{marginTop:'24px'}} onClick={()=>nav('contact')}>Contact the team →</a>
+      <div className="section-head" style={{textAlign:'center',margin:'0 auto 36px',maxWidth:'none'}}>
+        <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>Application form</span>
+        <h2 style={{color:'#fff',marginTop:'14px'}}>Tell us about <em className="script-em">you</em></h2>
+        <p style={{color:'rgba(255,255,255,.7)',maxWidth:'620px',margin:'14px auto 0',fontSize:'1.05rem'}}>Six short steps. You can go back at any point before submitting. Applications are shortlisted in two stages — a first review by the participation team, then a final selection by the working group — with outcomes sent by email.</p>
       </div>
+      <ApplicationForm />
     </div>
   </section>
   </>);
