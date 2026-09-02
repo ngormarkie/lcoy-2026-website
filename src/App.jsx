@@ -9,7 +9,6 @@ const NAV = [
   ['about','About',[ ['about','What is LCOY'], ['team','Organizing Team'], ['editions','Past Conferences'] ]],
   ['programme','Programme'],
   ['themes','Thematic Areas'],
-  ['register','Apply'],
   ['contact','Contact']
 ];
 const PATH_TO_PAGE = { '/apply': 'register', '/register': 'register' };
