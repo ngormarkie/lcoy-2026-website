@@ -6,9 +6,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import './Dashboard.css';
 
 export default function OrganiserDashboard() {
-  const { profile, isSuperAdmin } = useAuth();
+  const { profile, isSuperAdmin, isAdmin } = useAuth();
   const access = profile?.accessLevel || 'full';
-  const isFull = isSuperAdmin || access === 'full';
+  const isFull = isSuperAdmin || isAdmin || access === 'full';
   const canManagePeople = isFull || access === 'attendee_mgmt';
   const canManageProgramme = isFull || access === 'programme_mgmt';
   const canManageComms = isFull || access === 'comms' || access === 'programme_mgmt';
@@ -28,7 +28,7 @@ export default function OrganiserDashboard() {
         usersSnap.forEach((doc) => {
           const d = doc.data();
           total++;
-          if (d.role === 'organiser' || d.role === 'superadmin') organisers++;
+          if (d.role === 'organiser' || d.role === 'admin' || d.role === 'superadmin') organisers++;
           if (d.role === 'attendee') attendees++;
           if (Array.isArray(d.entries) && d.entries.length > 0) checkedIn++;
           const cat = d.category || 'Other';
@@ -51,7 +51,7 @@ export default function OrganiserDashboard() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <span className="dashboard-eyebrow">{isSuperAdmin ? 'Super-administrator' : 'Organiser'}</span>
+        <span className="dashboard-eyebrow">{isSuperAdmin ? 'Super-administrator' : isAdmin ? 'Admin' : 'Organiser'}</span>
         <h1 className="dashboard-title">{greet()}, {(profile?.name || '').split(' ')[0] || 'organiser'}.</h1>
         <p className="dashboard-sub">Here's how the conference is shaping up.</p>
       </header>

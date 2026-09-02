@@ -23,7 +23,7 @@ async function deleteDocs(refs) {
 }
 
 export default function Settings() {
-  const { profile, isSuperAdmin } = useAuth();
+  const { profile, isSuperAdmin, isAdmin } = useAuth();
   const [busy, setBusy] = useState('');
   const [msg, setMsg] = useState('');
   const [confirmText, setConfirmText] = useState('');
@@ -49,12 +49,12 @@ export default function Settings() {
     return Array.from(set).sort();
   }, [users]);
 
-  if (!isSuperAdmin) {
+  if (!isSuperAdmin && !isAdmin) {
     return (
       <div className="container" style={{ maxWidth: 700, margin: '0 auto' }}>
         <div className="card-elevated" style={{ padding: '2rem' }}>
           <h2>Settings</h2>
-          <p className="text-muted mt-2">Only the super-administrator can access platform settings.</p>
+          <p className="text-muted mt-2">Only admins and the super-administrator can access platform settings.</p>
         </div>
       </div>
     );
@@ -130,9 +130,9 @@ export default function Settings() {
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
       <header className="page-header">
         <div>
-          <span className="dashboard-eyebrow">Super-admin</span>
+          <span className="dashboard-eyebrow">{isSuperAdmin ? 'Super-admin' : 'Admin'}</span>
           <h1>Settings</h1>
-          <p className="text-muted" style={{ marginTop: '0.25rem' }}>Platform maintenance and data reset.</p>
+          <p className="text-muted" style={{ marginTop: '0.25rem' }}>Platform maintenance{isSuperAdmin ? ' and data reset' : ''}.</p>
         </div>
       </header>
 
@@ -163,68 +163,72 @@ export default function Settings() {
         )}
       </div>
 
-      {/* Delete by group */}
-      <div className="card-elevated" style={{ padding: '1.5rem', marginBottom: '1.25rem', borderLeft: '4px solid var(--crimson)' }}>
-        <h3 style={{ color: 'var(--crimson)' }}>Delete people by group</h3>
-        <p className="text-muted text-sm" style={{ marginTop: '0.35rem', marginBottom: '1rem' }}>
-          Remove a specific group of people — e.g. all attendees, all organisers, or a single category.
-          Your own account is always kept. Cannot be undone.
-        </p>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: mode === 'group' ? '1rem' : 0 }}>
-          <select className="select" style={{ maxWidth: 260 }} value={group} disabled={mode === 'group' || !!busy}
-            onChange={e => { setGroup(e.target.value); setMsg(''); }}>
-            <option value="all">All people</option>
-            <option value="attendees">All attendees</option>
-            <option value="organisers">All organisers</option>
-            <option value="checkin">All check-in staff</option>
-            {categories.length > 0 && <optgroup label="By category">
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </optgroup>}
-          </select>
-          <span className="text-sm text-muted">{targetCount} match{targetCount === 1 ? '' : 'es'}</span>
-        </div>
-        {mode !== 'group' ? (
-          <button className="btn btn-danger" disabled={!!busy || targetCount === 0} onClick={() => { setMode('group'); setConfirmText(''); setMsg(''); }}>
-            Delete {groupLabel(group)}…
-          </button>
-        ) : (
-          <div style={{ background: 'var(--crimson-soft)', padding: '1rem', borderRadius: 'var(--radius)' }}>
-            <p className="text-sm" style={{ marginBottom: '0.75rem' }}>Delete <strong>{targetCount}</strong> {groupLabel(group).toLowerCase()}? Type <strong>DELETE</strong> to confirm.</p>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <input className="input" style={{ maxWidth: 160 }} value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())} placeholder="DELETE" autoFocus />
-              <button className="btn btn-ghost" onClick={() => { setMode(null); setConfirmText(''); }}>Cancel</button>
-              <button className="btn btn-danger" disabled={confirmText !== 'DELETE' || busy === 'group'} onClick={deleteGroup}>
-                {busy === 'group' ? 'Deleting…' : 'Confirm delete'}
-              </button>
+      {isSuperAdmin && (
+        <>
+          {/* Delete by group */}
+          <div className="card-elevated" style={{ padding: '1.5rem', marginBottom: '1.25rem', borderLeft: '4px solid var(--crimson)' }}>
+            <h3 style={{ color: 'var(--crimson)' }}>Delete people by group</h3>
+            <p className="text-muted text-sm" style={{ marginTop: '0.35rem', marginBottom: '1rem' }}>
+              Remove a specific group of people — e.g. all attendees, all organisers, or a single category.
+              Your own account is always kept. Cannot be undone. Super-admin only.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: mode === 'group' ? '1rem' : 0 }}>
+              <select className="select" style={{ maxWidth: 260 }} value={group} disabled={mode === 'group' || !!busy}
+                onChange={e => { setGroup(e.target.value); setMsg(''); }}>
+                <option value="all">All people</option>
+                <option value="attendees">All attendees</option>
+                <option value="organisers">All organisers</option>
+                <option value="checkin">All check-in staff</option>
+                {categories.length > 0 && <optgroup label="By category">
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </optgroup>}
+              </select>
+              <span className="text-sm text-muted">{targetCount} match{targetCount === 1 ? '' : 'es'}</span>
             </div>
+            {mode !== 'group' ? (
+              <button className="btn btn-danger" disabled={!!busy || targetCount === 0} onClick={() => { setMode('group'); setConfirmText(''); setMsg(''); }}>
+                Delete {groupLabel(group)}…
+              </button>
+            ) : (
+              <div style={{ background: 'var(--crimson-soft)', padding: '1rem', borderRadius: 'var(--radius)' }}>
+                <p className="text-sm" style={{ marginBottom: '0.75rem' }}>Delete <strong>{targetCount}</strong> {groupLabel(group).toLowerCase()}? Type <strong>DELETE</strong> to confirm.</p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <input className="input" style={{ maxWidth: 160 }} value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())} placeholder="DELETE" autoFocus />
+                  <button className="btn btn-ghost" onClick={() => { setMode(null); setConfirmText(''); }}>Cancel</button>
+                  <button className="btn btn-danger" disabled={confirmText !== 'DELETE' || busy === 'group'} onClick={deleteGroup}>
+                    {busy === 'group' ? 'Deleting…' : 'Confirm delete'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Full reset */}
-      <div className="card-elevated" style={{ padding: '1.5rem', borderLeft: '4px solid var(--crimson)' }}>
-        <h3 style={{ color: 'var(--crimson)' }}>Full reset — wipe everything</h3>
-        <p className="text-muted text-sm" style={{ marginTop: '0.35rem', marginBottom: '1rem' }}>
-          Deletes <strong>all people</strong> (except your own account), plus all sessions, announcements,
-          resources and feedback. Cannot be undone. Use only for a completely clean slate.
-        </p>
-        {mode !== 'full' ? (
-          <button className="btn btn-danger" disabled={!!busy} onClick={() => { setMode('full'); setConfirmText(''); setMsg(''); }}>
-            Full reset…
-          </button>
-        ) : (
-          <div style={{ background: 'var(--crimson-soft)', padding: '1rem', borderRadius: 'var(--radius)' }}>
-            <p className="text-sm" style={{ marginBottom: '0.75rem' }}>This deletes everything except your account. Type <strong>DELETE ALL</strong> to confirm.</p>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <input className="input" style={{ maxWidth: 200 }} value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())} placeholder="DELETE ALL" autoFocus />
-              <button className="btn btn-ghost" onClick={() => { setMode(null); setConfirmText(''); }}>Cancel</button>
-              <button className="btn btn-danger" disabled={confirmText !== 'DELETE ALL' || busy === 'full'} onClick={fullReset}>
-                {busy === 'full' ? 'Resetting…' : 'Confirm full reset'}
+          {/* Full reset */}
+          <div className="card-elevated" style={{ padding: '1.5rem', borderLeft: '4px solid var(--crimson)' }}>
+            <h3 style={{ color: 'var(--crimson)' }}>Full reset — wipe everything</h3>
+            <p className="text-muted text-sm" style={{ marginTop: '0.35rem', marginBottom: '1rem' }}>
+              Deletes <strong>all people</strong> (except your own account), plus all sessions, announcements,
+              resources and feedback. Cannot be undone. Use only for a completely clean slate. Super-admin only.
+            </p>
+            {mode !== 'full' ? (
+              <button className="btn btn-danger" disabled={!!busy} onClick={() => { setMode('full'); setConfirmText(''); setMsg(''); }}>
+                Full reset…
               </button>
-            </div>
+            ) : (
+              <div style={{ background: 'var(--crimson-soft)', padding: '1rem', borderRadius: 'var(--radius)' }}>
+                <p className="text-sm" style={{ marginBottom: '0.75rem' }}>This deletes everything except your account. Type <strong>DELETE ALL</strong> to confirm.</p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <input className="input" style={{ maxWidth: 200 }} value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())} placeholder="DELETE ALL" autoFocus />
+                  <button className="btn btn-ghost" onClick={() => { setMode(null); setConfirmText(''); }}>Cancel</button>
+                  <button className="btn btn-danger" disabled={confirmText !== 'DELETE ALL' || busy === 'full'} onClick={fullReset}>
+                    {busy === 'full' ? 'Resetting…' : 'Confirm full reset'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

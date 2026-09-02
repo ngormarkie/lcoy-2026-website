@@ -30,6 +30,7 @@ export default function AppShell({ navItems = [], children }) {
 
   const roleLabel =
     role === 'superadmin' ? 'Super-admin' :
+    role === 'admin' ? 'Admin' :
     role === 'organiser' ? 'Organiser' :
     role === 'checkin' ? 'Check-in Staff' :
     'User';

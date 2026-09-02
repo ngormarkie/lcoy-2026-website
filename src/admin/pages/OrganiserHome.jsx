@@ -19,9 +19,9 @@ import Settings from './organiser/Settings';
 import Placeholder from '../components/Placeholder';
 
 export default function OrganiserHome() {
-  const { isSuperAdmin, profile } = useAuth();
+  const { isSuperAdmin, isAdmin, profile } = useAuth();
   const access = profile?.accessLevel || 'full';
-  const isFull = isSuperAdmin || access === 'full';
+  const isFull = isSuperAdmin || isAdmin || access === 'full';
   const canManagePeople = isFull || access === 'attendee_mgmt';
   const canManageProgramme = isFull || access === 'programme_mgmt';
   const canManageComms = isFull || access === 'comms' || access === 'programme_mgmt';
@@ -46,7 +46,7 @@ export default function OrganiserHome() {
       { to: '/admin/feedback', label: 'Feedback', icon: '✦' },
     ] : []),
     { to: '/admin/reports', label: 'Reports', icon: '◌' },
-    ...(isSuperAdmin ? [
+    ...(isSuperAdmin || isAdmin ? [
       { to: '/admin/settings', label: 'Settings', icon: '⚙' },
     ] : []),
   ];

@@ -9,12 +9,20 @@ import { downloadBadge } from '../../utils/badge';
 import './UserDetail.css';
 
 const ATTENDEE_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media', 'VIP'];
-const ALL_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media', 'VIP', 'Organiser', 'Check-in Staff'];
+const ALL_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media', 'VIP', 'Organiser', 'Check-in Staff', 'Admin'];
+const ROLE_STYLES = {
+  superadmin: { bg: 'var(--green-deepest)', label: 'Super-admin' },
+  admin: { bg: '#7c3aed', label: 'Admin' },
+  organiser: { bg: 'var(--blue, var(--green-deep))', label: 'Organiser' },
+  checkin: { bg: 'var(--amber)', label: 'Check-in Staff' },
+  attendee: { bg: 'var(--paper-dark)', label: 'Attendee' },
+};
+const LOWER_ROLES = ['attendee', 'checkin', 'organiser'];
 
 export default function UserDetail() {
   const { uid } = useParams();
   const navigate = useNavigate();
-  const { profile: me, isSuperAdmin, isOrganiser, resetPassword } = useAuth();
+  const { profile: me, isSuperAdmin, isAdmin, isOrganiser, resetPassword } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,8 +35,9 @@ export default function UserDetail() {
   useEffect(() => { let c = false; (async () => { try { const snap = await getDoc(doc(db, 'users', uid)); if (!c) { if (snap.exists()) { const u = { id: snap.id, ...snap.data() }; setUser(u); setForm(u); } else setError('Person not found.'); setLoading(false); } } catch (e) { if (!c) { setError('Could not load this person.'); setLoading(false); } } })(); return () => { c = true; }; }, [uid]);
 
   const isMe = me?.id === uid;
-  const canChangeRole = isSuperAdmin && !isMe;
-  const canDelete = isSuperAdmin && !isMe;
+  const targetIsLower = LOWER_ROLES.includes(user?.role);
+  const canChangeRole = !isMe && (isSuperAdmin || (isAdmin && targetIsLower));
+  const canDelete = !isMe && (isSuperAdmin || (isAdmin && targetIsLower));
   const canEdit = isOrganiser;
 
   const updateRole = async (newRole) => { if (!user) return; setBusy(true); setError(''); try { await updateDoc(doc(db, 'users', uid), { role: newRole, roleUpdatedAt: serverTimestamp() }); setUser({ ...user, role: newRole }); setForm({ ...form, role: newRole }); } catch (e) { setError('Could not update role.'); } finally { setBusy(false); } };
@@ -96,7 +105,7 @@ export default function UserDetail() {
         <Link to="/admin/users" className="btn btn-ghost btn-sm">← All people</Link>
         {canEdit && !editing && <button className="btn btn-secondary btn-sm" onClick={startEdit}>Edit</button>}
         {!editing && user?.code && <button className="btn btn-secondary btn-sm" onClick={() => downloadBadge(user)}>Download Badge</button>}
-        {canEdit && !editing && !isMe && (user.role === 'organiser' || user.role === 'checkin') && (
+        {canEdit && !editing && !isMe && (user.role === 'organiser' || user.role === 'admin' || user.role === 'checkin') && (
           <button className="btn btn-secondary btn-sm" onClick={resendLogin} disabled={busy}>{busy ? '…' : 'Resend login access'}</button>
         )}
         {editing && (
@@ -124,8 +133,8 @@ export default function UserDetail() {
         <div className="user-detail-info">
           <div className="user-detail-tags">
             <span className={`pill cat-${user.category || 'Delegate'}`}>{user.category}</span>
-            <span className="pill" style={{ background: user.role === 'superadmin' ? 'var(--green-deepest)' : user.role === 'organiser' ? 'var(--blue, var(--green-deep))' : user.role === 'checkin' ? 'var(--amber)' : 'var(--paper-dark)', color: user.role === 'attendee' ? 'var(--ink-soft)' : '#fff' }}>
-              {user.role === 'superadmin' ? 'Super-admin' : user.role === 'organiser' ? 'Organiser' : user.role === 'checkin' ? 'Check-in Staff' : 'Attendee'}
+            <span className="pill" style={{ background: (ROLE_STYLES[user.role] || ROLE_STYLES.attendee).bg, color: user.role === 'attendee' ? 'var(--ink-soft)' : '#fff' }}>
+              {(ROLE_STYLES[user.role] || ROLE_STYLES.attendee).label}
             </span>
           </div>
 
@@ -190,12 +199,16 @@ export default function UserDetail() {
       {(canChangeRole || canDelete) && (
         <div className="card-elevated user-detail-admin">
           <h3>Administration</h3>
-          <p className="text-muted text-sm" style={{ marginTop: '0.25rem', marginBottom: '1.25rem' }}>Super-admin actions.</p>
+          <p className="text-muted text-sm" style={{ marginTop: '0.25rem', marginBottom: '1.25rem' }}>{isSuperAdmin ? 'Super-admin actions.' : 'Admin actions.'}</p>
           {canChangeRole && (
             <div className="admin-row">
               <div><div className="weight-semi">Role</div><div className="text-sm text-muted">Promote or demote.</div></div>
               <select className="select" value={user.role} onChange={(e) => updateRole(e.target.value)} disabled={busy} style={{ maxWidth: 220 }}>
-                <option value="attendee">Attendee</option><option value="checkin">Check-in Staff</option><option value="organiser">Organiser</option><option value="superadmin">Super-admin</option>
+                <option value="attendee">Attendee</option>
+                <option value="checkin">Check-in Staff</option>
+                <option value="organiser">Organiser</option>
+                {isSuperAdmin && <option value="admin">Admin</option>}
+                {isSuperAdmin && <option value="superadmin">Super-admin</option>}
               </select>
             </div>
           )}

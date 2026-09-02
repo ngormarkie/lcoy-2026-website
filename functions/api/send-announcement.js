@@ -44,7 +44,7 @@ export async function onRequestPost({ request, env }) {
     if (!meRes.ok) return json({ ok: false, error: 'forbidden' }, 403);
     const me = await meRes.json();
     const role = me.fields && me.fields.role && me.fields.role.stringValue;
-    if (role !== 'organiser' && role !== 'superadmin') return json({ ok: false, error: 'forbidden' }, 403);
+    if (role !== 'organiser' && role !== 'admin' && role !== 'superadmin') return json({ ok: false, error: 'forbidden' }, 403);
 
     // 3) Fetch all attendee emails (server-side).
     const query = {

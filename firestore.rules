@@ -19,8 +19,17 @@ service cloud.firestore {
     function isSuperAdmin() {
       return profileExists() && myRole() == 'superadmin';
     }
+    // "Admin" is a level below super-admin with full day-to-day operational
+    // access, but no destructive/irreversible powers and no reach into
+    // admin/super-admin accounts — see the users rules below.
+    function isAdmin() {
+      return profileExists() && myRole() == 'admin';
+    }
+    // Broadened to admin so every "organiser-level" rule below (sessions,
+    // announcements, resources, feedback, applications, mail) already
+    // extends to admins with no further changes needed there.
     function isOrganiser() {
-      return profileExists() && (myRole() == 'organiser' || myRole() == 'superadmin');
+      return profileExists() && (myRole() == 'organiser' || myRole() == 'admin' || myRole() == 'superadmin');
     }
     function isCheckin() {
       return profileExists() && myRole() == 'checkin';
@@ -33,6 +42,9 @@ service cloud.firestore {
     function roleUnchanged() {
       return request.resource.data.role == resource.data.role;
     }
+    function isLowerRole(r) {
+      return r == 'attendee' || r == 'checkin' || r == 'organiser';
+    }
 
     // ---------- USERS ----------
     match /users/{uid} {
@@ -41,10 +53,13 @@ service cloud.firestore {
       // (the first-run check handles the rejection gracefully).
       allow read: if isSignedIn();
 
-      // Super-admin can create anyone; an organiser can only create attendees.
+      // Super-admin can create anyone. Admin can create attendees, check-in
+      // staff and organisers — never another admin or super-admin. A plain
+      // organiser can only create attendees.
       // First-run super-admin bootstrap must be done with rules temporarily
       // relaxed in the Firebase console (the super-admin already exists).
       allow create: if isSuperAdmin()
+        || (isAdmin() && isLowerRole(request.resource.data.role))
         || (isOrganiser() && request.resource.data.role == 'attendee');
 
       // A person can edit their own profile but never their role / code / email.
@@ -52,15 +67,22 @@ service cloud.firestore {
         && !request.resource.data.diff(resource.data).affectedKeys()
               .hasAny(['role', 'code', 'email']);
 
-      // Organisers can edit anyone; only a super-admin may change a role.
+      // Organisers/admins can edit anyone's other fields. Role changes are
+      // super-admin only, except an admin may reassign a role among the
+      // three lower tiers (never touching an existing admin/super-admin,
+      // and never promoting anyone to admin/super-admin).
       allow update: if isOrganiser()
-        && (roleUnchanged() || isSuperAdmin());
+        && (roleUnchanged()
+            || isSuperAdmin()
+            || (isAdmin() && isLowerRole(resource.data.role) && isLowerRole(request.resource.data.role)));
 
       // Check-in staff may only write entry / meal / supply records.
       allow update: if isCheckin() && onlyCheckinFields();
 
-      // Only a super-admin can delete people.
-      allow delete: if isSuperAdmin();
+      // Super-admin can delete anyone. Admin can delete anyone except an
+      // existing admin or super-admin.
+      allow delete: if isSuperAdmin()
+        || (isAdmin() && isLowerRole(resource.data.role));
     }
 
     // Broadcast content is publicly readable so the attendee Live board

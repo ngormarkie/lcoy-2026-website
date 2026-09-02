@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './UsersList.css';
 
-const ROLE_LABELS = { superadmin: 'Super-admin', organiser: 'Organiser', attendee: 'Attendee' };
+const ROLE_LABELS = { superadmin: 'Super-admin', admin: 'Admin', organiser: 'Organiser', checkin: 'Check-in Staff', attendee: 'Attendee' };
 
 export default function UsersList() {
   const [users, setUsers] = useState([]);
@@ -87,7 +87,7 @@ export default function UsersList() {
     let list = [], label = '';
     if (val === 'all') { list = users; label = 'All Participants'; }
     else if (val === 'attendees') { list = users.filter(u => u.role === 'attendee'); label = 'Attendees'; }
-    else if (val === 'organisers') { list = users.filter(u => u.role === 'organiser' || u.role === 'superadmin'); label = 'Organisers'; }
+    else if (val === 'organisers') { list = users.filter(u => u.role === 'organiser' || u.role === 'admin' || u.role === 'superadmin'); label = 'Organisers'; }
     else { list = users.filter(u => u.category === val); label = val; }
     if (list.length === 0) { alert('No people for this filter.'); return; }
     if (fmt === 'pdf') await downloadPeoplePDF(list, label);
@@ -136,7 +136,7 @@ export default function UsersList() {
             let batch = [], zipName = 'all';
             if (val === 'all') { batch = users.filter(u => u.code); zipName = 'all'; }
             else if (val === 'attendees') { batch = users.filter(u => u.role === 'attendee' && u.code); zipName = 'attendees'; }
-            else if (val === 'organisers') { batch = users.filter(u => (u.role === 'organiser' || u.role === 'superadmin') && u.code); zipName = 'organisers'; }
+            else if (val === 'organisers') { batch = users.filter(u => (u.role === 'organiser' || u.role === 'admin' || u.role === 'superadmin') && u.code); zipName = 'organisers'; }
             else { batch = users.filter(u => u.category === val && u.code); zipName = val; }
             if (batch.length === 0) { alert('No badges for this filter.'); setBatchBusy(false); return; }
             try { await downloadBadgesBatch(batch, zipName); } catch (err) { console.error(err); alert('Could not build the ZIP.'); }
@@ -195,7 +195,7 @@ export default function UsersList() {
               <div className="user-row-tags">
                 {u.code && <span className="user-row-code font-mono">{u.code}</span>}
                 {u.category && <span className={`pill cat-${u.category}`}>{u.category}</span>}
-                <span className="pill" style={{ background: u.role === 'superadmin' || u.role === 'organiser' ? 'var(--green-deep)' : 'var(--paper-dark)', color: u.role === 'superadmin' || u.role === 'organiser' ? 'var(--paper)' : 'var(--ink-soft)' }}>{ROLE_LABELS[u.role] || 'No role'}</span>
+                <span className="pill" style={{ background: u.role === 'admin' ? '#7c3aed' : (u.role === 'superadmin' || u.role === 'organiser') ? 'var(--green-deep)' : 'var(--paper-dark)', color: (u.role === 'admin' || u.role === 'superadmin' || u.role === 'organiser') ? 'var(--paper)' : 'var(--ink-soft)' }}>{ROLE_LABELS[u.role] || 'No role'}</span>
                 {u.code && (
                   <button
                     className="user-row-dl"
