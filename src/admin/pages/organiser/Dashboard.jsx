@@ -12,14 +12,17 @@ export default function OrganiserDashboard() {
   const canManagePeople = isFull || access === 'attendee_mgmt';
   const canManageProgramme = isFull || access === 'programme_mgmt';
   const canManageComms = isFull || access === 'comms' || access === 'programme_mgmt';
-  const [stats, setStats] = useState({ total: null, organisers: null, attendees: null, checkedIn: null, byCategory: {} });
+  const [stats, setStats] = useState({ total: null, organisers: null, attendees: null, checkedIn: null, byCategory: {}, pendingApplications: null, shortlistedApplications: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const usersSnap = await getDocs(collection(db, 'users'));
+        const [usersSnap, appsSnap] = await Promise.all([
+          getDocs(collection(db, 'users')),
+          canManagePeople ? getDocs(collection(db, 'applications')) : Promise.resolve(null),
+        ]);
         let total = 0, organisers = 0, attendees = 0, checkedIn = 0;
         const byCategory = {};
         usersSnap.forEach((doc) => {
@@ -31,11 +34,17 @@ export default function OrganiserDashboard() {
           const cat = d.category || 'Other';
           byCategory[cat] = (byCategory[cat] || 0) + 1;
         });
-        if (!cancelled) { setStats({ total, organisers, attendees, checkedIn, byCategory }); setLoading(false); }
+        let pendingApplications = 0, shortlistedApplications = 0;
+        if (appsSnap) appsSnap.forEach((doc) => {
+          const s = doc.data().status;
+          if (s === 'pending') pendingApplications++;
+          if (s === 'shortlisted') shortlistedApplications++;
+        });
+        if (!cancelled) { setStats({ total, organisers, attendees, checkedIn, byCategory, pendingApplications, shortlistedApplications }); setLoading(false); }
       } catch (e) { console.error(e); if (!cancelled) setLoading(false); }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [canManagePeople]);
 
   const greet = () => { const h = new Date().getHours(); if (h < 12) return 'Good morning'; if (h < 17) return 'Good afternoon'; return 'Good evening'; };
 

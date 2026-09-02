@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import { useAuth } from '../contexts/AuthContext';
 import OrganiserDashboard from './organiser/Dashboard';
+import Applications from './organiser/Applications';
 import OrganiserUsersList from './organiser/UsersList';
 import OrganiserCreateUser from './organiser/CreateUser';
 import OrganiserUserDetail from './organiser/UserDetail';
@@ -28,6 +29,7 @@ export default function OrganiserHome() {
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: '◆' },
     ...(canManagePeople ? [
+      { to: '/admin/applications', label: 'Applications', icon: '◪' },
       { to: '/admin/users', label: 'People', icon: '◉' },
       { to: '/admin/users/new', label: 'Add person', icon: '＋' },
     ] : []),
@@ -53,6 +55,7 @@ export default function OrganiserHome() {
     <AppShell navItems={navItems}>
       <Routes>
         <Route path="/" element={<OrganiserDashboard />} />
+        <Route path="/applications" element={<Applications />} />
         <Route path="/users" element={<OrganiserUsersList />} />
         <Route path="/users/new" element={<OrganiserCreateUser />} />
         <Route path="/users/:uid" element={<OrganiserUserDetail />} />

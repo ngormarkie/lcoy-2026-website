@@ -101,6 +101,14 @@ service cloud.firestore {
       allow read, delete: if isOrganiser();
     }
 
+    // ---------- APPLICATIONS ----------
+    // Anyone can submit the public application form. Only organisers can
+    // read the pool, move applicants through screening, or remove one.
+    match /applications/{id} {
+      allow create: if true;
+      allow read, update, delete: if isOrganiser();
+    }
+
     // ---------- MAIL (Firebase "Trigger Email" extension) ----------
     // Organisers queue emails; the extension reads server-side.
     match /mail/{id} {

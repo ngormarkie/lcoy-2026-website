@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from './admin/services/firebase'
+import { REGIONS, getDistricts } from './admin/utils/locations'
+import { isValidEmail } from './admin/utils/badgeCode'
 
 const NAV = [
   ['home','Home'],
@@ -21,6 +25,451 @@ const HERO_TEXTS = [
   { eyebrow: 'Mangroves · Trees · Clean-ups', heading: <>Advocacy Matched by <em>Community Action</em></>, lead: "A movement that goes beyond the conference floor. Mangrove restoration, tree planting and clean-ups demonstrate that youth climate leadership is practised, not just spoken." },
   { eyebrow: 'Beach clean-ups · Community action', heading: <>Youth Leading by <em>Example</em></>, lead: "From conference halls to coastlines — Sierra Leonean youth take climate action to the communities that need it most, demonstrating that advocacy starts at home." },
 ];
+
+// ----- Application form (Group 1-6 questions) -----
+const GENDERS = ['Male', 'Female', 'Prefer not to say'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CONFERENCE_DATE = new Date(Date.UTC(2026, 9, 7)); // 7 October 2026 — eligibility is measured against this date
+const MIN_AGE = 16, MAX_AGE = 35;
+const DOB_YEARS = Array.from({ length: 21 }, (_, i) => 2010 - i); // 2010 down to 1990 — the only birth years that can fall inside the 16-35 window on 7 Oct 2026
+const WORD_CAPS = { essayWhy: 250, essayChallenge: 150, essayLearn: 100 };
+const SECTOR_OPTIONS = [
+  'Agriculture & Food Systems', 'Environment & Climate Change', 'Energy (Renewable & Non-renewable)',
+  'Water, Sanitation & Hygiene (WASH)', 'Education & Youth Development', 'Health & Public Health',
+  'Governance, Policy & Public Administration', 'Business, Entrepreneurship & Innovation',
+  'Science & Technology (STEM)', 'Media, Communications & Journalism', 'Forestry, Biodiversity & Conservation', 'Arts & Culture',
+];
+const CLIMATE_TOPIC_OPTIONS = [
+  'Climate Adaptation', 'Climate Mitigation', 'Renewable Energy', 'Climate Finance', 'Gender & Climate',
+  'Agriculture & Food Security', 'Biodiversity & Ecosystems', 'Youth Advocacy & Policy', 'Disaster Risk Reduction', 'Water & Sanitation',
+];
+const CONTACT_PREFS = ['Email Address', 'WhatsApp', 'Phone Call'];
+const SOURCE_OPTIONS = ['Organisation', 'Social Media (LinkedIn, WhatsApp, Facebook, Instagram etc.)', 'Email newsletter', 'Direct email from the LCOY team', 'Friend or colleague', 'Radio or TV'];
+const APPLICATION_STEPS = ['Personal details', 'Location & affiliation', 'Access & accommodation', 'Experience & interests', 'Essay questions', 'Contact & declaration'];
+
+const BLANK_APPLICATION = {
+  fullName: '', gender: '', dobDay: '', dobMonth: '', dobYear: '',
+  email: '', phone: '',
+  region: '', district: '', institution: '',
+  disability: '', disabilityDetails: '',
+  dietary: '', dietaryDetails: '',
+  priorAttendance: '', priorAttendanceDetails: '',
+  sectors: [], sectorsOther: '',
+  climateTopics: [], climateTopicsOther: '',
+  essayWhy: '', essayChallenge: '', essayLearn: '', leadershipSentence: '', applyPlan: '', climateSolutions: '', policyInfluence: '',
+  contactPreference: '', contactPreferenceOther: '',
+  source: '', sourceOther: '',
+  declAccurate: false, declNoGuarantee: false, declCodeOfConduct: false,
+};
+
+function wordCount(text) { const t = (text || '').trim(); return t ? t.split(/\s+/).length : 0; }
+function daysInMonth(month, year) { if (!month) return 31; return new Date(year || 2000, month, 0).getDate(); }
+function calcAgeAt(day, month, year, atDate) {
+  const dob = new Date(Date.UTC(year, month - 1, day));
+  let age = atDate.getUTCFullYear() - dob.getUTCFullYear();
+  const beforeBirthday = (atDate.getUTCMonth() < dob.getUTCMonth()) || (atDate.getUTCMonth() === dob.getUTCMonth() && atDate.getUTCDate() < dob.getUTCDate());
+  if (beforeBirthday) age--;
+  return age;
+}
+
+function validateApplicationStep(step, f) {
+  const e = {};
+  if (step === 0) {
+    if (!f.fullName.trim()) e.fullName = 'Please enter your full name.';
+    if (!f.gender) e.gender = 'Please select an option.';
+    if (!f.dobDay || !f.dobMonth || !f.dobYear) {
+      e.dob = 'Please select your date of birth.';
+    } else {
+      const age = calcAgeAt(Number(f.dobDay), Number(f.dobMonth), Number(f.dobYear), CONFERENCE_DATE);
+      if (age < MIN_AGE) e.dob = `This application is open to ages ${MIN_AGE}–${MAX_AGE} as of 7 October 2026. Based on this date of birth you would be ${age}.`;
+      else if (age > MAX_AGE) e.dob = `This application is open to ages ${MIN_AGE}–${MAX_AGE} as of 7 October 2026. Based on this date of birth you would be ${age}.`;
+    }
+    if (!isValidEmail(f.email)) e.email = 'Please enter a valid email address.';
+    if (!f.phone.trim()) e.phone = 'Please enter a phone number.';
+  } else if (step === 1) {
+    if (!f.region) e.region = 'Please select your region.';
+    if (!f.district) e.district = 'Please select your district.';
+    if (!f.institution.trim()) e.institution = 'Please enter your institution or organisation.';
+  } else if (step === 2) {
+    if (!f.disability) e.disability = 'Please select an option.';
+    else if (f.disability === 'Yes' && !f.disabilityDetails.trim()) e.disabilityDetails = 'Please specify.';
+    if (!f.dietary) e.dietary = 'Please select an option.';
+    else if (f.dietary === 'Yes' && !f.dietaryDetails.trim()) e.dietaryDetails = 'Please specify.';
+  } else if (step === 3) {
+    if (!f.priorAttendance) e.priorAttendance = 'Please select an option.';
+    else if (f.priorAttendance === 'Yes' && !f.priorAttendanceDetails.trim()) e.priorAttendanceDetails = 'Please give details.';
+    if (f.sectors.length === 0) e.sectors = 'Please select at least one sector.';
+    else if (f.sectors.includes('Other') && !f.sectorsOther.trim()) e.sectorsOther = 'Please specify.';
+    if (f.climateTopics.length === 0) e.climateTopics = 'Please select at least one topic.';
+    else if (f.climateTopics.includes('Other') && !f.climateTopicsOther.trim()) e.climateTopicsOther = 'Please specify.';
+  } else if (step === 4) {
+    if (!f.essayWhy.trim()) e.essayWhy = 'This question is required.';
+    else if (wordCount(f.essayWhy) > WORD_CAPS.essayWhy) e.essayWhy = `Please keep this to ${WORD_CAPS.essayWhy} words or fewer (currently ${wordCount(f.essayWhy)}).`;
+    if (!f.essayChallenge.trim()) e.essayChallenge = 'This question is required.';
+    else if (wordCount(f.essayChallenge) > WORD_CAPS.essayChallenge) e.essayChallenge = `Please keep this to ${WORD_CAPS.essayChallenge} words or fewer (currently ${wordCount(f.essayChallenge)}).`;
+    if (!f.essayLearn.trim()) e.essayLearn = 'This question is required.';
+    else if (wordCount(f.essayLearn) > WORD_CAPS.essayLearn) e.essayLearn = `Please keep this to ${WORD_CAPS.essayLearn} words or fewer (currently ${wordCount(f.essayLearn)}).`;
+    if (!f.leadershipSentence.trim()) e.leadershipSentence = 'This question is required.';
+    if (!f.applyPlan.trim()) e.applyPlan = 'This question is required.';
+    if (!f.climateSolutions.trim()) e.climateSolutions = 'This question is required.';
+    if (!f.policyInfluence.trim()) e.policyInfluence = 'This question is required.';
+  } else if (step === 5) {
+    if (!f.contactPreference) e.contactPreference = 'Please select an option.';
+    else if (f.contactPreference === 'Other' && !f.contactPreferenceOther.trim()) e.contactPreferenceOther = 'Please specify.';
+    if (!f.source) e.source = 'Please select an option.';
+    else if (f.source === 'Other' && !f.sourceOther.trim()) e.sourceOther = 'Please specify.';
+    if (!f.declAccurate || !f.declNoGuarantee || !f.declCodeOfConduct) e.declaration = 'Please confirm all three statements to submit your application.';
+  }
+  return e;
+}
+
+function FieldError({ msg }) { if (!msg) return null; return <div className="apply-error">{msg}</div>; }
+
+function YesNoOther({ name, label, value, onChange, detail, onDetail, detailLabel, error, detailError }) {
+  return (
+    <div className="field">
+      <label className="dark-label">{label}</label>
+      <div className="apply-radio-group">
+        {['Yes', 'No'].map(v => (
+          <label key={v} className={"apply-radio-pill" + (value === v ? " checked" : "")}>
+            <input type="radio" name={name} value={v} checked={value === v} onChange={() => onChange(v)} />{v}
+          </label>
+        ))}
+      </div>
+      <FieldError msg={error} />
+      {value === 'Yes' && (
+        <div style={{ marginTop: '10px' }}>
+          <input className="dark-input" placeholder={detailLabel} value={detail} onChange={e => onDetail(e.target.value)} />
+          <FieldError msg={detailError} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CheckboxGroup({ label, options, selected, onToggle, otherValue, onOther, error, otherError }) {
+  const hasOther = selected.includes('Other');
+  return (
+    <div className="field">
+      <label className="dark-label">{label}</label>
+      <div className="apply-checkbox-grid">
+        {options.map(o => (
+          <label key={o} className={"apply-checkbox-item" + (selected.includes(o) ? " checked" : "")}>
+            <input type="checkbox" checked={selected.includes(o)} onChange={() => onToggle(o)} />{o}
+          </label>
+        ))}
+        <label className={"apply-checkbox-item" + (hasOther ? " checked" : "")}>
+          <input type="checkbox" checked={hasOther} onChange={() => onToggle('Other')} />Other
+        </label>
+      </div>
+      <FieldError msg={error} />
+      {hasOther && (
+        <div style={{ marginTop: '10px' }}>
+          <input className="dark-input" placeholder="Please specify" value={otherValue} onChange={e => onOther(e.target.value)} />
+          <FieldError msg={otherError} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EssayField({ id, label, cap, value, onChange, error, rows }) {
+  const wc = wordCount(value);
+  const over = wc > cap;
+  return (
+    <div className="field">
+      <label className="dark-label" htmlFor={id}>{label} <span className="apply-cap-hint">({cap} words max)</span></label>
+      <textarea id={id} className="dark-input" rows={rows} value={value} onChange={e => onChange(e.target.value)} />
+      <div className={"apply-word-count" + (over ? " over" : "")}>{wc} / {cap} words</div>
+      <FieldError msg={error} />
+    </div>
+  );
+}
+
+function ApplicationForm() {
+  const [step, setStep] = useState(0);
+  const [f, setF] = useState(BLANK_APPLICATION);
+  const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [done, setDone] = useState(false);
+  const topRef = useRef(null);
+
+  const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
+  const toggleMulti = (k, value) => setF(prev => ({ ...prev, [k]: prev[k].includes(value) ? prev[k].filter(x => x !== value) : [...prev[k], value] }));
+  const scrollUp = () => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const goNext = () => {
+    const e = validateApplicationStep(step, f);
+    if (Object.keys(e).length) { setErrors(e); return; }
+    setErrors({});
+    setStep(s => Math.min(s + 1, APPLICATION_STEPS.length - 1));
+    scrollUp();
+  };
+  const goBack = () => { setErrors({}); setStep(s => Math.max(s - 1, 0)); scrollUp(); };
+
+  const handleDobPart = (part, value) => {
+    setF(prev => {
+      const next = { ...prev, [part]: value };
+      const max = daysInMonth(Number(next.dobMonth), Number(next.dobYear));
+      if (next.dobDay && Number(next.dobDay) > max) next.dobDay = '';
+      return next;
+    });
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const errs = validateApplicationStep(5, f);
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    setBusy(true); setSubmitError('');
+    try {
+      const age = calcAgeAt(Number(f.dobDay), Number(f.dobMonth), Number(f.dobYear), CONFERENCE_DATE);
+      const pad = (n) => String(n).padStart(2, '0');
+      await addDoc(collection(db, 'applications'), {
+        fullName: f.fullName.trim(),
+        gender: f.gender,
+        dob: `${f.dobYear}-${pad(f.dobMonth)}-${pad(f.dobDay)}`,
+        ageAtConference: age,
+        email: f.email.trim().toLowerCase(),
+        phone: f.phone.trim(),
+        region: f.region,
+        district: f.district,
+        institution: f.institution.trim(),
+        disability: f.disability,
+        disabilityDetails: f.disability === 'Yes' ? f.disabilityDetails.trim() : '',
+        dietary: f.dietary,
+        dietaryDetails: f.dietary === 'Yes' ? f.dietaryDetails.trim() : '',
+        priorAttendance: f.priorAttendance,
+        priorAttendanceDetails: f.priorAttendance === 'Yes' ? f.priorAttendanceDetails.trim() : '',
+        sectors: f.sectors,
+        sectorsOther: f.sectors.includes('Other') ? f.sectorsOther.trim() : '',
+        climateTopics: f.climateTopics,
+        climateTopicsOther: f.climateTopics.includes('Other') ? f.climateTopicsOther.trim() : '',
+        essayWhy: f.essayWhy.trim(),
+        essayChallenge: f.essayChallenge.trim(),
+        essayLearn: f.essayLearn.trim(),
+        leadershipSentence: f.leadershipSentence.trim(),
+        applyPlan: f.applyPlan.trim(),
+        climateSolutions: f.climateSolutions.trim(),
+        policyInfluence: f.policyInfluence.trim(),
+        contactPreference: f.contactPreference,
+        contactPreferenceOther: f.contactPreference === 'Other' ? f.contactPreferenceOther.trim() : '',
+        source: f.source,
+        sourceOther: f.source === 'Other' ? f.sourceOther.trim() : '',
+        declarationAccurate: f.declAccurate,
+        declarationNoGuarantee: f.declNoGuarantee,
+        declarationCodeOfConduct: f.declCodeOfConduct,
+        status: 'pending',
+        submittedAt: serverTimestamp(),
+      });
+      setDone(true);
+    } catch (err) {
+      console.error(err);
+      setSubmitError('Could not submit your application. Please check your connection and try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="apply-success reveal in" ref={topRef}>
+        <div className="apply-success-icon">✓</div>
+        <h3>Application received</h3>
+        <p>Thank you, {f.fullName.split(' ')[0]} — your application for LCOY Sierra Leone 2026 has been submitted. Applications are shortlisted in two stages, and successful applicants will be contacted by email at {f.email}.</p>
+        <button type="button" className="btn btn-primary" onClick={() => { setF(BLANK_APPLICATION); setStep(0); setDone(false); setErrors({}); }}>Submit another response</button>
+      </div>
+    );
+  }
+
+  const districts = getDistricts(f.region);
+
+  return (
+    <div className="apply-wrap" ref={topRef}>
+      <div className="apply-progress">
+        {APPLICATION_STEPS.map((label, i) => (
+          <div key={label} className={"apply-progress-step" + (i === step ? " current" : "") + (i < step ? " done" : "")}>
+            <span className="apply-progress-dot">{i < step ? "✓" : i + 1}</span>
+            <span className="apply-progress-label">{label}</span>
+          </div>
+        ))}
+      </div>
+
+      <form className="form-card apply-card" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', backdropFilter: 'blur(8px)' }} onSubmit={step === APPLICATION_STEPS.length - 1 ? submit : (e) => e.preventDefault()}>
+        <div className="apply-step-eyebrow">Step {step + 1} of {APPLICATION_STEPS.length}</div>
+        <h3 className="apply-step-title">{APPLICATION_STEPS[step]}</h3>
+
+        {step === 0 && (
+          <>
+            <div className="field"><label className="dark-label" htmlFor="ap-name">Full name</label><input id="ap-name" className="dark-input" value={f.fullName} onChange={e => set('fullName', e.target.value)} /><FieldError msg={errors.fullName} /></div>
+            <div className="field">
+              <label className="dark-label">Gender</label>
+              <div className="apply-radio-group">
+                {GENDERS.map(g => (
+                  <label key={g} className={"apply-radio-pill" + (f.gender === g ? " checked" : "")}>
+                    <input type="radio" name="gender" value={g} checked={f.gender === g} onChange={() => set('gender', g)} />{g}
+                  </label>
+                ))}
+              </div>
+              <FieldError msg={errors.gender} />
+            </div>
+            <div className="field">
+              <label className="dark-label">Date of birth</label>
+              <div className="field-row-3">
+                <select className="dark-input" value={f.dobDay} onChange={e => handleDobPart('dobDay', e.target.value)}>
+                  <option value="">Day</option>
+                  {Array.from({ length: daysInMonth(Number(f.dobMonth), Number(f.dobYear)) }, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select className="dark-input" value={f.dobMonth} onChange={e => handleDobPart('dobMonth', e.target.value)}>
+                  <option value="">Month</option>
+                  {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                </select>
+                <select className="dark-input" value={f.dobYear} onChange={e => handleDobPart('dobYear', e.target.value)}>
+                  <option value="">Year</option>
+                  {DOB_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+              <span className="apply-hint">Day / Month / Year. You must be 16–35 years old as of 7 October 2026 to apply.</span>
+              <FieldError msg={errors.dob} />
+            </div>
+            <div className="field"><label className="dark-label" htmlFor="ap-email">Email address</label><input id="ap-email" type="email" className="dark-input" value={f.email} onChange={e => set('email', e.target.value)} /><FieldError msg={errors.email} /></div>
+            <div className="field"><label className="dark-label" htmlFor="ap-phone">Phone number (preferably WhatsApp)</label><input id="ap-phone" type="tel" className="dark-input" value={f.phone} onChange={e => set('phone', e.target.value)} placeholder="+232 ..." /><FieldError msg={errors.phone} /></div>
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <div className="field">
+              <label className="dark-label">Region</label>
+              <div className="apply-radio-group">
+                {REGIONS.map(r => (
+                  <label key={r} className={"apply-radio-pill" + (f.region === r ? " checked" : "")}>
+                    <input type="radio" name="region" value={r} checked={f.region === r} onChange={() => { set('region', r); set('district', ''); }} />{r}
+                  </label>
+                ))}
+              </div>
+              <FieldError msg={errors.region} />
+            </div>
+            <div className="field">
+              <label className="dark-label" htmlFor="ap-district">District</label>
+              <select id="ap-district" className="dark-input" value={f.district} onChange={e => set('district', e.target.value)} disabled={!f.region}>
+                <option value="">{f.region ? 'Select district' : 'Select a region first'}</option>
+                {districts.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              <FieldError msg={errors.district} />
+            </div>
+            <div className="field"><label className="dark-label" htmlFor="ap-org">Institution / Organisation</label><input id="ap-org" className="dark-input" value={f.institution} onChange={e => set('institution', e.target.value)} /><FieldError msg={errors.institution} /></div>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <YesNoOther
+              name="disability" label='Are you a person living with a disability?'
+              value={f.disability} onChange={v => set('disability', v)}
+              detail={f.disabilityDetails} onDetail={v => set('disabilityDetails', v)}
+              detailLabel="Please specify" error={errors.disability} detailError={errors.disabilityDetails}
+            />
+            <YesNoOther
+              name="dietary" label='Do you have any dietary concerns?'
+              value={f.dietary} onChange={v => set('dietary', v)}
+              detail={f.dietaryDetails} onDetail={v => set('dietaryDetails', v)}
+              detailLabel="Please specify" error={errors.dietary} detailError={errors.dietaryDetails}
+            />
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <YesNoOther
+              name="prior" label="Have you ever attended a LCOY, RCOY, COY or COP before?"
+              value={f.priorAttendance} onChange={v => set('priorAttendance', v)}
+              detail={f.priorAttendanceDetails} onDetail={v => set('priorAttendanceDetails', v)}
+              detailLabel="Please specify with details" error={errors.priorAttendance} detailError={errors.priorAttendanceDetails}
+            />
+            <CheckboxGroup
+              label="Which sector best describes your interest? (Select all that apply)"
+              options={SECTOR_OPTIONS} selected={f.sectors} onToggle={v => toggleMulti('sectors', v)}
+              otherValue={f.sectorsOther} onOther={v => set('sectorsOther', v)}
+              error={errors.sectors} otherError={errors.sectorsOther}
+            />
+            <CheckboxGroup
+              label="Which climate topics interest you the most? (Select all that apply)"
+              options={CLIMATE_TOPIC_OPTIONS} selected={f.climateTopics} onToggle={v => toggleMulti('climateTopics', v)}
+              otherValue={f.climateTopicsOther} onOther={v => set('climateTopicsOther', v)}
+              error={errors.climateTopics} otherError={errors.climateTopicsOther}
+            />
+          </>
+        )}
+
+        {step === 4 && (
+          <>
+            <EssayField id="ap-why" label="Why do you want to participate in LCOY Sierra Leone 2026?" cap={WORD_CAPS.essayWhy} value={f.essayWhy} onChange={v => set('essayWhy', v)} error={errors.essayWhy} rows={5} />
+            <EssayField id="ap-challenge" label="What climate or environmental challenge affects your community the most?" cap={WORD_CAPS.essayChallenge} value={f.essayChallenge} onChange={v => set('essayChallenge', v)} error={errors.essayChallenge} rows={4} />
+            <EssayField id="ap-learn" label="What do you hope to learn from LCOY Sierra Leone 2026?" cap={WORD_CAPS.essayLearn} value={f.essayLearn} onChange={v => set('essayLearn', v)} error={errors.essayLearn} rows={3} />
+            <div className="field"><label className="dark-label" htmlFor="ap-leadership">In one sentence, what does climate leadership mean to you?</label><input id="ap-leadership" className="dark-input" value={f.leadershipSentence} onChange={e => set('leadershipSentence', e.target.value)} /><FieldError msg={errors.leadershipSentence} /></div>
+            <div className="field"><label className="dark-label" htmlFor="ap-apply">How do you plan to apply what you have learnt from the conference to your community?</label><textarea id="ap-apply" className="dark-input" rows={4} value={f.applyPlan} onChange={e => set('applyPlan', e.target.value)} /><FieldError msg={errors.applyPlan} /></div>
+            <div className="field"><label className="dark-label" htmlFor="ap-solutions">Mention one or more climate solutions you have implemented in your community or Sierra Leone as a whole.</label><textarea id="ap-solutions" className="dark-input" rows={4} value={f.climateSolutions} onChange={e => set('climateSolutions', e.target.value)} /><FieldError msg={errors.climateSolutions} /></div>
+            <div className="field"><label className="dark-label" htmlFor="ap-policy">If you could influence one national climate policy, what would it be and why?</label><textarea id="ap-policy" className="dark-input" rows={4} value={f.policyInfluence} onChange={e => set('policyInfluence', e.target.value)} /><FieldError msg={errors.policyInfluence} /></div>
+          </>
+        )}
+
+        {step === 5 && (
+          <>
+            <div className="field">
+              <label className="dark-label">What is the easiest way for us to communicate with you if you are successful?</label>
+              <div className="apply-radio-group">
+                {CONTACT_PREFS.map(v => (
+                  <label key={v} className={"apply-radio-pill" + (f.contactPreference === v ? " checked" : "")}>
+                    <input type="radio" name="contactpref" value={v} checked={f.contactPreference === v} onChange={() => set('contactPreference', v)} />{v}
+                  </label>
+                ))}
+                <label className={"apply-radio-pill" + (f.contactPreference === 'Other' ? " checked" : "")}>
+                  <input type="radio" name="contactpref" value="Other" checked={f.contactPreference === 'Other'} onChange={() => set('contactPreference', 'Other')} />Other
+                </label>
+              </div>
+              {f.contactPreference === 'Other' && <input className="dark-input" style={{ marginTop: '10px' }} placeholder="Please specify" value={f.contactPreferenceOther} onChange={e => set('contactPreferenceOther', e.target.value)} />}
+              <FieldError msg={errors.contactPreference || errors.contactPreferenceOther} />
+            </div>
+
+            <div className="field">
+              <label className="dark-label">How did you hear about this application?</label>
+              <div className="apply-radio-group">
+                {SOURCE_OPTIONS.map(v => (
+                  <label key={v} className={"apply-radio-pill" + (f.source === v ? " checked" : "")}>
+                    <input type="radio" name="source" value={v} checked={f.source === v} onChange={() => set('source', v)} />{v}
+                  </label>
+                ))}
+                <label className={"apply-radio-pill" + (f.source === 'Other' ? " checked" : "")}>
+                  <input type="radio" name="source" value="Other" checked={f.source === 'Other'} onChange={() => set('source', 'Other')} />Other
+                </label>
+              </div>
+              {f.source === 'Other' && <input className="dark-input" style={{ marginTop: '10px' }} placeholder="Please specify" value={f.sourceOther} onChange={e => set('sourceOther', e.target.value)} />}
+              <FieldError msg={errors.source || errors.sourceOther} />
+            </div>
+
+            <div className="field apply-declaration">
+              <label className="dark-label">Declaration</label>
+              <label className="apply-check-row"><input type="checkbox" checked={f.declAccurate} onChange={e => set('declAccurate', e.target.checked)} />I confirm the information provided is accurate.</label>
+              <label className="apply-check-row"><input type="checkbox" checked={f.declNoGuarantee} onChange={e => set('declNoGuarantee', e.target.checked)} />I understand that submission does not guarantee selection.</label>
+              <label className="apply-check-row"><input type="checkbox" checked={f.declCodeOfConduct} onChange={e => set('declCodeOfConduct', e.target.checked)} />If selected, I commit to participating fully and respecting the Code of Conduct.</label>
+              <FieldError msg={errors.declaration} />
+            </div>
+          </>
+        )}
+
+        {submitError && <div className="apply-error apply-error-block">{submitError}</div>}
+
+        <div className="apply-nav">
+          {step > 0 ? <button type="button" className="btn btn-ghost" onClick={goBack} disabled={busy}>← Back</button> : <span />}
+          {step < APPLICATION_STEPS.length - 1
+            ? <button type="button" className="btn btn-primary" onClick={goNext}>Continue →</button>
+            : <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Submitting…' : 'Submit application'}</button>}
+        </div>
+      </form>
+    </div>
+  );
+}
 
 export default function App() {
   const [page,setPage] = useState('home');

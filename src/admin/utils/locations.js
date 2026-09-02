@@ -1,9 +1,9 @@
 export const REGIONS_DISTRICTS = {
+  'Northern Region': ['Bombali', 'Falaba', 'Koinadugu', 'Tonkolili'],
   'Western Area': ['Western Area Urban', 'Western Area Rural'],
-  'North West': ['Kambia', 'Karene', 'Port Loko'],
-  'North': ['Bombali', 'Falaba', 'Koinadugu', 'Tonkolili'],
-  'South': ['Bo', 'Bonthe', 'Moyamba', 'Pujehun'],
-  'East': ['Kailahun', 'Kenema', 'Kono'],
+  'Eastern Region': ['Kailahun', 'Kenema', 'Kono'],
+  'Southern Region': ['Bo', 'Bonthe', 'Moyamba', 'Pujehun'],
+  'North-Western Region': ['Kambia', 'Karene', 'Port Loko'],
 };
 
 export const REGIONS = Object.keys(REGIONS_DISTRICTS);
