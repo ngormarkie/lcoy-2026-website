@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { auth, db } from '../../services/firebase';
 import { useAuth, deriveAttendeePassword } from '../../contexts/AuthContext';
 import { createUserAccount, findUserByEmail } from '../../services/userManagement';
 import { generateUniqueBadgeCode, isValidEmail } from '../../utils/badgeCode';
@@ -65,7 +65,25 @@ export default function CreateUser() {
       };
       await createUserAccount({ email, password, profile });
       setExistingCodes((prev) => new Set([...prev, code]));
-      setResult({ name: name.trim(), email: email.trim().toLowerCase(), code, loginPassword: accountType === 'organiser' ? orgPassword : code, type: accountType, category, org: org.trim(), city: city.trim(), district, region });
+
+      let emailNote = '';
+      if (role === 'organiser') {
+        try {
+          const idToken = await auth.currentUser.getIdToken();
+          const res = await window.fetch('/api/send-organiser-welcome', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ idToken, name: name.trim(), email: email.trim().toLowerCase(), password: orgPassword, origin: window.location.origin }),
+          });
+          const data = await res.json().catch(() => ({}));
+          emailNote = (res.ok && data.ok) ? `A welcome email with login details was sent to ${email.trim().toLowerCase()}.` : 'Could not send the welcome email — please share the login details below manually.';
+        } catch (mailErr) {
+          console.error(mailErr);
+          emailNote = 'Could not send the welcome email — please share the login details below manually.';
+        }
+      }
+
+      setResult({ name: name.trim(), email: email.trim().toLowerCase(), code, loginPassword: accountType === 'organiser' ? orgPassword : code, type: accountType, category, org: org.trim(), city: city.trim(), district, region, emailNote });
       setName(''); setEmail(''); setPhone(''); setOrg(''); setBio(''); setPhotoURL(null); setOrgPassword(''); setRegion(''); setDistrict(''); setCity(''); setWorkingGroup('');
     } catch (err) {
       const msg = err.code === 'auth/email-already-in-use' ? 'An account with that email already exists.' : err.code === 'auth/weak-password' ? 'Password is too weak.' : err.code === 'permission-denied' ? 'You do not have permission.' : 'Could not create account. Please try again.';
@@ -85,6 +103,7 @@ export default function CreateUser() {
       {result && (
         <div className="alert alert-success result-card">
           <div className="result-card-head"><strong>Account created for {result.name}</strong></div>
+          {result.emailNote && <p className="text-sm" style={{ marginTop: '-0.5rem', marginBottom: '0.75rem' }}>{result.emailNote}</p>}
           <div className="result-grid">
             <div><span className="result-label">Email</span><span className="result-value font-mono">{result.email}</span></div>
             <div><span className="result-label">Badge code</span><span className="result-value badge-code-big">{result.code}</span></div>

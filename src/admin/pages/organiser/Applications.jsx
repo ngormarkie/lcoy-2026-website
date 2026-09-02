@@ -36,7 +36,12 @@ function StatusPill({ status }) {
 
 function Detail({ label, value }) {
   if (!value) return null;
-  return <div style={{ marginBottom: '0.6rem' }}><div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--ink-muted)' }}>{label}</div><div style={{ fontSize: '0.92rem', color: 'var(--ink-soft)', whiteSpace: 'pre-wrap' }}>{value}</div></div>;
+  return (
+    <div style={{ padding: '0.85rem 0', borderBottom: '1px solid var(--paper-dark)' }}>
+      <div style={{ fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--blue, var(--green-deep))', marginBottom: '0.3rem' }}>{label}</div>
+      <div style={{ fontSize: '0.96rem', color: 'var(--ink)', whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>{value}</div>
+    </div>
+  );
 }
 
 export default function Applications() {
@@ -300,27 +305,23 @@ export default function Applications() {
               </div>
 
               {expandedId === a.id && (
-                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--paper-dark)', paddingTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 2rem' }}>
-                  <div>
-                    <Detail label="Gender" value={a.gender} />
-                    <Detail label="Date of birth" value={a.dob} />
-                    <Detail label="Disability" value={a.disability === 'Yes' ? `Yes — ${a.disabilityDetails}` : a.disability} />
-                    <Detail label="Dietary concerns" value={a.dietary === 'Yes' ? `Yes — ${a.dietaryDetails}` : a.dietary} />
-                    <Detail label="Attended LCOY/RCOY/COY/COP before" value={a.priorAttendance === 'Yes' ? `Yes — ${a.priorAttendanceDetails}` : a.priorAttendance} />
-                    <Detail label="Sectors of interest" value={[...(a.sectors || [])].map(s => s === 'Other' ? `Other — ${a.sectorsOther}` : s).join(', ')} />
-                    <Detail label="Climate topics" value={[...(a.climateTopics || [])].map(s => s === 'Other' ? `Other — ${a.climateTopicsOther}` : s).join(', ')} />
-                    <Detail label="Contact preference" value={a.contactPreference === 'Other' ? `Other — ${a.contactPreferenceOther}` : a.contactPreference} />
-                    <Detail label="Heard about this via" value={a.source === 'Other' ? `Other — ${a.sourceOther}` : a.source} />
-                  </div>
-                  <div>
-                    <Detail label="Why participate?" value={a.essayWhy} />
-                    <Detail label="Community challenge" value={a.essayChallenge} />
-                    <Detail label="Hopes to learn" value={a.essayLearn} />
-                    <Detail label="Climate leadership, in one sentence" value={a.leadershipSentence} />
-                    <Detail label="How they'll apply it" value={a.applyPlan} />
-                    <Detail label="Solutions already implemented" value={a.climateSolutions} />
-                    <Detail label="Policy they'd influence" value={a.policyInfluence} />
-                  </div>
+                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--paper-dark)', paddingTop: '0.25rem' }}>
+                  <Detail label="Gender" value={a.gender} />
+                  <Detail label="Date of birth" value={a.dob} />
+                  <Detail label="Disability" value={a.disability === 'Yes' ? `Yes — ${a.disabilityDetails}` : a.disability} />
+                  <Detail label="Dietary concerns" value={a.dietary === 'Yes' ? `Yes — ${a.dietaryDetails}` : a.dietary} />
+                  <Detail label="Attended LCOY/RCOY/COY/COP before" value={a.priorAttendance === 'Yes' ? `Yes — ${a.priorAttendanceDetails}` : a.priorAttendance} />
+                  <Detail label="Sectors of interest" value={[...(a.sectors || [])].map(s => s === 'Other' ? `Other — ${a.sectorsOther}` : s).join(', ')} />
+                  <Detail label="Climate topics" value={[...(a.climateTopics || [])].map(s => s === 'Other' ? `Other — ${a.climateTopicsOther}` : s).join(', ')} />
+                  <Detail label="Why participate?" value={a.essayWhy} />
+                  <Detail label="Community challenge" value={a.essayChallenge} />
+                  <Detail label="Hopes to learn" value={a.essayLearn} />
+                  <Detail label="Climate leadership, in one sentence" value={a.leadershipSentence} />
+                  <Detail label="How they'll apply it" value={a.applyPlan} />
+                  <Detail label="Solutions already implemented" value={a.climateSolutions} />
+                  <Detail label="Policy they'd influence" value={a.policyInfluence} />
+                  <Detail label="Contact preference" value={a.contactPreference === 'Other' ? `Other — ${a.contactPreferenceOther}` : a.contactPreference} />
+                  <Detail label="Heard about this via" value={a.source === 'Other' ? `Other — ${a.sourceOther}` : a.source} />
                 </div>
               )}
             </div>

@@ -29,7 +29,7 @@ export async function onRequestPost({ request, env }) {
     const safeName = String(name || '').trim().slice(0, 200);
     const safeEmail = String(email || '').trim().slice(0, 200).toLowerCase();
     const safeOrigin = origin ? String(origin).slice(0, 200).replace(/[^a-zA-Z0-9:/._-]/g, '') : '';
-    const logoUrl = safeOrigin ? `${safeOrigin}/photos/LCOY-2026-Logo.png` : '';
+    const logoUrl = safeOrigin ? `${safeOrigin}/photos/Logos%20for%20host%20organizations/LCOY-YOUNGO-Endored.png` : '';
 
     if (!safeName) return json({ ok: false, error: 'missing_name' }, 400);
     if (!EMAIL_RE.test(safeEmail)) return json({ ok: false, error: 'invalid_email' }, 400);
@@ -42,7 +42,7 @@ export async function onRequestPost({ request, env }) {
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto">
         <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center">
-          ${logoUrl ? `<img src="${logoUrl}" alt="LCOY Sierra Leone 2026" width="56" height="56" style="display:block;margin:0 auto 10px;border-radius:12px" />` : ''}
+          ${logoUrl ? `<div style="display:inline-block;background:#fff;padding:10px 18px;border-radius:10px;margin-bottom:12px"><img src="${logoUrl}" alt="LCOY Sierra Leone 2026 — officially endorsed by YOUNGO" width="260" style="display:block;max-width:260px;height:auto" /></div>` : ''}
           <h2 style="margin:0;font-size:18px">LCOY Sierra Leone 2026</h2>
           <p style="margin:4px 0 0;opacity:.8;font-size:13px">Application received</p>
         </div>

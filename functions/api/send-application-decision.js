@@ -21,7 +21,7 @@ function esc(s) {
 function header(logoUrl, tagline) {
   return `
       <div style="background:#0B2233;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center">
-        ${logoUrl ? `<img src="${logoUrl}" alt="LCOY Sierra Leone 2026" width="56" height="56" style="display:block;margin:0 auto 10px;border-radius:12px" />` : ''}
+        ${logoUrl ? `<div style="display:inline-block;background:#fff;padding:10px 18px;border-radius:10px;margin-bottom:12px"><img src="${logoUrl}" alt="LCOY Sierra Leone 2026 — officially endorsed by YOUNGO" width="260" style="display:block;max-width:260px;height:auto" /></div>` : ''}
         <h2 style="margin:0;font-size:18px">LCOY Sierra Leone 2026</h2>
         <p style="margin:4px 0 0;opacity:.8;font-size:13px">${tagline}</p>
       </div>`;
@@ -101,7 +101,7 @@ export async function onRequestPost({ request, env }) {
     // 3) Send one personalised email per recipient via Brevo.
     const sender = { name: env.SENDER_NAME || 'LCOY Sierra Leone 2026', email: env.SENDER_EMAIL };
     const safeOrigin = origin ? String(origin).replace(/[^a-zA-Z0-9:/._-]/g, '') : '';
-    const logoUrl = safeOrigin ? `${safeOrigin}/photos/LCOY-2026-Logo.png` : '';
+    const logoUrl = safeOrigin ? `${safeOrigin}/photos/Logos%20for%20host%20organizations/LCOY-YOUNGO-Endored.png` : '';
     const manualLoginUrl = safeOrigin ? `${safeOrigin}/admin` : '#';
     const safeWhatsapp = (whatsappLink || '').trim();
 
