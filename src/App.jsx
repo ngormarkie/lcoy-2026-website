@@ -9,8 +9,15 @@ const NAV = [
   ['about','About',[ ['about','What is LCOY'], ['team','Organizing Team'], ['editions','Past Conferences'] ]],
   ['programme','Programme'],
   ['themes','Thematic Areas'],
+  ['register','Apply'],
   ['contact','Contact']
 ];
+const PATH_TO_PAGE = { '/apply': 'register', '/register': 'register' };
+const PAGE_TO_PATH = { register: '/apply' };
+function getPageFromPath(pathname) {
+  const p = (pathname || '/').replace(/\/+$/, '') || '/';
+  return PATH_TO_PAGE[p] || 'home';
+}
 const CAPS = [
   'Photos from LCOY Sierra Leone 2024',
   'Photos from LCOY Sierra Leone 2024',
@@ -472,7 +479,7 @@ function ApplicationForm() {
 }
 
 export default function App() {
-  const [page,setPage] = useState('home');
+  const [page,setPage] = useState(()=> typeof window!=='undefined' ? getPageFromPath(window.location.pathname) : 'home');
   const [open,setOpen] = useState(false);
   const [slide,setSlide] = useState(0);
   const [regOk,setRegOk] = useState(false);
@@ -481,7 +488,18 @@ export default function App() {
   const [cd,setCd] = useState({d:'--',h:'--',m:'--',s:'--'});
   const timer = useRef(null);
 
-  const nav = (id) => { setPage(id); setOpen(false); window.scrollTo({top:0}); };
+  const nav = (id) => {
+    setPage(id); setOpen(false); window.scrollTo({top:0});
+    const path = PAGE_TO_PATH[id] || '/';
+    if (window.location.pathname !== path) window.history.pushState(null, '', path);
+  };
+
+  // Keep the page in sync with the URL bar (direct links like /apply, and browser back/forward).
+  useEffect(()=>{
+    const onPop = () => setPage(getPageFromPath(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  },[]);
 
   // ----- slider auto-rotate -----
   const reduce = typeof window!=='undefined' && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
