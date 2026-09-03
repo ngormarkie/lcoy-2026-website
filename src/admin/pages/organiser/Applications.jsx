@@ -156,7 +156,7 @@ export default function Applications() {
           category: 'Delegate', photoURL: null, role: 'attendee', code, entries: [], meals: {},
           region: app.region, district: app.district, city: '',
           gender: app.gender || '', dob: app.dob || '', applicationId: app.id,
-          mustSetPassword: true,
+          mustSetPassword: true, authLinkIssuedAt: serverTimestamp(), confirmed: false,
         };
         const uid = await createUserAccount({ email: app.email, password, profile });
         setExistingCodes(prev => new Set([...prev, code]));
@@ -191,10 +191,12 @@ export default function Applications() {
     try {
       const idToken = await auth.currentUser.getIdToken();
       const recipients = list.map(a => ({ id: a.id, name: a.fullName, email: a.email, code: a.assignedCode || '' }));
+      const totalApplications = applications.length;
+      const totalSelected = applications.filter(a => a.status === 'accepted').length;
       const res = await window.fetch('/api/send-application-decision', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ idToken, decision, recipients, whatsappLink: whatsappLink.trim(), origin: window.location.origin }),
+        body: JSON.stringify({ idToken, decision, recipients, whatsappLink: whatsappLink.trim(), origin: window.location.origin, totalApplications, totalSelected }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || 'Send failed');

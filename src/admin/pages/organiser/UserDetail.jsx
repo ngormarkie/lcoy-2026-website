@@ -185,6 +185,7 @@ export default function UserDetail() {
                 <div className="meta-row"><span className="meta-label">Email</span><span className="meta-value font-mono">{user.email}</span></div>
                 {user.phone && <div className="meta-row"><span className="meta-label">Phone</span><span className="meta-value">{user.phone}</span></div>}
                 <div className="meta-row"><span className="meta-label">Badge code</span><span className="meta-value badge-code-big">{user.code}</span></div>
+                {typeof user.confirmed === 'boolean' && <div className="meta-row"><span className="meta-label">Place confirmed</span><span className="meta-value">{user.confirmed ? '✓ Yes' : <span style={{ color: 'var(--crimson)' }}>Not yet</span>}</span></div>}
                 {user.region && <div className="meta-row"><span className="meta-label">Location</span><span className="meta-value">{[user.city, user.district, user.region].filter(Boolean).join(', ')}</span></div>}
                 {user.workingGroup && <div className="meta-row"><span className="meta-label">Working group</span><span className="meta-value">{user.workingGroup}</span></div>}
                 {user.accessLevel && user.role === 'organiser' && <div className="meta-row"><span className="meta-label">Access</span><span className="meta-value">{user.accessLevel === 'full' ? 'Full Access' : user.accessLevel === 'attendee_mgmt' ? 'Attendee Management' : user.accessLevel === 'programme_mgmt' ? 'Programme & Sessions' : 'Communications'}</span></div>}

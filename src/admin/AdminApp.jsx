@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import AutoLogin from './pages/AutoLogin';
 import SetPasswordPage from './pages/SetPasswordPage';
+import ExpiredLinkPage from './pages/ExpiredLinkPage';
 import OrganiserHome from './pages/OrganiserHome';
 import CheckinHome from './pages/CheckinHome';
 import AttendeeHome from './pages/AttendeeHome';
@@ -15,6 +16,13 @@ import './styles/global.css';
 
 function FullLoader() {
   return <div className="full-loader"><div className="loader" /></div>;
+}
+
+const LINK_LIFETIME_MS = 10 * 24 * 60 * 60 * 1000; // 10 days, matches the acceptance email's stated expiry
+function isLinkExpired(profile) {
+  if (!profile?.authLinkIssuedAt) return false;
+  const issued = profile.authLinkIssuedAt.toDate ? profile.authLinkIssuedAt.toDate() : new Date(profile.authLinkIssuedAt);
+  return (Date.now() - issued.getTime()) > LINK_LIFETIME_MS;
 }
 
 export default function AdminApp() {
@@ -62,7 +70,7 @@ export default function AdminApp() {
   if (profile.mustSetPassword) {
     return (
       <Routes>
-        <Route path="*" element={<SetPasswordPage />} />
+        <Route path="*" element={isLinkExpired(profile) ? <ExpiredLinkPage /> : <SetPasswordPage />} />
       </Routes>
     );
   }

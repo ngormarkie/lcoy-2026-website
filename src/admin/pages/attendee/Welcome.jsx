@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import PhotoInput from '../../components/PhotoInput';
@@ -11,8 +11,13 @@ export default function AttendeeWelcome() {
   const [photoURL, setPhotoURL] = useState(profile?.photoURL || null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [confirmed, setConfirmed] = useState(profile?.confirmed === true);
+  const [confirming, setConfirming] = useState(false);
   if (!profile) return null;
   const greet = () => { const h = new Date().getHours(); if (h < 12) return 'Good morning'; if (h < 17) return 'Good afternoon'; return 'Good evening'; };
+  // Only delegates who came through the accept-application flow have this
+  // field at all; older/manually-added attendees never see the prompt.
+  const needsConfirmation = profile.confirmed === false && !confirmed;
 
   const savePhoto = async () => {
     setSaving(true); setSaved(false);
@@ -23,6 +28,15 @@ export default function AttendeeWelcome() {
     setSaving(false);
   };
 
+  const confirmPlace = async () => {
+    setConfirming(true);
+    try {
+      await updateDoc(doc(db, 'users', profile.id), { confirmed: true, confirmedAt: serverTimestamp() });
+      setConfirmed(true);
+    } catch (e) { console.error(e); alert('Could not confirm your place. Please try again.'); }
+    setConfirming(false);
+  };
+
   return (
     <div className="welcome-page">
       <header className="welcome-header">
@@ -30,6 +44,17 @@ export default function AttendeeWelcome() {
         <h1>{greet()},<br /><em>{(profile.name || '').split(' ')[0]}</em>.</h1>
         <p className="welcome-sub">You're registered for LCOY Sierra Leone 2026. Your badge appears below — bring it with you.</p>
       </header>
+
+      {needsConfirmation && (
+        <div className="card-elevated" style={{ padding: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid var(--orange, var(--green-light))' }}>
+          <h3 style={{ marginBottom: '0.35rem' }}>Confirm your place</h3>
+          <p className="text-muted text-sm" style={{ marginBottom: '1rem' }}>Let us know you're coming so your seat is kept. Unconfirmed places go to the waiting list.</p>
+          <button type="button" className="btn btn-primary" disabled={confirming} onClick={confirmPlace}>{confirming ? 'Confirming…' : "I'm attending — confirm my place"}</button>
+        </div>
+      )}
+      {confirmed && profile.confirmed !== true && (
+        <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>Your place is confirmed. See you in Freetown!</div>
+      )}
 
       {!photoURL && (
         <div className="welcome-tip" style={{ borderLeftColor: 'var(--orange, var(--green-light))' }}>
@@ -63,8 +88,8 @@ export default function AttendeeWelcome() {
         </div>
       </div>
       <div className="welcome-tip">
-        <h3>Your code is also your password</h3>
-        <p className="text-soft">When entrance staff ask, show or read out the two characters: <strong className="font-mono">{profile.code}</strong>.</p>
+        <h3>Bring your badge code to registration</h3>
+        <p className="text-soft">When entrance staff ask, show or read out the two characters: <strong className="font-mono">{profile.code}</strong>. Please don't share it with anyone else.</p>
       </div>
       <div className="welcome-grid">
         <Link to="/admin/agenda" className="welcome-tile"><span className="welcome-tile-icon">◎</span><span className="welcome-tile-label">View agenda</span><span className="welcome-tile-sub">2-day programme</span></Link>
