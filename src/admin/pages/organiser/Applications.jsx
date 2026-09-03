@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, doc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../../services/firebase';
 import { deriveAttendeePassword } from '../../contexts/AuthContext';
 import { createUserAccount, findUserByEmail } from '../../services/userManagement';
@@ -113,6 +113,22 @@ export default function Applications() {
   const shortlist = (app) => setStatus(app, 'shortlisted');
   const restore = (app) => setStatus(app, 'pending');
   const reject = (app) => { if (!confirm(`Reject ${app.fullName}'s application?`)) return; setStatus(app, 'rejected'); };
+
+  // Deletes the application AND the email-lock marker, so the same address
+  // can submit a fresh application afterwards (e.g. removing test entries).
+  const removeApplication = async (app) => {
+    if (!confirm(`Delete ${app.fullName}'s application? This cannot be undone, and frees up ${app.email} to apply again.`)) return;
+    setBusyId(app.id);
+    try {
+      await deleteDoc(doc(db, 'applications', app.id));
+      try { await deleteDoc(doc(db, 'applicationEmails', app.id)); } catch (e) { console.error(e); }
+      setApplications(prev => prev.filter(a => a.id !== app.id));
+    } catch (e) {
+      console.error(e);
+      alert('Could not delete this application.');
+    }
+    setBusyId('');
+  };
 
   const accept = async (app) => {
     if (!confirm(`Accept ${app.fullName} and create their delegate account? This generates their badge code and QR automatically.`)) return;
@@ -301,6 +317,7 @@ export default function Applications() {
                   </>}
                   {a.status === 'accepted' && a.migratedUserId && <Link to={`/admin/users/${a.migratedUserId}`} className="btn btn-ghost btn-sm">View delegate ↗</Link>}
                   {a.status === 'rejected' && <button className="btn btn-ghost btn-sm" disabled={busyId === a.id} onClick={() => restore(a)}>Restore to pending</button>}
+                  <button className="btn btn-ghost btn-sm" style={{ color: 'var(--crimson)' }} disabled={busyId === a.id} onClick={() => removeApplication(a)} title="Delete this application permanently">Delete</button>
                 </div>
               </div>
 

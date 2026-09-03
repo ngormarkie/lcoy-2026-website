@@ -100,7 +100,7 @@ export async function onRequestPost({ request, env }) {
     const sender = { name: env.SENDER_NAME || 'LCOY Sierra Leone 2026', email: env.SENDER_EMAIL };
     const safeOrigin = origin ? String(origin).replace(/[^a-zA-Z0-9:/._-]/g, '') : '';
     const logoUrl = safeOrigin ? `${safeOrigin}/photos/Logos%20for%20host%20organizations/LCOY-YOUNGO-Endored.png` : '';
-    const manualLoginUrl = safeOrigin ? `${safeOrigin}/admin` : '#';
+    const manualLoginUrl = safeOrigin ? `${safeOrigin}/delegate` : '#';
     const safeWhatsapp = (whatsappLink || '').trim();
 
     let sent = 0, skipped = 0;

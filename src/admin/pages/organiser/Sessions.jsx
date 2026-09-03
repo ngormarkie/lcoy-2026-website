@@ -6,12 +6,26 @@ const DAYS = ['Day 1 — 7 October', 'Day 2 — 8 October', 'Day 3 — 9 October
 const TYPES = ['Plenary', 'Panel', 'Workshop', 'Breakout', 'Hackathon', 'Ceremony', 'Field Trip', 'Other'];
 const BLANK = { title: '', description: '', day: DAYS[0], type: TYPES[0], time: '', room: '', capacity: '', speakers: '', allowRegistration: false };
 
+// The stored `time` field stays a single display string (e.g. "09:00 – 10:30")
+// so nothing else that reads it (LiveBoard, Workshop entry, etc.) needs to
+// change — these just compose/decompose that string for the two time pickers.
+function parseTimeRange(str) {
+  const matches = (str || '').match(/\d{1,2}:\d{2}/g) || [];
+  return { start: matches[0] || '', end: matches[1] || '' };
+}
+function composeTimeRange(start, end) {
+  if (start && end) return `${start} – ${end}`;
+  return start || end || '';
+}
+
 export default function Sessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(BLANK);
+  const [timeStart, setTimeStart] = useState('');
+  const [timeEnd, setTimeEnd] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [openRegs, setOpenRegs] = useState(null); // sessionId whose registrations are shown
@@ -31,8 +45,15 @@ export default function Sessions() {
 
   useEffect(() => { fetchSessions(); }, []);
 
-  const resetForm = () => { setForm(BLANK); setEditing(null); setShowForm(false); setError(''); };
-  const startEdit = (s) => { setForm({ ...BLANK, ...s, capacity: s.capacity || '' }); setEditing(s.id); setShowForm(true); };
+  const resetForm = () => { setForm(BLANK); setTimeStart(''); setTimeEnd(''); setEditing(null); setShowForm(false); setError(''); };
+  const startEdit = (s) => {
+    setForm({ ...BLANK, ...s, capacity: s.capacity || '' });
+    const { start, end } = parseTimeRange(s.time);
+    setTimeStart(start); setTimeEnd(end);
+    setEditing(s.id); setShowForm(true);
+  };
+  const updateTimeStart = (v) => { setTimeStart(v); setForm(f => ({ ...f, time: composeTimeRange(v, timeEnd) })); };
+  const updateTimeEnd = (v) => { setTimeEnd(v); setForm(f => ({ ...f, time: composeTimeRange(timeStart, v) })); };
 
   const submit = async (e) => {
     e.preventDefault(); setError('');
@@ -116,7 +137,13 @@ export default function Sessions() {
               <div className="field"><label className="field-label">Type</label><select className="select" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>{TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-              <div className="field"><label className="field-label">Time</label><input className="input" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} placeholder="09:00 – 10:30" /></div>
+              <div className="field"><label className="field-label">Time</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <input type="time" className="input" value={timeStart} onChange={e => updateTimeStart(e.target.value)} style={{ minWidth: 0 }} />
+                  <span className="text-muted text-sm">to</span>
+                  <input type="time" className="input" value={timeEnd} onChange={e => updateTimeEnd(e.target.value)} style={{ minWidth: 0 }} />
+                </div>
+              </div>
               <div className="field"><label className="field-label">Room</label><input className="input" value={form.room} onChange={e => setForm({ ...form, room: e.target.value })} placeholder="Main hall" /></div>
               <div className="field"><label className="field-label">Capacity</label><input className="input" type="number" value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })} placeholder="e.g. 40" /></div>
             </div>

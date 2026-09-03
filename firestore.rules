@@ -145,7 +145,10 @@ service cloud.firestore {
     match /applicationEmails/{email} {
       allow get: if true;
       allow create: if true;
-      allow list, update, delete: if false;
+      // Deleting the application itself (e.g. a test submission) also
+      // deletes this marker, so the same email can apply again.
+      allow delete: if isOrganiser();
+      allow list, update: if false;
     }
 
     // ---------- MAIL (Firebase "Trigger Email" extension) ----------
