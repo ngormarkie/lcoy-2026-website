@@ -50,6 +50,9 @@ export default function Applications() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('pending');
   const [regionFilter, setRegionFilter] = useState('all');
+  const [districtFilter, setDistrictFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('submittedAt');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState(null);
   const [busyId, setBusyId] = useState('');
@@ -84,15 +87,29 @@ export default function Applications() {
     return c;
   }, [applications]);
 
+  const districts = useMemo(() => { const s = new Set(); applications.forEach(a => a.district && s.add(a.district)); return Array.from(s).sort(); }, [applications]);
+  const genders = useMemo(() => { const s = new Set(); applications.forEach(a => a.gender && s.add(a.gender)); return Array.from(s).sort(); }, [applications]);
+
+  const SORTERS = {
+    submittedAt: (a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0),
+    region: (a, b) => (a.region || '￿').localeCompare(b.region || '￿') || (a.district || '').localeCompare(b.district || ''),
+    district: (a, b) => (a.district || '￿').localeCompare(b.district || '￿') || (a.region || '').localeCompare(b.region || ''),
+    gender: (a, b) => (a.gender || '￿').localeCompare(b.gender || '￿') || (a.fullName || '').localeCompare(b.fullName || ''),
+    name: (a, b) => (a.fullName || '').localeCompare(b.fullName || ''),
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return applications.filter(a => {
+    const list = applications.filter(a => {
       if (statusFilter !== 'all' && a.status !== statusFilter) return false;
       if (regionFilter !== 'all' && a.region !== regionFilter) return false;
+      if (districtFilter !== 'all' && a.district !== districtFilter) return false;
+      if (genderFilter !== 'all' && a.gender !== genderFilter) return false;
       if (!q) return true;
       return (a.fullName || '').toLowerCase().includes(q) || (a.email || '').toLowerCase().includes(q) || (a.institution || '').toLowerCase().includes(q);
     });
-  }, [applications, statusFilter, regionFilter, search]);
+    return [...list].sort(SORTERS[sortBy] || SORTERS.submittedAt);
+  }, [applications, statusFilter, regionFilter, districtFilter, genderFilter, search, sortBy]);
 
   const toNotifyAccepted = useMemo(() => applications.filter(a => a.status === 'accepted' && !a.notifiedAt && a.assignedCode), [applications]);
   const missingCodeAccepted = useMemo(() => applications.filter(a => a.status === 'accepted' && !a.notifiedAt && !a.assignedCode), [applications]);
@@ -239,7 +256,10 @@ export default function Applications() {
             First pass: shortlist toward your target pool. Second pass: accept from the shortlist — this creates the delegate's account, badge code and QR automatically. {counts.shortlisted} currently shortlisted.
           </p>
         </div>
-        <Link to="/admin/applications/import" className="btn btn-secondary btn-sm">Import from Google Form</Link>
+        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+          <Link to="/admin/applications/dashboard" className="btn btn-secondary btn-sm">Dashboard</Link>
+          <Link to="/admin/applications/import" className="btn btn-secondary btn-sm">Import from Google Form</Link>
+        </div>
       </header>
 
       {acceptResult && (
@@ -300,8 +320,21 @@ export default function Applications() {
 
       <div className="users-controls" style={{ marginBottom: '0.75rem' }}>
         <input type="search" className="input" placeholder="Search name, email, institution…" value={search} onChange={e => setSearch(e.target.value)} style={{ flex: '2 1 200px' }} />
-        <select className="select" value={regionFilter} onChange={e => setRegionFilter(e.target.value)} style={{ flex: '1 1 160px' }}>
+        <select className="select" value={regionFilter} onChange={e => setRegionFilter(e.target.value)} style={{ flex: '1 1 150px' }}>
           <option value="all">All regions</option>{REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+        </select>
+        <select className="select" value={districtFilter} onChange={e => setDistrictFilter(e.target.value)} style={{ flex: '1 1 150px' }}>
+          <option value="all">All districts</option>{districts.map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+        <select className="select" value={genderFilter} onChange={e => setGenderFilter(e.target.value)} style={{ flex: '1 1 130px' }}>
+          <option value="all">All genders</option>{genders.map(g => <option key={g} value={g}>{g}</option>)}
+        </select>
+        <select className="select" value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ flex: '1 1 150px' }}>
+          <option value="submittedAt">Sort: Newest first</option>
+          <option value="name">Sort: Name</option>
+          <option value="region">Sort: Region</option>
+          <option value="district">Sort: District</option>
+          <option value="gender">Sort: Gender</option>
         </select>
       </div>
 
