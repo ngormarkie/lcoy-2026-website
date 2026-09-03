@@ -1,10 +1,11 @@
 import { Routes, Route } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import AttendeeWelcome from './attendee/Welcome';
+import MySessions from './attendee/MySessions';
+import Directory from './attendee/Directory';
 import AgendaView from '../components/AgendaView';
 import AnnouncementsView from '../components/AnnouncementsView';
 import ResourcesView from '../components/ResourcesView';
-import Placeholder from '../components/Placeholder';
 
 export default function AttendeeHome() {
   const navItems = [
@@ -21,8 +22,8 @@ export default function AttendeeHome() {
       <Routes>
         <Route path="/" element={<AttendeeWelcome />} />
         <Route path="/agenda" element={<AgendaView />} />
-        <Route path="/sessions" element={<Placeholder title="My Sessions" note="Coming soon: your personalised schedule." />} />
-        <Route path="/directory" element={<Placeholder title="Attendee Directory" note="Coming soon: search and connect with other delegates." />} />
+        <Route path="/sessions" element={<MySessions />} />
+        <Route path="/directory" element={<Directory />} />
         <Route path="/announcements" element={<AnnouncementsView />} />
         <Route path="/resources" element={<ResourcesView />} />
         <Route path="*" element={<AttendeeWelcome />} />
