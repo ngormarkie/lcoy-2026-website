@@ -220,6 +220,7 @@ export default function Applications() {
             First pass: shortlist toward your target pool. Second pass: accept from the shortlist — this creates the delegate's account, badge code and QR automatically. {counts.shortlisted} currently shortlisted.
           </p>
         </div>
+        <Link to="/admin/applications/import" className="btn btn-secondary btn-sm">Import from Google Form</Link>
       </header>
 
       {acceptResult && (

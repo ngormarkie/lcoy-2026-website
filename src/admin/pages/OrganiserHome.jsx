@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import { useAuth } from '../contexts/AuthContext';
 import OrganiserDashboard from './organiser/Dashboard';
 import Applications from './organiser/Applications';
+import ImportApplications from './organiser/ImportApplications';
 import OrganiserUsersList from './organiser/UsersList';
 import OrganiserCreateUser from './organiser/CreateUser';
 import OrganiserUserDetail from './organiser/UserDetail';
@@ -56,6 +57,7 @@ export default function OrganiserHome() {
       <Routes>
         <Route path="/" element={<OrganiserDashboard />} />
         <Route path="/applications" element={<Applications />} />
+        <Route path="/applications/import" element={<ImportApplications />} />
         <Route path="/users" element={<OrganiserUsersList />} />
         <Route path="/users/new" element={<OrganiserCreateUser />} />
         <Route path="/users/:uid" element={<OrganiserUserDetail />} />
