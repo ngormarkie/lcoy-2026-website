@@ -258,6 +258,7 @@ export default function Applications() {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
           <Link to="/admin/applications/dashboard" className="btn btn-secondary btn-sm">Dashboard</Link>
+          <Link to="/admin/applications/fix-districts" className="btn btn-secondary btn-sm">Fix Districts</Link>
           <Link to="/admin/applications/import" className="btn btn-secondary btn-sm">Import from Google Form</Link>
         </div>
       </header>

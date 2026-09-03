@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { REGIONS } from '../../utils/locations';
+import { REGIONS, ALL_DISTRICTS } from '../../utils/locations';
 
 // Categorical hues from the validated reference palette (dataviz skill):
 // fixed order, never cycled, colorblind-safe as a sequence. Each row is also
@@ -72,6 +72,7 @@ export default function ApplicationsDashboard() {
   const regionRows = Object.entries(stats.byRegion).sort((a, b) => b[1].total - a[1].total);
   const genderRows = Object.entries(stats.byGender).sort((a, b) => b[1] - a[1]);
   const districtRows = Object.entries(stats.byDistrict).sort((a, b) => b[1] - a[1]);
+  const nonCanonicalDistricts = districtRows.filter(([d]) => d !== 'Not specified' && !ALL_DISTRICTS.includes(d)).reduce((sum, [, c]) => sum + c, 0);
   const maxRegion = Math.max(1, ...regionRows.map(([, v]) => v.total));
   const maxGender = Math.max(1, ...genderRows.map(([, v]) => v));
   const maxDistrict = Math.max(1, ...districtRows.map(([, v]) => v));
@@ -141,7 +142,9 @@ export default function ApplicationsDashboard() {
 
       <div className="card-elevated" style={{ padding: '1.5rem' }}>
         <h3>By district</h3>
-        <p className="text-muted text-sm" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>Sorted by count. District is free text on imported rows, so near-duplicate names (e.g. "Freetown" vs "Western Area Urban") may not be merged here.</p>
+        <p className="text-muted text-sm" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>
+          Sorted by count.{nonCanonicalDistricts > 0 && <> {nonCanonicalDistricts} application{nonCanonicalDistricts === 1 ? '' : 's'} still {nonCanonicalDistricts === 1 ? "has" : 'have'} a district outside the canonical 16 — <Link to="/admin/applications/fix-districts">fix them here</Link>.</>}
+        </p>
         <div style={{ marginTop: '0.5rem' }}>
           {districtRows.length === 0 ? <p className="text-muted text-sm">No applications yet.</p> : districtRows.map(([district, count], i) => (
             <BarRow key={district} label={district} count={count} total={stats.total} color={CATEGORICAL[i % CATEGORICAL.length]} />

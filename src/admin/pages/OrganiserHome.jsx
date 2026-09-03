@@ -5,6 +5,7 @@ import OrganiserDashboard from './organiser/Dashboard';
 import Applications from './organiser/Applications';
 import ImportApplications from './organiser/ImportApplications';
 import ApplicationsDashboard from './organiser/ApplicationsDashboard';
+import FixDistricts from './organiser/FixDistricts';
 import OrganiserUsersList from './organiser/UsersList';
 import OrganiserCreateUser from './organiser/CreateUser';
 import OrganiserUserDetail from './organiser/UserDetail';
@@ -59,6 +60,7 @@ export default function OrganiserHome() {
         <Route path="/applications" element={<Applications />} />
         <Route path="/applications/import" element={<ImportApplications />} />
         <Route path="/applications/dashboard" element={<ApplicationsDashboard />} />
+        <Route path="/applications/fix-districts" element={<FixDistricts />} />
         <Route path="/users" element={<OrganiserUsersList />} />
         <Route path="/users/new" element={<OrganiserCreateUser />} />
         <Route path="/users/:uid" element={<OrganiserUserDetail />} />

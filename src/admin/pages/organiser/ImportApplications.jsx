@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { isValidEmail } from '../../utils/badgeCode';
+import { ALL_DISTRICTS, normalizeDistrict } from '../../utils/locations';
 
 // ---------- CSV parsing (handles quoted fields with commas/newlines) ----------
 function parseCSV(text) {
@@ -166,7 +167,7 @@ function mapRow(cells, headerIndex, mapping) {
       email,
       phone: get('phone'),
       region: get('region'),
-      district: get('district'),
+      district: normalizeDistrict(get('district')),
       institution: get('institution'),
       disability: disability.value, disabilityDetails: disability.details,
       dietary: dietary.value, dietaryDetails: dietary.details,
@@ -255,10 +256,12 @@ export default function ImportApplications() {
         await batch.commit();
       }
 
+      const unmatchedDistrict = toImport.filter(({ docData }) => docData.district && !ALL_DISTRICTS.includes(docData.district)).length;
+
       setResult({
         imported: toImport.length,
         duplicatesInFile: dataRows.length - invalidEmail - seenInFile.size,
-        alreadyExists, invalidEmail, declarationNo,
+        alreadyExists, invalidEmail, declarationNo, unmatchedDistrict,
       });
     } catch (e) {
       console.error(e);
@@ -338,12 +341,13 @@ export default function ImportApplications() {
           <div className="card-elevated" style={{ padding: '1.5rem' }}>
             <h3>4. Import</h3>
             <p className="text-muted text-sm" style={{ marginTop: '0.35rem', marginBottom: '1rem' }}>
-              Imported rows land as <strong>pending</strong> applications, same as the live form, and go through the same shortlist → accept review. Rows whose email already has an application here are skipped automatically (nothing is overwritten). District is imported as free text exactly as typed on the old form, so it may not match the dropdown list used on the live form — worth a glance before relying on it for regional balance reporting.
+              Imported rows land as <strong>pending</strong> applications, same as the live form, and go through the same shortlist → accept review. Rows whose email already has an application here are skipped automatically (nothing is overwritten). District is matched against the 16 canonical districts, including common town names (Freetown, Makeni, etc.) — anything still unrecognised is flagged below and can be fixed in <Link to="/admin/applications/fix-districts">Fix Districts</Link>.
             </p>
             {result && (
               <div className="alert alert-success" style={{ marginBottom: '1rem' }}>
                 Imported {result.imported}. Skipped: {result.alreadyExists} already had an application, {result.duplicatesInFile} were repeated within the file (kept the last), {result.invalidEmail} had no valid email.
                 {result.declarationNo > 0 && <> {result.declarationNo} imported row(s) had declared "No" on the old form — worth reviewing before accepting.</>}
+                {result.unmatchedDistrict > 0 && <> {result.unmatchedDistrict} imported row(s) have a district that isn't one of the 16 — visit <Link to="/admin/applications/fix-districts">Fix Districts</Link> to map them.</>}
               </div>
             )}
             <button className="btn btn-primary btn-lg" disabled={busy || !mapping.email || dataRows.length === 0} onClick={runImport}>
