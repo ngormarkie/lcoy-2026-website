@@ -9,9 +9,26 @@ const BLANK = { title: '', description: '', day: DAYS[0], type: TYPES[0], time: 
 // The stored `time` field stays a single display string (e.g. "09:00 – 10:30")
 // so nothing else that reads it (LiveBoard, Workshop entry, etc.) needs to
 // change — these just compose/decompose that string for the two time pickers.
+// Also normalizes legacy free-typed values (e.g. "9:00am - 5:00pm") to the
+// zero-padded 24h "HH:MM" an <input type="time"> requires — without this,
+// am/pm gets silently dropped and a single-digit hour can fail to prefill.
+function to24Hour(hour, minute, meridiem) {
+  let h = parseInt(hour, 10);
+  if (meridiem) {
+    const isPM = /p/i.test(meridiem);
+    if (isPM && h !== 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+  }
+  return `${String(h).padStart(2, '0')}:${minute}`;
+}
 function parseTimeRange(str) {
-  const matches = (str || '').match(/\d{1,2}:\d{2}/g) || [];
-  return { start: matches[0] || '', end: matches[1] || '' };
+  const re = /(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)?/gi;
+  const found = [];
+  let m;
+  while (found.length < 2 && (m = re.exec(str || ''))) {
+    found.push(to24Hour(m[1], m[2], m[3]));
+  }
+  return { start: found[0] || '', end: found[1] || '' };
 }
 function composeTimeRange(start, end) {
   if (start && end) return `${start} – ${end}`;

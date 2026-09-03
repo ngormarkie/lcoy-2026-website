@@ -17,7 +17,6 @@ import Resources from './organiser/Resources';
 import Feedback from './organiser/Feedback';
 import Reports from './organiser/Reports';
 import Settings from './organiser/Settings';
-import Placeholder from '../components/Placeholder';
 
 export default function OrganiserHome() {
   const { isSuperAdmin, isAdmin, profile } = useAuth();

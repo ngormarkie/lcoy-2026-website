@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { db, auth } from '../../services/firebase';
 import { deriveAttendeePassword } from '../../contexts/AuthContext';
 import { createUserAccount, findUserByEmail } from '../../services/userManagement';
@@ -142,12 +143,21 @@ export default function Applications() {
         let code = existingUser.code || '';
         if (!code) {
           code = generateUniqueBadgeCode(existingCodes);
-          await updateDoc(doc(db, 'users', existingUser.id), { code });
           setExistingCodes(prev => new Set([...prev, code]));
         }
-        await updateDoc(doc(db, 'applications', app.id), { status: 'accepted', migratedUserId: existingUser.id, assignedCode: code, migratedAt: serverTimestamp() });
-        patchApp(app.id, { status: 'accepted', migratedUserId: existingUser.id, assignedCode: code });
-        setAcceptResult({ name: app.fullName, email: app.email, code, alreadyExisted: true });
+        // We have no way to reset another account's actual Firebase Auth
+        // password to match `code` (that needs Admin SDK access we don't
+        // have), so the emailed auto-login link may not work for whatever
+        // password this account already had. Send a real password-reset
+        // email too, so there's a guaranteed working way in regardless.
+        const extraFields = { code, mustSetPassword: true, authLinkIssuedAt: serverTimestamp(), confirmed: false };
+        await updateDoc(doc(db, 'users', existingUser.id), extraFields);
+        let resetSent = false;
+        try { await sendPasswordResetEmail(auth, app.email); resetSent = true; } catch (e) { console.error(e); }
+        const migratedAt = serverTimestamp();
+        await updateDoc(doc(db, 'applications', app.id), { status: 'accepted', migratedUserId: existingUser.id, assignedCode: code, migratedAt });
+        patchApp(app.id, { status: 'accepted', migratedUserId: existingUser.id, assignedCode: code, migratedAt });
+        setAcceptResult({ name: app.fullName, email: app.email, code, alreadyExisted: true, resetSent });
       } else {
         const code = generateUniqueBadgeCode(existingCodes);
         const password = deriveAttendeePassword(code);
@@ -160,8 +170,9 @@ export default function Applications() {
         };
         const uid = await createUserAccount({ email: app.email, password, profile });
         setExistingCodes(prev => new Set([...prev, code]));
-        await updateDoc(doc(db, 'applications', app.id), { status: 'accepted', migratedUserId: uid, assignedCode: code, migratedAt: serverTimestamp() });
-        patchApp(app.id, { status: 'accepted', migratedUserId: uid, assignedCode: code });
+        const migratedAt = serverTimestamp();
+        await updateDoc(doc(db, 'applications', app.id), { status: 'accepted', migratedUserId: uid, assignedCode: code, migratedAt });
+        patchApp(app.id, { status: 'accepted', migratedUserId: uid, assignedCode: code, migratedAt });
         setAcceptResult({ name: app.fullName, email: app.email, code, password, org: app.institution, category: 'Delegate', alreadyExisted: false });
       }
     } catch (e) {
@@ -200,11 +211,17 @@ export default function Applications() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) throw new Error(data.error || 'Send failed');
+      // Only mark the recipients Brevo actually accepted as "notified" — a
+      // failed or skipped send must stay eligible to retry, not get silently
+      // stuck as "already emailed" with no way to tell it never went out.
+      const sentIds = new Set(Array.isArray(data.sentIds) ? data.sentIds : list.map(a => a.id));
       const batch = writeBatch(db);
-      list.forEach(a => batch.update(doc(db, 'applications', a.id), { notifiedAt: serverTimestamp(), notifiedDecision: decision }));
+      list.forEach(a => { if (sentIds.has(a.id)) batch.update(doc(db, 'applications', a.id), { notifiedAt: serverTimestamp(), notifiedDecision: decision }); });
       await batch.commit();
-      setApplications(prev => prev.map(a => list.some(x => x.id === a.id) ? { ...a, notifiedAt: { seconds: Date.now() / 1000 }, notifiedDecision: decision } : a));
-      setNotifyMsg(`Sent to ${data.sent ?? list.length} of ${list.length} ${decision} applicant(s).`);
+      const notifiedAtNow = new Date();
+      setApplications(prev => prev.map(a => sentIds.has(a.id) ? { ...a, notifiedAt: notifiedAtNow, notifiedDecision: decision } : a));
+      const missed = list.length - sentIds.size;
+      setNotifyMsg(`Sent to ${data.sent ?? sentIds.size} of ${list.length} ${decision} applicant(s).${missed > 0 ? ` ${missed} were not sent and remain eligible to retry.` : ''}`);
     } catch (e) {
       console.error(e);
       setNotifyMsg('Could not send emails. ' + (e.message === 'email_not_configured' ? 'Email service is not configured yet.' : e.message || ''));
@@ -228,6 +245,13 @@ export default function Applications() {
       {acceptResult && (
         <div className="alert alert-success result-card" style={{ marginBottom: '1.5rem' }}>
           <div className="result-card-head"><strong>{acceptResult.alreadyExisted ? `${acceptResult.name} already has an account` : `Delegate account created for ${acceptResult.name}`}</strong></div>
+          {acceptResult.alreadyExisted && (
+            <p className="text-sm" style={{ marginTop: '-0.5rem', marginBottom: '0.75rem' }}>
+              {acceptResult.resetSent
+                ? "The auto-login link in the acceptance email may not work for this account since it already had a password — a password-reset email was also sent so they have a working way in."
+                : "This account already had a password, and we could not send a password-reset email — please check their access manually before relying on the acceptance email's login link."}
+            </p>
+          )}
           <div className="result-grid">
             <div><span className="result-label">Email</span><span className="result-value font-mono">{acceptResult.email}</span></div>
             <div><span className="result-label">Badge code</span><span className="result-value badge-code-big">{acceptResult.code}</span></div>

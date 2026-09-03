@@ -34,7 +34,8 @@ export default function WorkshopEntry() {
 
   const lookup = async (overrideCode) => {
     const normalized = normalizeCode(overrideCode || code);
-    if (!normalized || !sessionId) return;
+    if (!normalized) return;
+    if (!sessionId) { setResult({ type: 'error', message: 'Select a session above before scanning.' }); return; }
     setBusy(true); setResult(null);
 
     let person = users.find(u => normalizeCode(u.code) === normalized);
@@ -48,7 +49,7 @@ export default function WorkshopEntry() {
     }
     if (!person) {
       setResult({ type: 'error', message: `No person found with code "${normalized}".` });
-      setBusy(false); return;
+      setBusy(false); inputRef.current?.focus(); return;
     }
 
     try {
@@ -56,12 +57,12 @@ export default function WorkshopEntry() {
       const regSnap = await getDoc(regRef);
       if (!regSnap.exists()) {
         setResult({ type: 'error', user: person, message: `${person.name} is not registered for this session.` });
-        setBusy(false); setCode(''); return;
+        setBusy(false); setCode(''); inputRef.current?.focus(); return;
       }
       const reg = regSnap.data();
       if (reg.status === 'waitlist') {
-        setResult({ type: 'warning', user: person, message: `${person.name} is on the waitlist — not yet confirmed.` });
-        setBusy(false); setCode(''); return;
+        setResult({ type: 'warning', heading: 'ON WAITLIST', user: person, message: `${person.name} is on the waitlist — not yet confirmed.` });
+        setBusy(false); setCode(''); inputRef.current?.focus(); return;
       }
       // Confirmed → admit + record attendance
       if (!reg.attended) {

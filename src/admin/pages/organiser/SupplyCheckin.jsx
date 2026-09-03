@@ -47,12 +47,15 @@ export default function SupplyCheckin() {
     if (!found) {
       setResult({ type: 'error', message: `No person found with code "${normalized}".` });
       setBusy(false);
+      inputRef.current?.focus();
       return;
     }
 
     if (found.suppliesIssued) {
       setResult({ type: 'warning', user: found, message: `${found.name} has already received their supplies.` });
       setBusy(false);
+      setCode('');
+      inputRef.current?.focus();
       return;
     }
 

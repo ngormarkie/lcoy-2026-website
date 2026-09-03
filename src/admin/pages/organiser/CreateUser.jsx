@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { useAuth, deriveAttendeePassword } from '../../contexts/AuthContext';
 import { createUserAccount, findUserByEmail } from '../../services/userManagement';
@@ -65,7 +65,7 @@ export default function CreateUser() {
         category, photoURL: photoURL || null, role, code, entries: [], meals: {},
         region, district, city: city.trim(),
         ...(role === 'organiser' ? { accessLevel, workingGroup } : {}),
-        ...(role === 'attendee' ? { mustSetPassword: true } : {}),
+        ...(role === 'attendee' ? { mustSetPassword: true, authLinkIssuedAt: serverTimestamp(), confirmed: false } : {}),
       };
       await createUserAccount({ email, password, profile });
       setExistingCodes((prev) => new Set([...prev, code]));

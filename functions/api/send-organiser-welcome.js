@@ -1,10 +1,11 @@
 // Cloudflare Pages Function: POST /api/send-organiser-welcome
-// Sends a login-details email to a newly created organiser account.
+// Sends a login-details email to a newly created organiser/admin account.
 // Security: verifies the caller's Firebase ID token and that they are an
-// organiser/super-admin before sending anything (only a super-admin can
-// actually create an organiser account under Firestore rules, but this is
-// checked here too since the function only ever sends mail, never reads or
-// writes Firestore itself).
+// admin/super-admin before sending anything — a plain organiser cannot
+// create an organiser-or-higher account under Firestore rules (and the
+// CreateUser.jsx UI hides this action from them), so this endpoint must not
+// accept that role either, since it fully trusts the caller-supplied
+// name/email/password and never re-checks Firestore for a matching user.
 //
 // Required Cloudflare env vars (same as the other Brevo-based functions):
 //   FIREBASE_API_KEY, FIREBASE_PROJECT_ID, BREVO_API_KEY, SENDER_EMAIL, SENDER_NAME
@@ -35,7 +36,7 @@ export async function onRequestPost({ request, env }) {
     const uid = lookupData.users && lookupData.users[0] && lookupData.users[0].localId;
     if (!uid) return json({ ok: false, error: 'unauthorized' }, 401);
 
-    // 2) Confirm the caller is an organiser / super-admin.
+    // 2) Confirm the caller is an admin / super-admin.
     const meRes = await fetch(
       `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${uid}`,
       { headers: { Authorization: `Bearer ${idToken}` } }
@@ -43,7 +44,7 @@ export async function onRequestPost({ request, env }) {
     if (!meRes.ok) return json({ ok: false, error: 'forbidden' }, 403);
     const me = await meRes.json();
     const role = me.fields && me.fields.role && me.fields.role.stringValue;
-    if (role !== 'organiser' && role !== 'admin' && role !== 'superadmin') return json({ ok: false, error: 'forbidden' }, 403);
+    if (role !== 'admin' && role !== 'superadmin') return json({ ok: false, error: 'forbidden' }, 403);
 
     // 3) Send the welcome email.
     const safeOrigin = origin ? String(origin).replace(/[^a-zA-Z0-9:/._-]/g, '') : '';

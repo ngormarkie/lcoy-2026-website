@@ -4,7 +4,6 @@ import VerifyEntry from './organiser/VerifyEntry';
 import MealCheckin from './organiser/MealCheckin';
 import SupplyCheckin from './organiser/SupplyCheckin';
 import WorkshopEntry from './organiser/WorkshopEntry';
-import Placeholder from '../components/Placeholder';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 

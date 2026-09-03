@@ -54,6 +54,7 @@ export default function VerifyEntry() {
     if (!found) {
       setResult({ type: 'error', message: `No person found with code "${normalized}".` });
       setBusy(false);
+      inputRef.current?.focus();
       return;
     }
 

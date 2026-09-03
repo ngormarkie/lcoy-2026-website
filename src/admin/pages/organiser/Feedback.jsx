@@ -49,9 +49,10 @@ export default function Feedback() {
             <div key={f.id} className="card-elevated" style={{ padding: '1.1rem 1.25rem', marginBottom: '0.6rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
+                  {f.type === 'contact' && <span className="pill" style={{ background: 'var(--blue, var(--green-deep))', color: '#fff', fontSize: '0.65rem', marginBottom: '0.4rem', display: 'inline-block' }}>Contact form{f.topic ? ` · ${f.topic}` : ''}</span>}
                   <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{f.message}</p>
                   <div style={{ fontSize: '0.8rem', color: 'var(--ink-muted)', marginTop: '0.5rem' }}>
-                    {f.name || 'Anonymous'} · {fmt(f.createdAt)}
+                    {f.name || 'Anonymous'}{f.email && <> · <a href={`mailto:${f.email}`} className="font-mono">{f.email}</a></>} · {fmt(f.createdAt)}
                   </div>
                 </div>
                 <button className="btn btn-ghost btn-sm" style={{ color: 'var(--crimson)', flexShrink: 0 }} onClick={() => handleDelete(f.id)}>Delete</button>

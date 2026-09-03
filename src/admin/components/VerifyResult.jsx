@@ -2,8 +2,8 @@ import './VerifyResult.css';
 
 export default function VerifyResult({ result, action, onClose, onNext }) {
   if (!result) return null;
-  const { type, message, user } = result;
-  const statusLabel = type === 'success' ? 'VERIFIED' : type === 'warning' ? 'ALREADY DONE' : 'NOT ALLOWED';
+  const { type, message, user, heading } = result;
+  const statusLabel = heading || (type === 'success' ? 'VERIFIED' : type === 'warning' ? 'ALREADY DONE' : 'NOT ALLOWED');
 
   return (
     <div className="vresult-overlay" onClick={onClose}>

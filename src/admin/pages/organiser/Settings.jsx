@@ -65,7 +65,7 @@ export default function Settings() {
     if (u.id === profile.id) return false;
     if (g === 'all') return true;
     if (g === 'attendees') return u.role === 'attendee';
-    if (g === 'organisers') return u.role === 'organiser' || u.role === 'superadmin';
+    if (g === 'organisers') return u.role === 'organiser' || u.role === 'admin' || u.role === 'superadmin';
     if (g === 'checkin') return u.role === 'checkin';
     return u.category === g; // a specific category
   });

@@ -172,7 +172,7 @@ export default function UsersList() {
       <div className="users-controls">
         <input type="search" className="input" placeholder="Search name, email, organisation, code…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: '2 1 200px' }} />
         <select className="select" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} style={{ flex: '1 1 130px' }}>
-          <option value="all">All roles</option><option value="superadmin">Super-admin</option><option value="organiser">Organiser</option><option value="attendee">Attendee</option>
+          <option value="all">All roles</option><option value="superadmin">Super-admin</option><option value="admin">Admin</option><option value="organiser">Organiser</option><option value="checkin">Check-in Staff</option><option value="attendee">Attendee</option>
         </select>
         <select className="select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={{ flex: '1 1 150px' }}>
           <option value="all">All categories</option>{categories.map((c) => <option key={c} value={c}>{c}</option>)}

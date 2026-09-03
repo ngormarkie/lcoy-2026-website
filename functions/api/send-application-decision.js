@@ -62,6 +62,7 @@ function acceptedEmail({ name, code, autoLoginUrl, delegateUrl, whatsappLink, lo
         ${whatsappHtml}
         <p style="color:#3e5160;line-height:1.6;margin-top:18px">For any question write to <a href="mailto:lcoy@yccsierraleone.org">lcoy@yccsierraleone.org</a> or call +232 76 226302.</p>
         <p style="color:#3e5160;line-height:1.6;margin-top:18px">Participant Affairs<br/>LCOY Sierra Leone 2026</p>
+        ${CONTACTS_TIP}
       </div>
     </div>`;
   const text = `You have been selected as a delegate for LCOY Sierra Leone 2026, taking place in Freetown from 7 to 9 October 2026 under the theme Inclusive Climate Action: Leaving No Youth Behind.${countsLine}
@@ -82,7 +83,9 @@ ${whatsappLink ? `\nJoin the delegate WhatsApp group: ${whatsappLink}\nThis grou
 For any question write to lcoy@yccsierraleone.org or call +232 76 226302.
 
 Participant Affairs
-LCOY Sierra Leone 2026`;
+LCOY Sierra Leone 2026
+
+Tip: add this address to your contacts so future emails from us land in your inbox.`;
   return { subject, html, text };
 }
 
@@ -100,7 +103,15 @@ function rejectedEmail({ name, logoUrl }) {
         ${CONTACTS_TIP}
       </div>
     </div>`;
-  const text = `Thank you for applying to LCOY Sierra Leone 2026. Applications this year far exceeded the places available, and after careful review we are unable to offer you a place at this year's conference. Please stay connected for future opportunities.`;
+  const text = `Thank you for applying to LCOY Sierra Leone 2026 and for your interest in youth climate action. Applications this year far exceeded the places available, and after careful review we are unable to offer you a place at this year's conference.
+
+Please stay connected through our social media channels for future opportunities, including regional consultations and future editions of LCOY.
+
+Thank you again for your commitment to climate action.
+
+Inclusive Climate Action: Leaving No Youth Behind
+
+Tip: add this address to your contacts so future emails from us land in your inbox.`;
   return { subject, html, text };
 }
 
@@ -143,6 +154,7 @@ export async function onRequestPost({ request, env }) {
     const safeWhatsapp = (whatsappLink || '').trim();
 
     let sent = 0, skipped = 0;
+    const sentIds = []; // only these should be marked "notified" client-side
     for (const r of recipients) {
       if (!r || !r.email || !r.name) continue;
       if (decision === 'accepted' && !r.code) { skipped += 1; continue; } // never send a blank-code email
@@ -162,11 +174,11 @@ export async function onRequestPost({ request, env }) {
             textContent: content.text,
           }),
         });
-        if (bres.ok) sent += 1;
+        if (bres.ok) { sent += 1; if (r.id) sentIds.push(r.id); }
       } catch { /* keep going for the rest of the batch */ }
     }
 
-    return json({ ok: true, sent, skipped, total: recipients.length });
+    return json({ ok: true, sent, skipped, total: recipients.length, sentIds });
   } catch (e) {
     return json({ ok: false, error: String(e && e.message ? e.message : e) }, 500);
   }

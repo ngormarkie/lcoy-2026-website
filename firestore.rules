@@ -67,14 +67,14 @@ service cloud.firestore {
         && !request.resource.data.diff(resource.data).affectedKeys()
               .hasAny(['role', 'code', 'email']);
 
-      // Organisers/admins can edit anyone's other fields. Role changes are
-      // super-admin only, except an admin may reassign a role among the
-      // three lower tiers (never touching an existing admin/super-admin,
-      // and never promoting anyone to admin/super-admin).
-      allow update: if isOrganiser()
-        && (roleUnchanged()
-            || isSuperAdmin()
-            || (isAdmin() && isLowerRole(resource.data.role) && isLowerRole(request.resource.data.role)));
+      // Super-admin can edit anyone, any field. Admin and plain organisers
+      // can edit non-admin/non-super-admin people's fields freely; an admin
+      // may also reassign a role among the three lower tiers (never
+      // touching an existing admin/super-admin, and never promoting anyone
+      // to admin/super-admin). A plain organiser can never change a role.
+      allow update: if isSuperAdmin()
+        || (isAdmin() && isLowerRole(resource.data.role) && isLowerRole(request.resource.data.role))
+        || (myRole() == 'organiser' && roleUnchanged() && isLowerRole(resource.data.role));
 
       // Check-in staff may only write entry / meal / supply records.
       allow update: if isCheckin() && onlyCheckinFields();

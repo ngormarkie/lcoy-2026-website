@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from './admin/services/firebase'
 import { REGIONS, getDistricts } from './admin/utils/locations'
 import { isValidEmail } from './admin/utils/badgeCode'
@@ -36,6 +36,19 @@ const HERO_TEXTS = [
 const GENDERS = ['Male', 'Female', 'Prefer not to say'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const CONFERENCE_DATE = new Date(Date.UTC(2026, 9, 7)); // 7 October 2026 — eligibility is measured against this date
+
+// Which stop on the homepage "journey" timeline to mark "We are here" —
+// computed from the real date instead of being pinned to one step forever.
+function currentJourneyStep() {
+  const now = Date.now();
+  const d = (y, m, day) => Date.UTC(y, m - 1, day);
+  if (now >= d(2026, 10, 9)) return 5; // Deliver (day 3)
+  if (now >= d(2026, 10, 8)) return 4; // Create (day 2)
+  if (now >= d(2026, 10, 7)) return 3; // Convene (day 1)
+  if (now >= d(2026, 9, 1)) return 2;  // Draft
+  if (now >= d(2026, 8, 1)) return 1;  // Virtual Consult
+  return 0;                             // Consult
+}
 const MIN_AGE = 16, MAX_AGE = 35;
 const DOB_YEARS = Array.from({ length: 21 }, (_, i) => 2010 - i); // 2010 down to 1990 — the only birth years that can fall inside the 16-35 window on 7 Oct 2026
 const WORD_CAPS = { essayWhy: 250, essayChallenge: 150, essayLearn: 100 };
@@ -90,7 +103,7 @@ function validateApplicationStep(step, f) {
       if (age < MIN_AGE) e.dob = `This application is open to ages ${MIN_AGE}–${MAX_AGE} as of 7 October 2026. Based on this date of birth you would be ${age}.`;
       else if (age > MAX_AGE) e.dob = `This application is open to ages ${MIN_AGE}–${MAX_AGE} as of 7 October 2026. Based on this date of birth you would be ${age}.`;
     }
-    if (!isValidEmail(f.email)) e.email = 'Please enter a valid email address.';
+    if (!isValidEmail(f.email.trim())) e.email = 'Please enter a valid email address.';
     if (!f.phone.trim()) e.phone = 'Please enter a phone number.';
   } else if (step === 1) {
     if (!f.region) e.region = 'Please select your region.';
@@ -133,8 +146,8 @@ function FieldError({ msg }) { if (!msg) return null; return <div className="app
 
 function YesNoOther({ name, label, value, onChange, detail, onDetail, detailLabel, error, detailError }) {
   return (
-    <div className="field">
-      <label className="dark-label">{label}</label>
+    <fieldset className="field" style={{ border: 0, padding: 0, margin: '0 0 18px' }}>
+      <legend className="dark-label" style={{ padding: 0, marginBottom: '6px' }}>{label}</legend>
       <div className="apply-radio-group">
         {['Yes', 'No'].map(v => (
           <label key={v} className={"apply-radio-pill" + (value === v ? " checked" : "")}>
@@ -149,7 +162,7 @@ function YesNoOther({ name, label, value, onChange, detail, onDetail, detailLabe
           <FieldError msg={detailError} />
         </div>
       )}
-    </div>
+    </fieldset>
   );
 }
 
@@ -363,8 +376,8 @@ function ApplicationForm() {
         {step === 0 && (
           <>
             <div className="field"><label className="dark-label" htmlFor="ap-name">Full name</label><input id="ap-name" className="dark-input" value={f.fullName} onChange={e => set('fullName', e.target.value)} /><FieldError msg={errors.fullName} /></div>
-            <div className="field">
-              <label className="dark-label">Gender</label>
+            <fieldset className="field" style={{ border: 0, padding: 0, margin: '0 0 18px' }}>
+              <legend className="dark-label" style={{ padding: 0, marginBottom: '6px' }}>Gender</legend>
               <div className="apply-radio-group">
                 {GENDERS.map(g => (
                   <label key={g} className={"apply-radio-pill" + (f.gender === g ? " checked" : "")}>
@@ -373,24 +386,24 @@ function ApplicationForm() {
                 ))}
               </div>
               <FieldError msg={errors.gender} />
-            </div>
+            </fieldset>
             <div className="field">
               <label className="dark-label">Date of birth</label>
               <div className="field-row-3">
-                <select className="dark-input" value={f.dobDay} onChange={e => handleDobPart('dobDay', e.target.value)}>
+                <select className="dark-input" aria-label="Day of birth" value={f.dobDay} onChange={e => handleDobPart('dobDay', e.target.value)}>
                   <option value="">Day</option>
                   {Array.from({ length: daysInMonth(Number(f.dobMonth), Number(f.dobYear)) }, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
-                <select className="dark-input" value={f.dobMonth} onChange={e => handleDobPart('dobMonth', e.target.value)}>
+                <select className="dark-input" aria-label="Month of birth" value={f.dobMonth} onChange={e => handleDobPart('dobMonth', e.target.value)}>
                   <option value="">Month</option>
                   {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
                 </select>
-                <select className="dark-input" value={f.dobYear} onChange={e => handleDobPart('dobYear', e.target.value)}>
+                <select className="dark-input" aria-label="Year of birth" value={f.dobYear} onChange={e => handleDobPart('dobYear', e.target.value)}>
                   <option value="">Year</option>
                   {DOB_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
-              <span className="apply-hint">Day / Month / Year. You must be 16–35 years old as of 7 October 2026 to apply.</span>
+              <span className="apply-hint">Day / Month / Year. You must be {MIN_AGE}–{MAX_AGE} years old as of 7 October 2026 to apply.</span>
               <FieldError msg={errors.dob} />
             </div>
             <div className="field"><label className="dark-label" htmlFor="ap-email">Email address</label><input id="ap-email" type="email" className="dark-input" value={f.email} onChange={e => set('email', e.target.value)} /><FieldError msg={errors.email} /></div>
@@ -400,8 +413,8 @@ function ApplicationForm() {
 
         {step === 1 && (
           <>
-            <div className="field">
-              <label className="dark-label">Region</label>
+            <fieldset className="field" style={{ border: 0, padding: 0, margin: '0 0 18px' }}>
+              <legend className="dark-label" style={{ padding: 0, marginBottom: '6px' }}>Region</legend>
               <div className="apply-radio-group">
                 {REGIONS.map(r => (
                   <label key={r} className={"apply-radio-pill" + (f.region === r ? " checked" : "")}>
@@ -410,7 +423,7 @@ function ApplicationForm() {
                 ))}
               </div>
               <FieldError msg={errors.region} />
-            </div>
+            </fieldset>
             <div className="field">
               <label className="dark-label" htmlFor="ap-district">District</label>
               <select id="ap-district" className="dark-input" value={f.district} onChange={e => set('district', e.target.value)} disabled={!f.region}>
@@ -477,8 +490,8 @@ function ApplicationForm() {
 
         {step === 5 && (
           <>
-            <div className="field">
-              <label className="dark-label">What is the easiest way for us to communicate with you if you are successful?</label>
+            <fieldset className="field" style={{ border: 0, padding: 0, margin: '0 0 18px' }}>
+              <legend className="dark-label" style={{ padding: 0, marginBottom: '6px' }}>What is the easiest way for us to communicate with you if you are successful?</legend>
               <div className="apply-radio-group">
                 {CONTACT_PREFS.map(v => (
                   <label key={v} className={"apply-radio-pill" + (f.contactPreference === v ? " checked" : "")}>
@@ -491,10 +504,10 @@ function ApplicationForm() {
               </div>
               {f.contactPreference === 'Other' && <input className="dark-input" style={{ marginTop: '10px' }} placeholder="Please specify" value={f.contactPreferenceOther} onChange={e => set('contactPreferenceOther', e.target.value)} />}
               <FieldError msg={errors.contactPreference || errors.contactPreferenceOther} />
-            </div>
+            </fieldset>
 
-            <div className="field">
-              <label className="dark-label">How did you hear about this application?</label>
+            <fieldset className="field" style={{ border: 0, padding: 0, margin: '0 0 18px' }}>
+              <legend className="dark-label" style={{ padding: 0, marginBottom: '6px' }}>How did you hear about this application?</legend>
               <div className="apply-radio-group">
                 {SOURCE_OPTIONS.map(v => (
                   <label key={v} className={"apply-radio-pill" + (f.source === v ? " checked" : "")}>
@@ -507,15 +520,15 @@ function ApplicationForm() {
               </div>
               {f.source === 'Other' && <input className="dark-input" style={{ marginTop: '10px' }} placeholder="Please specify" value={f.sourceOther} onChange={e => set('sourceOther', e.target.value)} />}
               <FieldError msg={errors.source || errors.sourceOther} />
-            </div>
+            </fieldset>
 
-            <div className="field apply-declaration">
-              <label className="dark-label">Declaration</label>
+            <fieldset className="field apply-declaration" style={{ border: 0, padding: 0, margin: 0 }}>
+              <legend className="dark-label" style={{ padding: 0 }}>Declaration</legend>
               <label className="apply-check-row"><input type="checkbox" checked={f.declAccurate} onChange={e => set('declAccurate', e.target.checked)} />I confirm the information provided is accurate.</label>
               <label className="apply-check-row"><input type="checkbox" checked={f.declNoGuarantee} onChange={e => set('declNoGuarantee', e.target.checked)} />I understand that submission does not guarantee selection.</label>
               <label className="apply-check-row"><input type="checkbox" checked={f.declCodeOfConduct} onChange={e => set('declCodeOfConduct', e.target.checked)} />If selected, I commit to participating fully and respecting the Code of Conduct.</label>
               <FieldError msg={errors.declaration} />
-            </div>
+            </fieldset>
           </>
         )}
 
@@ -536,8 +549,6 @@ export default function App() {
   const [page,setPage] = useState(()=> typeof window!=='undefined' ? getPageFromPath(window.location.pathname) : 'home');
   const [open,setOpen] = useState(false);
   const [slide,setSlide] = useState(0);
-  const [regOk,setRegOk] = useState(false);
-  const [volTab,setVolTab] = useState(0);
   const [msgOk,setMsgOk] = useState(false);
   const [cd,setCd] = useState({d:'--',h:'--',m:'--',s:'--'});
   const timer = useRef(null);
@@ -569,7 +580,10 @@ export default function App() {
 
   // ----- countdown -----
   useEffect(()=>{
-    const target = new Date('2026-10-07T09:00:00+00:00').getTime();
+    // Derived from the same CONFERENCE_DATE used for age eligibility, so the
+    // two can't drift apart if the date is ever changed — the 09:00 start
+    // time is the only thing added on top.
+    const target = Date.UTC(CONFERENCE_DATE.getUTCFullYear(), CONFERENCE_DATE.getUTCMonth(), CONFERENCE_DATE.getUTCDate(), 9, 0, 0);
     const pad = v=>String(v).padStart(2,'0');
     const tick = ()=>{
       let d=target-Date.now(); if(d<0)d=0;
@@ -600,8 +614,21 @@ export default function App() {
     return ()=>io.disconnect();
   },[page]);
 
-  const submitReg=()=>{const n=document.getElementById('fn').value.trim(),e=document.getElementById('em').value.trim();if(!n||!e){alert('Please add at least your name and email.');return;}setRegOk(true);window.scrollTo({top:200,behavior:'smooth'});};
-  const submitMsg=()=>{const n=document.getElementById('cn').value.trim(),e=document.getElementById('ce').value.trim();if(!n||!e){alert('Please add your name and email.');return;}setMsgOk(true);};
+  const submitMsg = async () => {
+    const n = document.getElementById('cn').value.trim();
+    const e = document.getElementById('ce').value.trim();
+    const t = document.getElementById('ct').value;
+    const m = document.getElementById('cm').value.trim();
+    if (!n || !e) { alert('Please add your name and email.'); return; }
+    if (!isValidEmail(e)) { alert('Please enter a valid email address.'); return; }
+    try {
+      await addDoc(collection(db, 'feedback'), { type: 'contact', name: n, email: e.toLowerCase(), topic: t, message: m, createdAt: serverTimestamp() });
+      setMsgOk(true);
+    } catch (err) {
+      console.error(err);
+      alert('Could not send your message. Please try again, or email lcoy@yccsierraleone.org directly.');
+    }
+  };
 
   const header = (
     <header>
@@ -762,7 +789,7 @@ export default function App() {
             <span className="journey-time">June–July 2026</span>
           </div>
           <div className="j-circle" style={{borderColor:'#e06c75'}}><span className="j-num">01</span></div>
-          <span className="we-are-here">▲ We are here</span>
+          {currentJourneyStep()===0 && <span className="we-are-here">▲ We are here</span>}
         </div>
         <div className="j-col j-bottom">
           <div className="j-circle" style={{borderColor:'#56b6c2'}}><span className="j-num">02</span></div>
@@ -771,6 +798,7 @@ export default function App() {
             <p>Online consultations to collect demands and inputs from youth across the country who couldn't attend in person.</p>
             <span className="journey-time">August 2026</span>
           </div>
+          {currentJourneyStep()===1 && <span className="we-are-here">▲ We are here</span>}
         </div>
         <div className="j-col j-top">
           <div className="j-card">
@@ -779,6 +807,7 @@ export default function App() {
             <span className="journey-time">September 2026</span>
           </div>
           <div className="j-circle" style={{borderColor:'#98c379'}}><span className="j-num">03</span></div>
+          {currentJourneyStep()===2 && <span className="we-are-here">▲ We are here</span>}
         </div>
         <div className="j-col j-bottom">
           <div className="j-circle" style={{borderColor:'#61afef'}}><span className="j-num">04</span></div>
@@ -787,6 +816,7 @@ export default function App() {
             <p>150+ delegates gather in Freetown for two conference days — panels, workshops, hackathons and dialogues.</p>
             <span className="journey-time">7–9 October 2026</span>
           </div>
+          {currentJourneyStep()===3 && <span className="we-are-here">▲ We are here</span>}
         </div>
         <div className="j-col j-top">
           <div className="j-card">
@@ -795,6 +825,7 @@ export default function App() {
             <span className="journey-time">Day 2</span>
           </div>
           <div className="j-circle" style={{borderColor:'#c678dd'}}><span className="j-num">05</span></div>
+          {currentJourneyStep()===4 && <span className="we-are-here">▲ We are here</span>}
         </div>
         <div className="j-col j-bottom">
           <div className="j-circle" style={{borderColor:'var(--orange)'}}><span className="j-num">06</span></div>
@@ -803,6 +834,7 @@ export default function App() {
             <p>Community action day — mangrove restoration, tree planting and clean-ups. Then carry the Statement to COP31.</p>
             <span className="journey-time">Day 3 → COP31</span>
           </div>
+          {currentJourneyStep()===5 && <span className="we-are-here">▲ We are here</span>}
         </div>
       </div>
     </div>
@@ -1443,7 +1475,7 @@ export default function App() {
           </div>
           <div className="field"><label htmlFor="cm" style={{color:'rgba(255,255,255,.8)'}}>Message</label><textarea id="cm" rows="5" placeholder="How can we help?" className="dark-input"></textarea></div>
           <button className="btn btn-primary" style={{width:"100%",justifyContent:"center"}} onClick={submitMsg}>Send message</button>
-          <p className="note" style={{color:'rgba(255,255,255,.5)'}}>Prototype only — wire this to your inbox or form backend on deployment.</p>
+          <p className="note" style={{color:'rgba(255,255,255,.5)'}}>The team typically responds within a few working days.</p>
         </div>
       </div>
     </div>

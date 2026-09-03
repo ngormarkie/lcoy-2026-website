@@ -56,7 +56,7 @@ export async function generateBadge(user) {
   const catColors = {
     Delegate: '#0072C6', Observer: '#2563eb', Speaker: '#FE9A02',
     Organiser: '#be185d', Volunteer: '#059669', Media: '#7c3aed',
-    VIP: '#ea580c', 'Check-in Staff': '#0B2233',
+    VIP: '#ea580c', 'Check-in Staff': '#0B2233', Admin: '#7c3aed',
   };
   const catColor = catColors[user.category] || '#0072C6';
 
@@ -112,10 +112,14 @@ export async function generateBadge(user) {
   ctx.fillText(code, M, H - 70);
 
   // ---- QR code (bottom-right, large) ----
-  const qrSize = 300;
-  const qrCanvas = document.createElement('canvas');
-  await QRCode.toCanvas(qrCanvas, code, { width: qrSize, margin: 0, color: { dark: '#0B2233', light: '#ffffff' } });
-  ctx.drawImage(qrCanvas, W - M - qrSize, H - 50 - qrSize, qrSize, qrSize);
+  // QRCode.toCanvas throws on an empty string, so a record missing a badge
+  // code still renders a (blank-code) badge instead of failing outright.
+  if (code) {
+    const qrSize = 300;
+    const qrCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(qrCanvas, code, { width: qrSize, margin: 0, color: { dark: '#0B2233', light: '#ffffff' } });
+    ctx.drawImage(qrCanvas, W - M - qrSize, H - 50 - qrSize, qrSize, qrSize);
+  }
 
   return canvas;
 }

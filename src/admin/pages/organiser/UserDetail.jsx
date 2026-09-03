@@ -38,7 +38,7 @@ export default function UserDetail() {
   const targetIsLower = LOWER_ROLES.includes(user?.role);
   const canChangeRole = !isMe && (isSuperAdmin || (isAdmin && targetIsLower));
   const canDelete = !isMe && (isSuperAdmin || (isAdmin && targetIsLower));
-  const canEdit = isOrganiser;
+  const canEdit = isOrganiser && (isSuperAdmin || targetIsLower);
 
   const updateRole = async (newRole) => { if (!user) return; setBusy(true); setError(''); try { await updateDoc(doc(db, 'users', uid), { role: newRole, roleUpdatedAt: serverTimestamp() }); setUser({ ...user, role: newRole }); setForm({ ...form, role: newRole }); } catch (e) { setError('Could not update role.'); } finally { setBusy(false); } };
 

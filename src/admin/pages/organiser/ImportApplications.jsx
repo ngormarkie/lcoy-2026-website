@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { isValidEmail } from '../../utils/badgeCode';
 
 // ---------- CSV parsing (handles quoted fields with commas/newlines) ----------
 function parseCSV(text) {
@@ -138,8 +139,6 @@ function parseTimestamp(raw) {
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
-const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e || '');
-
 function mapRow(cells, headerIndex, mapping) {
   const get = (key) => { const h = mapping[key]; if (!h) return ''; const idx = headerIndex[h]; return idx == null ? '' : (cells[idx] || '').trim(); };
 
@@ -231,18 +230,18 @@ export default function ImportApplications() {
       const existingEmails = new Set();
       existingSnap.forEach(d => existingEmails.add(d.id));
 
-      const seenInFile = new Map(); // email -> mapped doc (last one wins)
-      let invalidEmail = 0, declarationNo = 0;
+      const seenInFile = new Map(); // email -> {doc, declarationWasNo} (last row for that email wins)
+      let invalidEmail = 0;
       for (const cells of dataRows) {
         const mapped = mapRow(cells, headerIndex, mapping);
         if (mapped.skip) { invalidEmail++; continue; }
-        if (mapped.declarationWasNo) declarationNo++;
-        seenInFile.set(mapped.doc.email, mapped.doc);
+        seenInFile.set(mapped.doc.email, { doc: mapped.doc, declarationWasNo: mapped.declarationWasNo });
       }
 
-      let alreadyExists = 0, toImport = [];
-      for (const [email, docData] of seenInFile) {
+      let alreadyExists = 0, declarationNo = 0, toImport = [];
+      for (const [email, { doc: docData, declarationWasNo }] of seenInFile) {
         if (existingEmails.has(email)) { alreadyExists++; continue; }
+        if (declarationWasNo) declarationNo++;
         toImport.push({ email, docData });
       }
 

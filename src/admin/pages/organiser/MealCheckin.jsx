@@ -55,6 +55,7 @@ export default function MealCheckin() {
     if (!found) {
       setResult({ type: 'error', message: `No person found with code "${normalized}".` });
       setBusy(false);
+      inputRef.current?.focus();
       return;
     }
 
@@ -62,6 +63,8 @@ export default function MealCheckin() {
     if (meals[meal]) {
       setResult({ type: 'warning', user: found, message: `${found.name} has already collected this meal.` });
       setBusy(false);
+      setCode('');
+      inputRef.current?.focus();
       return;
     }
 
