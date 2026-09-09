@@ -45,6 +45,11 @@ service cloud.firestore {
     function isLowerRole(r) {
       return r == 'attendee' || r == 'checkin' || r == 'organiser';
     }
+    // A delegate may set their own headshot photo exactly once (from empty).
+    // Once set, changing it requires a staff member — they ask an admin.
+    function photoLocked() {
+      return resource.data.photoURL != null && resource.data.photoURL != '';
+    }
 
     // ---------- USERS ----------
     match /users/{uid} {
@@ -62,10 +67,14 @@ service cloud.firestore {
         || (isAdmin() && isLowerRole(request.resource.data.role))
         || (isOrganiser() && request.resource.data.role == 'attendee');
 
-      // A person can edit their own profile but never their role / code / email.
+      // A person can edit their own profile but never their role / code /
+      // email, and can only ever set their own photo once — once photoURL
+      // is non-empty, changing it again requires a staff member.
       allow update: if isSelf(uid)
         && !request.resource.data.diff(resource.data).affectedKeys()
-              .hasAny(['role', 'code', 'email']);
+              .hasAny(['role', 'code', 'email'])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['photoURL'])
+              || !photoLocked());
 
       // Super-admin can edit anyone, any field. Admin and plain organisers
       // can edit non-admin/non-super-admin people's fields freely; an admin

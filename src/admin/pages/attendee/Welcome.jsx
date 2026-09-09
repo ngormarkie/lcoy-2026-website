@@ -14,6 +14,9 @@ export default function AttendeeWelcome() {
   const [confirmed, setConfirmed] = useState(profile?.confirmed === true);
   const [confirming, setConfirming] = useState(false);
   const [flyerSent, setFlyerSent] = useState(profile?.flyerSent === true);
+  // Delegates may set their headshot exactly once — Firestore rules enforce
+  // this server-side too. Once it's set, only a staff member can change it.
+  const [photoLocked, setPhotoLocked] = useState(!!profile?.photoURL);
   if (!profile) return null;
   const greet = () => { const h = new Date().getHours(); if (h < 12) return 'Good morning'; if (h < 17) return 'Good afternoon'; return 'Good evening'; };
   // Only delegates who came through the accept-application flow have this
@@ -26,6 +29,7 @@ export default function AttendeeWelcome() {
     try {
       await updateDoc(doc(db, 'users', profile.id), { photoURL: photoURL || null });
       setSaved(true);
+      if (isFirstPhoto) setPhotoLocked(true);
       // First-ever headshot upload — send the "I will be attending" flyer
       // email right away. Best-effort: a failure here shouldn't block the
       // photo save the delegate actually asked for.
@@ -78,17 +82,30 @@ export default function AttendeeWelcome() {
       {!photoURL && (
         <div className="welcome-tip" style={{ borderLeftColor: 'var(--orange, var(--green-light))' }}>
           <h3>Add your headshot photo</h3>
-          <p>This appears on your printed badge and in the attendee directory. Take a clear photo of your face, or upload one.</p>
+          <p>This appears on your printed badge and in the attendee directory. Take a clear photo of your face, or upload one. You can only set this once, so choose carefully.</p>
         </div>
       )}
       <div className="card-elevated" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <h3 style={{ marginBottom: '0.25rem' }}>Your photo</h3>
         <p className="text-muted text-sm" style={{ marginBottom: '1rem' }}>Used on your badge and in the attendee directory.</p>
-        <PhotoInput value={photoURL} onChange={setPhotoURL} disabled={saving} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1rem' }}>
-          <button type="button" className="btn btn-primary" disabled={saving || photoURL === (profile.photoURL || null)} onClick={savePhoto}>{saving ? 'Saving…' : 'Save photo'}</button>
-          {saved && <span className="text-sm" style={{ color: 'var(--green-deep)' }}>Saved ✓</span>}
-        </div>
+        {photoLocked ? (
+          <>
+            {photoURL && (
+              <div style={{ width: 120, height: 120, borderRadius: 12, overflow: 'hidden', marginBottom: '1rem' }}>
+                <img src={photoURL} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+            <p className="text-muted text-sm">Your photo is set and can't be changed here. If you need it updated, please ask an admin.</p>
+          </>
+        ) : (
+          <>
+            <PhotoInput value={photoURL} onChange={setPhotoURL} disabled={saving} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1rem' }}>
+              <button type="button" className="btn btn-primary" disabled={saving || !photoURL} onClick={savePhoto}>{saving ? 'Saving…' : 'Save photo'}</button>
+              {saved && <span className="text-sm" style={{ color: 'var(--green-deep)' }}>Saved ✓</span>}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="badge-card">
