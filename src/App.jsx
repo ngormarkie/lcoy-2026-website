@@ -1418,43 +1418,6 @@ export default function App() {
   </>);
 
   const Page_register = () => (<>
-  <section className="about-hero">
-    <div className="about-hero-bg" style={{backgroundImage:"url('photos/F94A2211.jpg')",backgroundPosition:'center 55%'}}></div>
-    <div className="about-hero-overlay"></div>
-    <div className="wrap" style={{position:'relative',zIndex:3}}>
-      <span className="eyebrow" style={{color:'var(--orange)',fontSize:'1.4rem'}}>Application</span>
-      <h2 className="about-title">Apply for a place at <em className="script-em">LCOY-SL 2026</em></h2>
-      <p className="about-lead">Participation is 100% free. Delegate places are limited to 150 and allocated with inclusion quotas, following a two-stage shortlisting process.</p>
-    </div>
-  </section>
-
-  <section>
-    <div className="wrap">
-      <div className="reg-info-grid">
-        <div className="about-col reveal d1">
-          <div className="about-col-accent" style={{background:'var(--blue)'}}></div>
-          <h3>Who can register</h3>
-          <p>Sierra Leonean youth across all four regions, abilities, gender and economic backgrounds. Rural and peri-urban representation is deliberately prioritised.</p>
-        </div>
-        <div className="about-col reveal d2">
-          <div className="about-col-accent" style={{background:'var(--orange)'}}></div>
-          <h3>Inclusion quotas</h3>
-          <p>Minimum 50% female participation, reserved places for persons with disabilities, and dedicated representation for informal-economy youth.</p>
-        </div>
-        <div className="about-col reveal d3">
-          <div className="about-col-accent" style={{background:'#2ecc71'}}></div>
-          <h3>Subsidies &amp; access</h3>
-          <p>Full subsidies for marginalised youth, an accessible venue, sign language interpretation, and Krio facilitation alongside English.</p>
-        </div>
-        <div className="about-col reveal d1">
-          <div className="about-col-accent" style={{background:'#c678dd'}}></div>
-          <h3>Coalition exhibitor?</h3>
-          <p>Exhibition slots are available for youth-led initiatives. Contact the team directly.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section className="objectives-section">
     <div className="wrap">
       <ApplicationGate />
