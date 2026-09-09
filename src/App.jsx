@@ -239,7 +239,16 @@ function ApplicationGate() {
       </div>
     );
   }
-  return <ApplicationForm />;
+  return (
+    <>
+      <div className="section-head" style={{textAlign:'center',margin:'0 auto 36px',maxWidth:'none'}}>
+        <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>Application form</span>
+        <h2 style={{color:'#fff',marginTop:'14px'}}>Tell us about <em className="script-em">you</em></h2>
+        <p style={{color:'rgba(255,255,255,.7)',maxWidth:'620px',margin:'14px auto 0',fontSize:'1.05rem'}}>Six short steps. You can go back at any point before submitting. Applications are shortlisted in two stages — a first review by the participation team, then a final selection by the working group — with outcomes sent by email.</p>
+      </div>
+      <ApplicationForm />
+    </>
+  );
 }
 
 function ApplicationForm() {
@@ -1448,11 +1457,6 @@ export default function App() {
 
   <section className="objectives-section">
     <div className="wrap">
-      <div className="section-head" style={{textAlign:'center',margin:'0 auto 36px',maxWidth:'none'}}>
-        <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>Application form</span>
-        <h2 style={{color:'#fff',marginTop:'14px'}}>Tell us about <em className="script-em">you</em></h2>
-        <p style={{color:'rgba(255,255,255,.7)',maxWidth:'620px',margin:'14px auto 0',fontSize:'1.05rem'}}>Six short steps. You can go back at any point before submitting. Applications are shortlisted in two stages — a first review by the participation team, then a final selection by the working group — with outcomes sent by email.</p>
-      </div>
       <ApplicationGate />
     </div>
   </section>
