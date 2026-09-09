@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { REGIONS, getDistricts, WORKING_GROUPS } from '../../utils/locations';
 import PhotoInput from '../../components/PhotoInput';
 import { downloadBadge } from '../../utils/badge';
+import { downloadFlyer } from '../../utils/flyer';
 import './UserDetail.css';
 
 const ATTENDEE_CATEGORIES = ['Delegate', 'Observer', 'Speaker', 'Volunteer', 'Media', 'VIP'];
@@ -31,6 +32,7 @@ export default function UserDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
+  const [flyerBusy, setFlyerBusy] = useState(false);
 
   useEffect(() => { let c = false; (async () => { try { const snap = await getDoc(doc(db, 'users', uid)); if (!c) { if (snap.exists()) { const u = { id: snap.id, ...snap.data() }; setUser(u); setForm(u); } else setError('Person not found.'); setLoading(false); } } catch (e) { if (!c) { setError('Could not load this person.'); setLoading(false); } } })(); return () => { c = true; }; }, [uid]);
 
@@ -95,6 +97,15 @@ export default function UserDetail() {
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  // Lets staff hand a delegate their flyer directly (email/WhatsApp it to
+  // them, print it, etc.) when they're struggling to download it themselves.
+  const handleDownloadFlyer = async () => {
+    setFlyerBusy(true); setError('');
+    try { await downloadFlyer(user); }
+    catch (e) { console.error(e); setError('Could not generate the flyer. Please try again.'); }
+    finally { setFlyerBusy(false); }
+  };
+
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}><div className="loader" /></div>;
   if (error && !user) return <div className="form-page"><div className="alert alert-error">{error}</div><Link to="/admin/users" className="btn btn-secondary">← Back to people</Link></div>;
   if (!user) return null;
@@ -105,6 +116,7 @@ export default function UserDetail() {
         <Link to="/admin/users" className="btn btn-ghost btn-sm">← All people</Link>
         {canEdit && !editing && <button className="btn btn-secondary btn-sm" onClick={startEdit}>Edit</button>}
         {!editing && user?.code && <button className="btn btn-secondary btn-sm" onClick={() => downloadBadge(user)}>Download Badge</button>}
+        {!editing && user?.code && <button className="btn btn-secondary btn-sm" onClick={handleDownloadFlyer} disabled={flyerBusy}>{flyerBusy ? 'Generating…' : 'Download Flyer'}</button>}
         {canEdit && !editing && !isMe && (user.role === 'organiser' || user.role === 'admin' || user.role === 'checkin') && (
           <button className="btn btn-secondary btn-sm" onClick={resendLogin} disabled={busy}>{busy ? '…' : 'Resend login access'}</button>
         )}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { downloadBadge, downloadBadgesBatch } from '../../utils/badge';
+import { downloadFlyer } from '../../utils/flyer';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './UsersList.css';
@@ -202,6 +203,13 @@ export default function UsersList() {
                     title="Download badge"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadBadge(u); }}
                   >⤓ Badge</button>
+                )}
+                {u.code && (
+                  <button
+                    className="user-row-dl"
+                    title="Download flyer"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadFlyer(u).catch((err) => { console.error(err); alert('Could not generate the flyer.'); }); }}
+                  >⤓ Flyer</button>
                 )}
               </div>
             </Link>
