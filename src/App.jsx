@@ -205,6 +205,43 @@ function EssayField({ id, label, cap, value, onChange, error, rows }) {
   );
 }
 
+// Gate in front of the form, controlled by a Firestore doc (settings/application,
+// { open: boolean }) so organisers can open/close applications from the admin
+// Settings page without needing a code deploy. Missing doc, or anything other
+// than an explicit open:true, is treated as CLOSED — a fail-safe default so a
+// read error never lets someone submit into a process that isn't actually open.
+function ApplicationGate() {
+  const [status, setStatus] = useState('checking'); // 'checking' | 'open' | 'closed'
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'application'));
+        if (!cancelled) setStatus(snap.exists() && snap.data().open === true ? 'open' : 'closed');
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) setStatus('closed');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (status === 'checking') {
+    return <div style={{ textAlign: 'center', padding: '60px 0' }}><div className="loader" style={{ margin: '0 auto' }} /></div>;
+  }
+  if (status === 'closed') {
+    return (
+      <div className="apply-success reveal in">
+        <div className="apply-success-icon" style={{ background: 'var(--orange)' }}>✕</div>
+        <h3>Applications are now closed</h3>
+        <p>Thank you to everyone who applied. The shortlisting and selection process is underway, and every applicant will be notified by email with the outcome by 20 September 2026. Questions in the meantime? Write to <a href="mailto:lcoy@yccsierraleone.org" style={{ color: '#fff', textDecoration: 'underline' }}>lcoy@yccsierraleone.org</a>.</p>
+      </div>
+    );
+  }
+  return <ApplicationForm />;
+}
+
 function ApplicationForm() {
   const [step, setStep] = useState(0);
   const [f, setF] = useState(BLANK_APPLICATION);
@@ -1416,7 +1453,7 @@ export default function App() {
         <h2 style={{color:'#fff',marginTop:'14px'}}>Tell us about <em className="script-em">you</em></h2>
         <p style={{color:'rgba(255,255,255,.7)',maxWidth:'620px',margin:'14px auto 0',fontSize:'1.05rem'}}>Six short steps. You can go back at any point before submitting. Applications are shortlisted in two stages — a first review by the participation team, then a final selection by the working group — with outcomes sent by email.</p>
       </div>
-      <ApplicationForm />
+      <ApplicationGate />
     </div>
   </section>
   </>);

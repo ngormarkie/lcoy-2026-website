@@ -151,6 +151,17 @@ service cloud.firestore {
       allow list, update: if false;
     }
 
+    // ---------- SETTINGS ----------
+    // Small named config docs (e.g. settings/application: { open: boolean }).
+    // Public single-doc read so the application form can check its own
+    // open/closed state without anyone being logged in; only organisers can
+    // change it, and the collection can't be listed/enumerated.
+    match /settings/{id} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if isOrganiser();
+    }
+
     // ---------- MAIL (Firebase "Trigger Email" extension) ----------
     // Organisers queue emails; the extension reads server-side.
     match /mail/{id} {

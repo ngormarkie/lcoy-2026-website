@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -30,6 +30,8 @@ export default function Settings() {
   const [mode, setMode] = useState(null); // 'checkin' | 'group' | 'full'
   const [users, setUsers] = useState([]);
   const [group, setGroup] = useState('attendees');
+  const [appOpen, setAppOpen] = useState(null); // null = loading
+  const [appToggleBusy, setAppToggleBusy] = useState(false);
 
   useEffect(() => {
     if (!isSuperAdmin) return;
@@ -42,6 +44,28 @@ export default function Settings() {
       } catch (e) { console.error(e); }
     })();
   }, [isSuperAdmin]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'application'));
+        setAppOpen(snap.exists() && snap.data().open === true);
+      } catch (e) { console.error(e); setAppOpen(false); }
+    })();
+  }, []);
+
+  const toggleApplications = async () => {
+    setAppToggleBusy(true);
+    try {
+      const next = !appOpen;
+      await setDoc(doc(db, 'settings', 'application'), { open: next, updatedAt: serverTimestamp(), updatedBy: profile?.name || '' }, { merge: true });
+      setAppOpen(next);
+    } catch (e) {
+      console.error(e);
+      alert('Could not update the application status. Please try again.');
+    }
+    setAppToggleBusy(false);
+  };
 
   const categories = useMemo(() => {
     const set = new Set();
@@ -137,6 +161,24 @@ export default function Settings() {
       </header>
 
       {msg && <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>{msg}</div>}
+
+      {/* Applications open/closed */}
+      <div className="card-elevated" style={{ padding: '1.5rem', marginBottom: '1.25rem', borderLeft: `4px solid ${appOpen ? '#059669' : 'var(--crimson)'}` }}>
+        <h3>Delegate applications</h3>
+        <p className="text-muted text-sm" style={{ marginTop: '0.35rem', marginBottom: '1rem' }}>
+          Controls the public application form at lcoysl.org/apply. When closed, visitors see a "applications are now closed" message instead of the form — nothing already submitted is affected either way.
+        </p>
+        {appOpen === null ? (
+          <div className="loader" />
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <span className="pill" style={{ background: appOpen ? '#d1fae5' : 'var(--crimson-soft)', color: appOpen ? '#065f46' : 'var(--crimson)' }}>{appOpen ? 'Open' : 'Closed'}</span>
+            <button className={`btn ${appOpen ? 'btn-danger' : 'btn-primary'}`} disabled={appToggleBusy} onClick={toggleApplications}>
+              {appToggleBusy ? 'Saving…' : appOpen ? 'Close applications' : 'Reopen applications'}
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Clear check-in data */}
       <div className="card-elevated" style={{ padding: '1.5rem', marginBottom: '1.25rem', borderLeft: '4px solid var(--amber)' }}>
