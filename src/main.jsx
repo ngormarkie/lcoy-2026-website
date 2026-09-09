@@ -26,6 +26,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           </AuthProvider>
         } />
         <Route path="/delegate/auto-login" element={<RedirectKeepingQuery to="/admin/auto-login" />} />
+        <Route path="/delegate/flyer" element={<RedirectKeepingQuery to="/admin/flyer" />} />
         <Route path="/delegate/*" element={<RedirectKeepingQuery to="/admin" />} />
         <Route path="/live" element={<LiveBoard />} />
         <Route path="*" element={<App />} />

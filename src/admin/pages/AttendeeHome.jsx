@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import AttendeeWelcome from './attendee/Welcome';
 import MySessions from './attendee/MySessions';
 import Directory from './attendee/Directory';
+import MyFlyer from './attendee/MyFlyer';
 import AgendaView from '../components/AgendaView';
 import AnnouncementsView from '../components/AnnouncementsView';
 import ResourcesView from '../components/ResourcesView';
@@ -21,6 +22,7 @@ export default function AttendeeHome() {
     <AppShell navItems={navItems}>
       <Routes>
         <Route path="/" element={<AttendeeWelcome />} />
+        <Route path="/flyer" element={<MyFlyer />} />
         <Route path="/agenda" element={<AgendaView />} />
         <Route path="/sessions" element={<MySessions />} />
         <Route path="/directory" element={<Directory />} />

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { db, auth } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import PhotoInput from '../../components/PhotoInput';
 import './Welcome.css';
@@ -13,6 +13,7 @@ export default function AttendeeWelcome() {
   const [saved, setSaved] = useState(false);
   const [confirmed, setConfirmed] = useState(profile?.confirmed === true);
   const [confirming, setConfirming] = useState(false);
+  const [flyerSent, setFlyerSent] = useState(profile?.flyerSent === true);
   if (!profile) return null;
   const greet = () => { const h = new Date().getHours(); if (h < 12) return 'Good morning'; if (h < 17) return 'Good afternoon'; return 'Good evening'; };
   // Only delegates who came through the accept-application flow have this
@@ -21,9 +22,27 @@ export default function AttendeeWelcome() {
 
   const savePhoto = async () => {
     setSaving(true); setSaved(false);
+    const isFirstPhoto = !profile.photoURL && !!photoURL;
     try {
       await updateDoc(doc(db, 'users', profile.id), { photoURL: photoURL || null });
       setSaved(true);
+      // First-ever headshot upload — send the "I will be attending" flyer
+      // email right away. Best-effort: a failure here shouldn't block the
+      // photo save the delegate actually asked for.
+      if (isFirstPhoto && !flyerSent) {
+        try {
+          const idToken = await auth.currentUser.getIdToken();
+          const res = await fetch('/api/send-flyer-ready', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ idToken, origin: window.location.origin }),
+          });
+          if (res.ok) {
+            await updateDoc(doc(db, 'users', profile.id), { flyerSent: true });
+            setFlyerSent(true);
+          }
+        } catch (e) { console.error(e); }
+      }
     } catch (e) { console.error(e); alert('Could not save your photo. Please try again.'); }
     setSaving(false);
   };
@@ -96,6 +115,7 @@ export default function AttendeeWelcome() {
         <Link to="/admin/sessions" className="welcome-tile"><span className="welcome-tile-icon">◇</span><span className="welcome-tile-label">My sessions</span><span className="welcome-tile-sub">Breakouts & workshops</span></Link>
         <Link to="/admin/directory" className="welcome-tile"><span className="welcome-tile-icon">◉</span><span className="welcome-tile-label">Attendees</span><span className="welcome-tile-sub">Connect with others</span></Link>
         <Link to="/admin/announcements" className="welcome-tile"><span className="welcome-tile-icon">◐</span><span className="welcome-tile-label">Announcements</span><span className="welcome-tile-sub">Latest updates</span></Link>
+        <Link to="/admin/flyer" className="welcome-tile"><span className="welcome-tile-icon">★</span><span className="welcome-tile-label">My flyer</span><span className="welcome-tile-sub">"I will be attending"</span></Link>
       </div>
     </div>
   );
