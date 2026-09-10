@@ -16,7 +16,6 @@ export default function MyFlyer() {
       try {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        canvas.width = 1080; canvas.height = 1350;
         await drawAttendingFlyer(canvas, ctx, profile);
         if (!cancelled) setReady(true);
       } catch (e) {
@@ -25,7 +24,7 @@ export default function MyFlyer() {
       }
     })();
     return () => { cancelled = true; };
-  }, [profile?.id, profile?.photoURL, profile?.name, profile?.category, profile?.org]);
+  }, [profile?.id, profile?.photoURL]);
 
   const download = () => downloadFlyer(profile);
 
@@ -39,7 +38,7 @@ export default function MyFlyer() {
         <p className="text-muted" style={{ marginTop: '0.25rem' }}>Your personalised flyer — download it and share on social media.</p>
       </header>
       {error && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{error}</div>}
-      <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-lg)', marginBottom: '1.5rem', aspectRatio: '1080 / 1350', background: 'var(--paper-dark)' }}>
+      <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-lg)', marginBottom: '1.5rem', aspectRatio: '3541 / 4338', background: 'var(--paper-dark)' }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
       </div>
       <button className="btn btn-primary btn-lg" disabled={!ready} onClick={download}>{ready ? 'Download my flyer' : 'Generating…'}</button>
