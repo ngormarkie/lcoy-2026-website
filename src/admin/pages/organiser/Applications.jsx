@@ -7,6 +7,7 @@ import { deriveAttendeePassword } from '../../contexts/AuthContext';
 import { createUserAccount, findUserByEmail } from '../../services/userManagement';
 import { generateUniqueBadgeCode } from '../../utils/badgeCode';
 import { downloadBadge } from '../../utils/badge';
+import { downloadApplicationsExcel } from '../../utils/exportApplications';
 import { REGIONS } from '../../utils/locations';
 
 const STATUS_TABS = [
@@ -256,7 +257,15 @@ export default function Applications() {
             First pass: shortlist toward your target pool. Second pass: accept from the shortlist — this creates the delegate's account, badge code and QR automatically. {counts.shortlisted} currently shortlisted.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            disabled={filtered.length === 0}
+            onClick={() => downloadApplicationsExcel(filtered, STATUS_TABS.find(t => t.id === statusFilter)?.label || 'Applications')}
+          >
+            ⤓ Download Excel ({filtered.length})
+          </button>
           <Link to="/admin/applications/dashboard" className="btn btn-secondary btn-sm">Dashboard</Link>
           <Link to="/admin/applications/fix-districts" className="btn btn-secondary btn-sm">Fix Districts</Link>
           <Link to="/admin/applications/import" className="btn btn-secondary btn-sm">Import from Google Form</Link>
