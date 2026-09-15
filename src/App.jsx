@@ -32,7 +32,10 @@ function pathFor(id) {
 }
 
 // One dial of the countdown: a grey track with a coloured arc drawn over it.
-// Days has no natural ceiling to measure against, so its ring is simply full.
+// Hours, minutes and seconds measure against their own ceiling; days has none,
+// so the dial reads as a 30-day run-up — full a month out, emptying as the
+// conference arrives.
+const COUNTDOWN_WINDOW_DAYS = 30;
 const RING_R = 52;
 const RING_C = 2 * Math.PI * RING_R;
 function CountRing({ label, value, fraction, colour }) {
@@ -810,7 +813,7 @@ export default function App() {
   <section className="cd-band">
     <div className="wrap">
       <div className="cd-grid">
-        <CountRing label="Days" value={cd.d} fraction={1} colour="var(--orange)" />
+        <CountRing label="Days" value={cd.d} fraction={cd.d / COUNTDOWN_WINDOW_DAYS} colour="var(--orange)" />
         <CountRing label="Hours" value={cd.h} fraction={cd.h/24} colour="#e34948" />
         <CountRing label="Minutes" value={cd.m} fraction={cd.m/60} colour="#3ba9f0" />
         <CountRing label="Seconds" value={cd.s} fraction={cd.s/60} colour="#2ecc71" />

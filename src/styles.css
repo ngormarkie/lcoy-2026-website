@@ -117,7 +117,7 @@ section{padding:84px 0}
 .cd-ring-label{font-family:'Outfit',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.85)}
 .cd-ring-value{font-family:'Outfit',sans-serif;font-weight:800;font-size:2.15rem;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
 .cd-venue{font-family:'Outfit',sans-serif;font-weight:900;font-size:3.1rem;line-height:1.05;text-transform:uppercase;color:#fff;text-align:center;margin-top:8px}
-.cd-date{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.9);text-align:center}
+.cd-date{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.95rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.9);text-align:center}
 
 .ticker{background:#fff;color:var(--ink);padding:0;font-family:'Outfit';font-size:.85rem;font-weight:500;overflow:hidden;border-top:2px solid var(--blue);border-bottom:2px solid var(--blue)}
 .ticker-track{display:flex;gap:80px;white-space:nowrap;padding:4px 0;width:max-content;animation:scrollx 24s linear infinite;align-items:center}
@@ -501,7 +501,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .cd-ring-label{font-size:.56rem;letter-spacing:.1em}
   .cd-ring-value{font-size:1.5rem}
   .cd-venue{font-size:1.7rem}
-  .cd-date{font-size:1rem}
+  .cd-date{font-size:1.25rem}
   .arrows{display:none}
   .inclusion-grid,.ways-grid,.obj-grid,.theme-cards,.reg-info-grid,.contact-info-grid{grid-template-columns:1fr}
   .team-grid{grid-template-columns:repeat(2,1fr)}
