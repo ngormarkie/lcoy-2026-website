@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from './admin/services/firebase';
+import { publicDb } from './admin/services/firebase';
 
 const DAY_ORDER = [
   { id: 'Day 1 — 7 October', tab: 'Day 1', date: '7 October 2026', weekday: 'Wednesday', strap: 'Foundations & Dialogue' },
@@ -8,11 +8,28 @@ const DAY_ORDER = [
   { id: 'Day 3 — 9 October', tab: 'Day 3', date: '9 October 2026', weekday: 'Friday', strap: 'Community Action' },
 ];
 
+// Sessions are stored with a short title and a subtitle, which is what the
+// organisers edit. A reader wants the whole name in one line, so the two are
+// shown joined rather than hidden behind an expander.
+function fullTitle(s) {
+  const sub = (s.description || '').trim().replace(/\.$/, '');
+  return sub ? `${s.title}: ${sub}` : s.title;
+}
+
 function PinIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
       <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+function MicIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v4" />
     </svg>
   );
 }
@@ -31,32 +48,59 @@ function TagIcon() {
 // board never drift apart. Deliberately shows no speaker names.
 export default function ProgrammeAgenda() {
   const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
+  const [state, setState] = useState('loading'); // loading | ready | failed
   const [activeDay, setActiveDay] = useState(null);
-  const [expanded, setExpanded] = useState({});
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const snap = await getDocs(collection(db, 'sessions'));
-        const list = [];
-        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-        list.sort((a, b) => (a.day || '').localeCompare(b.day || '') || (a.time || '').localeCompare(b.time || ''));
-        if (!cancelled) setSessions(list);
-      } catch (e) {
-        console.error(e);
-        if (!cancelled) setFailed(true);
-      }
-      if (!cancelled) setLoading(false);
-    })();
-    return () => { cancelled = true; };
+  const load = useCallback(async () => {
+    setState('loading');
+    // getDocs does not reject when the connection is struggling — it retries
+    // indefinitely, so a phone opening this page on a cold network can sit on
+    // a pending promise forever and simply never show a programme. The timer
+    // turns that hang into something the reader can see and retry; a response
+    // that does eventually arrive still wins and renders.
+    let settled = false;
+    const timer = setTimeout(() => { if (!settled) setState('failed'); }, 8000);
+    try {
+      const snap = await getDocs(collection(publicDb, 'sessions'));
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (a.day || '').localeCompare(b.day || '') || (a.time || '').localeCompare(b.time || ''));
+      setSessions(list);
+      setState('ready');
+    } catch (e) {
+      console.error(e);
+      setState('failed');
+    } finally {
+      settled = true;
+      clearTimeout(timer);
+    }
   }, []);
 
-  // Nothing published yet is the normal early state, not an error worth
-  // showing the public — just leave the section out entirely.
-  if (loading || failed) return null;
+  useEffect(() => { load(); }, [load]);
+
+  if (state === 'loading') {
+    return (
+      <section className="agenda-section">
+        <div className="wrap"><p className="agenda-note">Loading the agenda…</p></div>
+      </section>
+    );
+  }
+
+  // A blank space where the programme should be just looks broken, so say what
+  // happened and give the reader a way to try again.
+  if (state === 'failed') {
+    return (
+      <section className="agenda-section">
+        <div className="wrap">
+          <p className="agenda-note">The agenda could not be loaded just now.</p>
+          <div style={{ textAlign: 'center' }}>
+            <button className="btn btn-primary" onClick={load}>Try again</button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const days = DAY_ORDER.map(d => ({ ...d, items: sessions.filter(s => s.day === d.id) })).filter(d => d.items.length > 0);
   if (days.length === 0) return null;
 
@@ -65,12 +109,6 @@ export default function ProgrammeAgenda() {
   return (
     <section className="agenda-section">
       <div className="wrap">
-        <div className="agenda-head">
-          <span className="eyebrow" style={{ fontSize: '1.6rem' }}>Session by session</span>
-          <h2>The detailed <em className="script-em">agenda</em></h2>
-          <p>The national conference programme at Freetown City Hall. Times and sessions may still change.</p>
-        </div>
-
         <div className="agenda-tabs" role="tablist">
           {days.map(d => (
             <button
@@ -92,36 +130,26 @@ export default function ProgrammeAgenda() {
           </div>
 
           <div className="agenda-list">
-            {current.items.map(s => {
-              const open = !!expanded[s.id];
-              return (
-                <div key={s.id} className="agenda-row">
-                  <div className="agenda-time">{s.time}</div>
-                  <div className="agenda-track"><span className="agenda-dot" /></div>
-                  <div className="agenda-body">
-                    <h4>{s.title}</h4>
-                    <div className="agenda-meta">
-                      {s.room && <span><PinIcon />{s.room}</span>}
-                      {/* "Other" is the catch-all for meals and breaks — a label
-                          that tells a reader nothing, so it's left off. */}
-                      {s.type && s.type !== 'Other' && <span><TagIcon />{s.type}</span>}
-                      {s.allowRegistration && <span className="agenda-choose">Delegates choose one</span>}
-                    </div>
-                    {open && s.description && <p className="agenda-desc">{s.description}</p>}
+            {current.items.map(s => (
+              <div key={s.id} className="agenda-row">
+                <div className="agenda-time">{s.time}</div>
+                <div className="agenda-track"><span className="agenda-dot" /></div>
+                <div className="agenda-body">
+                  <h4>{fullTitle(s)}</h4>
+                  <div className="agenda-meta">
+                    {s.room && <span><PinIcon />{s.room}</span>}
+                    {/* "Other" is the catch-all for meals and breaks — a label
+                        that tells a reader nothing, so it's left off. */}
+                    {s.type && s.type !== 'Other' && <span><TagIcon />{s.type}</span>}
+                    {/* Speakers and moderators are still being confirmed. Nothing
+                        shows while the field is empty, and each name appears here
+                        as soon as an organiser fills it in on the Sessions page. */}
+                    {s.speakers && <span><MicIcon />{s.speakers}</span>}
+                    {s.allowRegistration && <span className="agenda-choose">Delegates choose one</span>}
                   </div>
-                  {s.description && (
-                    <button
-                      className={`agenda-toggle${open ? ' is-open' : ''}`}
-                      aria-expanded={open}
-                      aria-label={open ? `Hide details for ${s.title}` : `Show details for ${s.title}`}
-                      onClick={() => setExpanded(prev => ({ ...prev, [s.id]: !prev[s.id] }))}
-                    >
-                      +
-                    </button>
-                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </div>

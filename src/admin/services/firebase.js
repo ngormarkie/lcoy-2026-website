@@ -3,6 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getFunctions } from 'firebase/functions';
 import {
   initializeFirestore,
+  getFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
@@ -23,10 +24,20 @@ export const app = initializeApp(firebaseConfig, 'lcoy-admin');
 export const auth = getAuth(app);
 export const functions = getFunctions(app, 'us-central1');
 
+// Offline-capable store for the signed-in portal — check-in and meal scanning
+// need to survive a patchy hall connection, so this one is backed by IndexedDB.
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
   }),
 });
+
+// The public site reads through a separate instance with the default in-memory
+// cache. Opening IndexedDB on a phone's very first page load can stall (and is
+// blocked outright in private browsing), which left a visitor looking at a page
+// with no agenda on it until they reloaded. A public visitor gains nothing from
+// persistence, so this side simply doesn't touch it.
+export const publicApp = initializeApp(firebaseConfig, 'lcoy-public');
+export const publicDb = getFirestore(publicApp);
 
 export { firebaseConfig };

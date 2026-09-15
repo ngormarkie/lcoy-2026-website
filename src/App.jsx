@@ -27,6 +27,9 @@ function getPageFromPath(pathname) {
   const p = (pathname || '/').replace(/\/+$/, '') || '/';
   return PATH_TO_PAGE[p] || 'home';
 }
+function pathFor(id) {
+  return PAGE_TO_PATH[id] || '/';
+}
 const CAPS = [
   'Photos from LCOY Sierra Leone 2024',
   'Photos from LCOY Sierra Leone 2024',
@@ -611,9 +614,13 @@ export default function App() {
 
   const nav = (id) => {
     setPage(id); setOpen(false); window.scrollTo({top:0});
-    const path = PAGE_TO_PATH[id] || '/';
+    const path = pathFor(id);
     if (window.location.pathname !== path) window.history.pushState(null, '', path);
   };
+
+  // Links carry a real href so they can be opened in a new tab, copied, and
+  // crawled; the click handler keeps navigation client-side.
+  const go = (e, id) => { e.preventDefault(); nav(id); };
 
   // Keep the page in sync with the URL bar (direct links like /apply, and browser back/forward).
   useEffect(()=>{
@@ -695,14 +702,14 @@ export default function App() {
         <nav className={"menu"+(open?" open":"")}>
           {NAV.map(([id,label,sub])=> sub ? (
             <div key={id} className={"nav-dropdown"+(page===id||sub.some(s=>s[0]===page)?" active":"")}>
-              <a onClick={()=>nav(id)}>{label} <span className="nav-arrow">▾</span></a>
-              <div className="nav-sub">{sub.map(([sid,slabel])=>(<a key={sid} className={page===sid?"active":""} onClick={()=>nav(sid)}>{slabel}</a>))}</div>
+              <a href={pathFor(id)} onClick={(e)=>go(e,id)}>{label} <span className="nav-arrow">▾</span></a>
+              <div className="nav-sub">{sub.map(([sid,slabel])=>(<a key={sid} className={page===sid?"active":""} href={pathFor(sid)} onClick={(e)=>go(e,sid)}>{slabel}</a>))}</div>
             </div>
-          ) : (<a key={id} className={page===id?"active":""} onClick={()=>nav(id)}>{label}</a>))}
+          ) : (<a key={id} className={page===id?"active":""} href={pathFor(id)} onClick={(e)=>go(e,id)}>{label}</a>))}
           <a href="/live" className="nav-live"><span className="nav-live-dot"></span>Live</a>
         </nav>
         <div className="nav-cta">
-          <a className="btn btn-blue" onClick={()=>nav('register')}>Register</a>
+          <a className="btn btn-blue" href={pathFor('register')} onClick={(e)=>go(e,'register')}>Register</a>
           <button className="burger" onClick={()=>setOpen(o=>!o)} aria-label="Menu"><span></span><span></span><span></span></button>
         </div>
       </div>
@@ -754,7 +761,7 @@ export default function App() {
           <h1>{HERO_TEXTS[slide].heading}</h1>
           <p className="lead">{HERO_TEXTS[slide].lead}</p>
           <div className="hero-actions">
-            <a className="btn btn-primary" onClick={()=>nav('register')}>Register your place →</a>
+            <a className="btn btn-primary" href="/programme" onClick={(e)=>{e.preventDefault();nav('programme')}}>See Conference Agenda →</a>
             <a className="btn btn-ghost" onClick={()=>document.getElementById('partners').scrollIntoView({behavior:'smooth'})}>Become a partner</a>
           </div>
         </div>
@@ -994,8 +1001,8 @@ export default function App() {
         <h2>Stand with the LCOY-SL 2026 coalition</h2>
         <p>A credible, government-recognised, youth-led platform to invest in inclusive climate leadership — and to ensure NDC 3.0 is delivered with the people it most affects.</p>
         <div style={{"display":"flex","gap":"14px","justifyContent":"center","flexWrap":"wrap"}}>
-          <a className="btn btn-primary" onClick={()=>nav('register')}>Register as a delegate</a>
-          <a className="btn btn-ghost" onClick={()=>nav('about')}>Learn more</a>
+          <a className="btn btn-primary" href="/programme" onClick={(e)=>{e.preventDefault();nav('programme')}}>See Conference Agenda</a>
+          <a className="btn btn-ghost" href="/about" onClick={(e)=>{e.preventDefault();nav('about')}}>Learn more</a>
         </div>
       </div>
     </div>
@@ -1133,14 +1140,20 @@ export default function App() {
     <div className="about-hero-bg" style={{backgroundImage:"url('photos/F94A1899.jpg')",backgroundPosition:'center 30%'}}></div>
     <div className="about-hero-overlay"></div>
     <div className="wrap" style={{position:'relative',zIndex:3}}>
-      <span className="eyebrow" style={{color:'var(--orange)',fontSize:'1.4rem'}}>Programme structure</span>
-      <h2 className="about-title">Two connected phases, <em className="script-em">one statement</em></h2>
-      <p className="about-lead">A regional consultation phase that grounds the agenda in lived experience, followed by a national conference that consolidates findings into a single National Youth Statement.</p>
+      <span className="eyebrow" style={{color:'var(--orange)',fontSize:'1.4rem'}}>Programme</span>
+      <h2 className="about-title">The conference <em className="script-em">agenda</em></h2>
+      <p className="about-lead">Session by session at Freetown City Hall. Times and sessions may still change.</p>
     </div>
   </section>
 
+  <ProgrammeAgenda />
+
   <section>
     <div className="wrap">
+      <div className="section-head" style={{textAlign:'center',margin:'0 auto 48px',maxWidth:'none'}}>
+        <span className="eyebrow" style={{fontSize:'1.6rem'}}>How we got here</span>
+        <h2 style={{marginTop:'14px'}}>Two connected <em className="script-em">phases</em></h2>
+      </div>
       <div className="grid g3" style={{marginBottom:'0'}}>
         <div className="about-col reveal d1">
           <div className="about-col-accent" style={{background:'var(--blue)'}}></div>
@@ -1163,8 +1176,6 @@ export default function App() {
       </div>
     </div>
   </section>
-
-  <ProgrammeAgenda />
 
   <section>
     <div className="wrap">
