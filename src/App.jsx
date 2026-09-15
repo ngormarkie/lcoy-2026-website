@@ -1164,53 +1164,6 @@ export default function App() {
     </div>
   </section>
 
-  <section className="objectives-section">
-    <div className="wrap">
-      <div className="section-head" style={{textAlign:'center',margin:'0 auto 48px',maxWidth:'none'}}>
-        <span className="eyebrow" style={{fontSize:'1.6rem',color:'var(--orange)'}}>The three days</span>
-        <h2 style={{color:'#fff',marginTop:'14px'}}>National conference <em className="script-em">programme</em></h2>
-      </div>
-
-      <div className="prog-days">
-        <div className="prog-day reveal d1">
-          <div className="prog-day-num" style={{background:'var(--blue)'}}>1</div>
-          <div className="prog-day-body">
-            <h3>Diagnose: <em className="script-em">Where We Stand</em></h3>
-            <ul>
-              <li>Opening ceremony and keynote on Sierra Leone's NDC 3.0 and adaptation outlook</li>
-              <li>Panels on adaptation and loss &amp; damage</li>
-              <li>Breakout sessions per theme to consolidate regional inputs into draft language</li>
-            </ul>
-          </div>
-        </div>
-        <div className="prog-day reveal d2">
-          <div className="prog-day-num" style={{background:'var(--orange)'}}>2</div>
-          <div className="prog-day-body">
-            <h3>Design &amp; <em className="script-em">Deliver</em></h3>
-            <ul>
-              <li>Workshops on NDC 3.0 finance literacy; UNFCCC and YOUNGO induction</li>
-              <li>Hackathon and Idealthon; exhibition of youth-led initiatives</li>
-              <li>Multi-stakeholder dialogue with government and partners</li>
-              <li>Drafting and adoption of the National Youth Statement 2026</li>
-              <li>COY21 / COP31 delegation briefing</li>
-            </ul>
-          </div>
-        </div>
-        <div className="prog-day reveal d3">
-          <div className="prog-day-num" style={{background:'#2ecc71'}}>3</div>
-          <div className="prog-day-body">
-            <h3>Demonstrate: <em className="script-em">Community Action</em></h3>
-            <ul>
-              <li>Mangrove restoration, tree planting and clean-up in Freetown and regional host sites</li>
-              <li>Coordinated by YCC-SL with YICA, FAIECY, ACRG, Dear Plastic, FYEA and Eco-Tourism Hub</li>
-              <li>Closing ceremony and statement launch</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <ProgrammeAgenda />
 
   <section>

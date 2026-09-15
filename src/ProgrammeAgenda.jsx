@@ -68,7 +68,7 @@ export default function ProgrammeAgenda() {
         <div className="agenda-head">
           <span className="eyebrow" style={{ fontSize: '1.6rem' }}>Session by session</span>
           <h2>The detailed <em className="script-em">agenda</em></h2>
-          <p>Draft programme for the national conference at Freetown City Hall. Times and sessions may still change.</p>
+          <p>The national conference programme at Freetown City Hall. Times and sessions may still change.</p>
         </div>
 
         <div className="agenda-tabs" role="tablist">

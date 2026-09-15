@@ -314,14 +314,6 @@ select.dark-input option{background:var(--ink);color:#fff}
 .stats .s .l{color:var(--slate);font-size:.95rem;margin-top:6px}
 .bg-ink .stats .s .l{color:rgba(255,255,255,.7)}
 
-.prog-days{display:flex;flex-direction:column;gap:24px}
-.prog-day{display:flex;gap:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:32px;transition:transform .3s,background .3s,box-shadow .3s}
-.prog-day:hover{transform:translateX(8px);background:rgba(255,255,255,.1);box-shadow:0 16px 40px -16px rgba(0,0,0,.3)}
-.prog-day-num{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:'Outfit';font-weight:900;font-size:2rem;flex-shrink:0}
-.prog-day-body h3{color:#fff;font-size:1.3rem;font-weight:700;margin-bottom:12px}
-.prog-day-body ul{list-style:none;display:grid;gap:8px}
-.prog-day-body li{position:relative;padding-left:20px;color:rgba(255,255,255,.7);font-size:.95rem;line-height:1.5}
-.prog-day-body li::before{content:"→";position:absolute;left:0;color:var(--orange);font-weight:700}
 /* ---- Detailed agenda: day tabs over a timeline card ---- */
 .agenda-section{background:var(--ink);padding:80px 0}
 .agenda-head{text-align:center;margin-bottom:38px}
@@ -481,8 +473,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .ways-grid{grid-template-columns:repeat(2,1fr)}
   .obj-grid{grid-template-columns:repeat(2,1fr)}
   .coalition-grid{grid-template-columns:repeat(3,1fr)}
-  .prog-day{flex-direction:column;gap:16px}
-  .prog-day-num{width:52px;height:52px;font-size:1.6rem}
   .why-left .eyebrow{font-size:1.5rem}
   .inclusion-header .eyebrow{font-size:1.8rem}
   .inclusion-header h2{font-size:2.2rem}
@@ -535,8 +525,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .hero-inner{padding-bottom:6vh}
   .hero{min-height:500px}
   .hero-actions .btn{font-size:.85rem;padding:.7rem 1.2rem}
-  .prog-day{padding:20px}
-  .prog-day-body h3{font-size:1.1rem}
   .reg-form-centered{max-width:100%}
   .why-num{font-size:2.4rem}
   .why-section{padding:50px 0}
