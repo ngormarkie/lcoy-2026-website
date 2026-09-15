@@ -322,6 +322,41 @@ select.dark-input option{background:var(--ink);color:#fff}
 .prog-day-body ul{list-style:none;display:grid;gap:8px}
 .prog-day-body li{position:relative;padding-left:20px;color:rgba(255,255,255,.7);font-size:.95rem;line-height:1.5}
 .prog-day-body li::before{content:"→";position:absolute;left:0;color:var(--orange);font-weight:700}
+/* ---- Detailed agenda: day tabs over a timeline card ---- */
+.agenda-section{background:var(--ink);padding:80px 0}
+.agenda-head{text-align:center;margin-bottom:38px}
+.agenda-head h2{color:#fff;margin-top:14px}
+.agenda-head .eyebrow{color:var(--orange)}
+.agenda-head p{color:rgba(255,255,255,.7);margin:14px auto 0;max-width:640px}
+.agenda-tabs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:38px}
+.agenda-tab{position:relative;border:0;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:700;font-size:1.05rem;color:#fff;background:rgba(255,255,255,.1);padding:18px 46px;border-radius:999px;transition:background .25s,color .25s}
+.agenda-tab:hover{background:rgba(255,255,255,.2)}
+.agenda-tab.is-active{background:#fff;color:var(--ink)}
+.agenda-tab.is-active::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);border-left:10px solid transparent;border-right:10px solid transparent;border-top:10px solid #fff}
+.agenda-card{background:var(--paper);border-radius:var(--radius);overflow:hidden;box-shadow:0 30px 70px -32px rgba(0,0,0,.6)}
+.agenda-date{background:var(--green-deep);padding:30px 44px}
+.agenda-date h3{color:#fff;font-size:2rem;font-weight:800;margin:0}
+.agenda-date span{display:block;color:rgba(255,255,255,.8);font-family:'Source Sans 3',sans-serif;font-size:.95rem;font-weight:600;margin-top:4px}
+.agenda-list{padding:12px 44px 34px}
+.agenda-row{display:flex;align-items:flex-start;gap:8px;padding:26px 0 0}
+/* Fixed width so every dot on the timeline lines up, whatever the time reads. */
+.agenda-time{flex:0 0 148px;width:148px;font-family:'Outfit',sans-serif;font-weight:700;font-size:1.1rem;color:var(--ink);padding-top:2px;white-space:nowrap}
+.agenda-track{position:relative;flex:0 0 34px;align-self:stretch}
+.agenda-track::before{content:"";position:absolute;left:5px;top:6px;bottom:-26px;width:2px;background:var(--line)}
+.agenda-row:last-child .agenda-track::before{display:none}
+.agenda-dot{position:absolute;left:0;top:6px;width:12px;height:12px;border-radius:50%;background:var(--green-deep)}
+.agenda-body{flex:1 1 auto;min-width:0;padding-bottom:26px}
+.agenda-row:not(:last-child) .agenda-body{border-bottom:1px solid var(--line)}
+.agenda-body h4{font-family:'Outfit',sans-serif;font-size:1.32rem;font-weight:700;color:var(--ink);line-height:1.25;margin:0}
+.agenda-meta{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:8px;color:var(--slate);font-size:1rem}
+.agenda-meta span{display:inline-flex;align-items:center;gap:7px}
+.agenda-meta svg{flex-shrink:0;opacity:.65}
+.agenda-choose{color:var(--green-deep);font-weight:600}
+.agenda-desc{color:var(--slate);font-size:1rem;line-height:1.6;margin-top:12px;max-width:760px}
+.agenda-toggle{flex:0 0 auto;margin-top:2px;width:30px;height:30px;border:0;background:none;cursor:pointer;color:var(--ink);font-size:1.9rem;line-height:1;display:grid;place-items:center;transition:transform .25s,color .25s}
+.agenda-toggle:hover{color:var(--green-deep)}
+.agenda-toggle.is-open{transform:rotate(45deg)}
+
 .inclusion-section{background:#ffffff;padding:80px 0;position:relative;overflow:hidden}
 .inclusion-section::before{content:"";position:absolute;top:-50%;left:-20%;width:60%;height:200%;background:radial-gradient(ellipse,rgba(0,114,198,.06),transparent 70%);animation:incGlow 8s ease-in-out infinite;pointer-events:none}
 .inclusion-section::after{content:"";position:absolute;bottom:-50%;right:-20%;width:60%;height:200%;background:radial-gradient(ellipse,rgba(254,154,2,.04),transparent 70%);animation:incGlow 8s ease-in-out 4s infinite;pointer-events:none}
@@ -554,4 +589,19 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .apply-progress-label{display:none}
   .apply-card{padding:22px 18px}
   .field-row-3{gap:6px}
+}
+
+@media(max-width:720px){
+  .agenda-tab{padding:14px 30px;font-size:.95rem}
+  .agenda-date{padding:24px 22px}
+  .agenda-date h3{font-size:1.5rem}
+  .agenda-list{padding:8px 22px 26px}
+  /* Stacked rows: the toggle is pulled out of the flow and parked beside the
+     time, otherwise it wraps onto a line of its own below the session. */
+  .agenda-row{flex-wrap:wrap;gap:0 8px;position:relative;padding-right:36px}
+  .agenda-time{flex:0 0 100%;width:auto;font-size:1rem;margin-bottom:8px}
+  .agenda-track{display:none}
+  .agenda-toggle{position:absolute;top:22px;right:0;margin-top:0}
+  .agenda-body h4{font-size:1.1rem}
+  .agenda-meta{gap:10px;font-size:.92rem}
 }
