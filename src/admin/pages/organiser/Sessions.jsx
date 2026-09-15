@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
@@ -140,7 +141,10 @@ export default function Sessions() {
           <h1>Sessions</h1>
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>Manage the agenda. Mark workshops "open for registration" to let attendees sign up.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>＋ Add session</button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <Link to="/admin/sessions/import" className="btn btn-secondary btn-sm">Import agenda</Link>
+          <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>＋ Add session</button>
+        </div>
       </header>
 
       {showForm && (

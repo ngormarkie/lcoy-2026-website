@@ -98,18 +98,46 @@ service cloud.firestore {
     // (/live) works without anyone logging in. Writes stay organiser-only.
 
     // ---------- SESSIONS ----------
+    function sessionOpen(id) {
+      return get(/databases/$(database)/documents/sessions/$(id)).data.allowRegistration == true;
+    }
+    // A delegate signing themselves up moves exactly one seat, one way. Anything
+    // else touching these counters is an organiser write. Reads default to 0 so
+    // a session saved before these counters existed still accepts sign-ups
+    // instead of failing the whole rule on a missing field.
+    function countersMoveByOne() {
+      let wasConfirmed = resource.data.get('regConfirmed', 0);
+      let wasWaitlist = resource.data.get('regWaitlist', 0);
+      let nowConfirmed = request.resource.data.get('regConfirmed', 0);
+      let nowWaitlist = request.resource.data.get('regWaitlist', 0);
+      return (nowConfirmed == wasConfirmed + 1 && nowWaitlist == wasWaitlist)
+          || (nowWaitlist == wasWaitlist + 1 && nowConfirmed == wasConfirmed)
+          || (nowConfirmed == wasConfirmed - 1 && nowWaitlist == wasWaitlist)
+          || (nowWaitlist == wasWaitlist - 1 && nowConfirmed == wasConfirmed);
+    }
+
     match /sessions/{id} {
       allow read: if true;
       allow write: if isOrganiser();
 
-      // Workshop registrations. They are CREATED only by the Cloud Function
-      // (Admin SDK, which bypasses rules) so attendee data is never exposed.
-      // Staff read the lists and mark attendance; organisers promote/remove.
+      // Delegates register themselves from their own My Sessions page (there
+      // is no Cloud Function — that would need the Blaze plan), so they need
+      // to nudge this session's seat counters. Restricted to the two counter
+      // fields, one seat at a time, and only while sign-up is open: everything
+      // else about the session stays organiser-only.
+      allow update: if isSignedIn()
+        && resource.data.allowRegistration == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['regConfirmed', 'regWaitlist'])
+        && countersMoveByOne();
+
+      // Registrations are keyed by the delegate's own uid, so a person can
+      // only ever create or withdraw their own place. Staff read the lists and
+      // mark attendance; organisers promote off the waitlist or remove someone.
       match /registrations/{regId} {
         allow read: if isSignedIn();
-        allow create: if false;
+        allow create: if isSelf(regId) && sessionOpen(id);
         allow update: if isOrganiser() || isCheckin();
-        allow delete: if isOrganiser();
+        allow delete: if isOrganiser() || isSelf(regId);
       }
     }
 

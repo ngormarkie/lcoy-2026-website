@@ -3,6 +3,7 @@ import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from 'fireba
 import { db } from './admin/services/firebase'
 import { REGIONS, getDistricts } from './admin/utils/locations'
 import { isValidEmail } from './admin/utils/badgeCode'
+import ProgrammeAgenda from './ProgrammeAgenda'
 
 const NAV = [
   ['home','Home'],
@@ -11,8 +12,17 @@ const NAV = [
   ['themes','Thematic Areas'],
   ['contact','Contact']
 ];
-const PATH_TO_PAGE = { '/apply': 'register', '/register': 'register' };
-const PAGE_TO_PATH = { register: '/apply' };
+// Every nav page gets a real, shareable URL. Without this each page pushed
+// "/" and a refresh or shared link dropped you back on the homepage.
+const PATH_TO_PAGE = {
+  '/apply': 'register', '/register': 'register',
+  '/programme': 'programme', '/about': 'about', '/themes': 'themes',
+  '/team': 'team', '/editions': 'editions', '/contact': 'contact',
+};
+const PAGE_TO_PATH = {
+  register: '/apply', programme: '/programme', about: '/about', themes: '/themes',
+  team: '/team', editions: '/editions', contact: '/contact',
+};
 function getPageFromPath(pathname) {
   const p = (pathname || '/').replace(/\/+$/, '') || '/';
   return PATH_TO_PAGE[p] || 'home';
@@ -1200,6 +1210,8 @@ export default function App() {
       </div>
     </div>
   </section>
+
+  <ProgrammeAgenda />
 
   <section>
     <div className="wrap">

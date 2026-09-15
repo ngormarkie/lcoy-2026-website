@@ -14,6 +14,7 @@ import MealCheckin from './organiser/MealCheckin';
 import SupplyCheckin from './organiser/SupplyCheckin';
 import WorkshopEntry from './organiser/WorkshopEntry';
 import Sessions from './organiser/Sessions';
+import ImportAgenda from './organiser/ImportAgenda';
 import Announcements from './organiser/Announcements';
 import Resources from './organiser/Resources';
 import Feedback from './organiser/Feedback';
@@ -69,6 +70,7 @@ export default function OrganiserHome() {
         <Route path="/supplies" element={<SupplyCheckin />} />
         <Route path="/workshop-entry" element={<WorkshopEntry />} />
         <Route path="/sessions" element={<Sessions />} />
+        <Route path="/sessions/import" element={<ImportAgenda />} />
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/feedback" element={<Feedback />} />
