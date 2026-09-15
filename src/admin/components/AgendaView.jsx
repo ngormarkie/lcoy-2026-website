@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { downloadAgendaPdf } from '../utils/agendaPdf';
 
 const DAY_ORDER = ['Day 1 — 7 October', 'Day 2 — 8 October', 'Day 3 — 9 October'];
 
@@ -11,6 +12,14 @@ const DAY_ORDER = ['Day 1 — 7 October', 'Day 2 — 8 October', 'Day 3 — 9 Oc
 export default function AgendaView() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  const savePdf = async () => {
+    setPdfBusy(true);
+    try { await downloadAgendaPdf(sessions); }
+    catch (e) { console.error(e); alert('Could not build the agenda PDF. Please try again.'); }
+    setPdfBusy(false);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -33,7 +42,14 @@ export default function AgendaView() {
 
   return (
     <div>
-      <header className="page-header"><div><span className="dashboard-eyebrow">Programme</span><h1>Agenda</h1></div></header>
+      <header className="page-header">
+        <div><span className="dashboard-eyebrow">Programme</span><h1>Agenda</h1></div>
+        {sessions.length > 0 && (
+          <button className="btn btn-secondary btn-sm" disabled={pdfBusy} onClick={savePdf} style={{ flexShrink: 0 }}>
+            {pdfBusy ? 'Building…' : '⤓ Save as PDF'}
+          </button>
+        )}
+      </header>
       {grouped.length === 0 ? (
         <div className="card-elevated" style={{ textAlign: 'center', padding: '3rem' }}><p className="text-muted">The agenda will appear here once it's published.</p></div>
       ) : grouped.map(g => (

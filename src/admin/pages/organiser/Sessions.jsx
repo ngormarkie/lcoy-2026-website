@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { downloadAgendaPdf } from '../../utils/agendaPdf';
 
 const DAYS = ['Day 1 — 7 October', 'Day 2 — 8 October', 'Day 3 — 9 October'];
 const TYPES = ['Plenary', 'Panel', 'Workshop', 'Breakout', 'Hackathon', 'Ceremony', 'Field Trip', 'Other'];
@@ -49,6 +50,14 @@ export default function Sessions() {
   const [openRegs, setOpenRegs] = useState(null); // sessionId whose registrations are shown
   const [regs, setRegs] = useState([]);
   const [regsLoading, setRegsLoading] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  const savePdf = async () => {
+    setPdfBusy(true);
+    try { await downloadAgendaPdf(sessions); }
+    catch (e) { console.error(e); alert('Could not build the agenda PDF. Please try again.'); }
+    setPdfBusy(false);
+  };
 
   const fetchSessions = async () => {
     try {
@@ -142,6 +151,11 @@ export default function Sessions() {
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>Manage the agenda. Mark workshops "open for registration" to let attendees sign up.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {sessions.length > 0 && (
+            <button className="btn btn-secondary btn-sm" disabled={pdfBusy} onClick={savePdf}>
+              {pdfBusy ? 'Building…' : '⤓ Agenda PDF'}
+            </button>
+          )}
           <Link to="/admin/sessions/import" className="btn btn-secondary btn-sm">Import agenda</Link>
           <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }}>＋ Add session</button>
         </div>

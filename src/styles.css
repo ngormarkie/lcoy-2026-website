@@ -12,7 +12,6 @@ a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 .wrap{max-width:none;margin:0;padding:0 5vw}
 .eyebrow{font-family:'Outfit',sans-serif;font-weight:600;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--green);display:inline-flex;align-items:center;gap:.5rem}
-.eyebrow::before{content:"";width:26px;height:2px;background:var(--orange);display:inline-block}
 .btn{display:inline-flex;align-items:center;gap:.5rem;font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;padding:.8rem 1.5rem;border-radius:999px;border:2px solid transparent;cursor:pointer;transition:transform .18s ease,background .18s ease,box-shadow .18s ease;white-space:nowrap}
 .btn-primary{background:var(--orange);color:#fff}
 .btn-primary:hover{background:#e88a00;transform:translateY(-2px) scale(1.02);box-shadow:0 10px 26px -10px rgba(254,154,2,.7)}
@@ -92,7 +91,6 @@ section{padding:84px 0}
 .hero-inner .wrap{width:100%;max-width:none;padding-left:5vw}
 .hero-copy{max-width:900px;color:#fff}
 .hero-copy .eyebrow{color:#00b300;font-size:.94rem}
-.hero-copy .eyebrow::before{background:var(--orange)}
 .hero-copy h1{font-size:4.44rem;font-weight:900;margin:18px 0 18px}
 .hero-copy h1 em{font-style:normal;color:var(--orange);display:inline-block}
 .hero-copy .lead{font-size:1.42rem;color:rgba(255,255,255,.9);max-width:700px;margin-bottom:26px}
@@ -110,12 +108,16 @@ section{padding:84px 0}
 
 .cd-band{background:linear-gradient(120deg,var(--ink),var(--blue-deep) 70%,var(--green-deep));color:#fff;padding:0}
 .cd-band .wrap{display:flex;flex-direction:column;align-items:center;padding:36px 24px;gap:20px}
-.cd-location{font-family:'Outfit';font-weight:900;font-size:1.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);text-align:center;text-shadow:0 2px 12px rgba(254,154,2,.3)}
-.cd-grid{display:flex;gap:20px}
-.cd-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:20px 28px;text-align:center;min-width:110px;transition:transform .25s}
-.cd-box:hover{transform:translateY(-4px)}
-.cd-box .n{font-family:'Outfit';font-weight:900;font-size:3.2rem;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
-.cd-box .u{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.7);margin-top:9px}
+.cd-grid{display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+.cd-ring{position:relative;width:124px;height:124px}
+.cd-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.cd-ring-track{fill:none;stroke:rgba(255,255,255,.25);stroke-width:9}
+.cd-ring-arc{fill:none;stroke-width:9;stroke-linecap:butt;transition:stroke-dashoffset .35s linear}
+.cd-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;pointer-events:none}
+.cd-ring-label{font-family:'Outfit',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.cd-ring-value{font-family:'Outfit',sans-serif;font-weight:800;font-size:2.15rem;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.cd-venue{font-family:'Outfit',sans-serif;font-weight:900;font-size:3.1rem;line-height:1.05;text-transform:uppercase;color:#fff;text-align:center;margin-top:8px}
+.cd-date{font-family:'Outfit',sans-serif;font-weight:700;font-size:1.35rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.9);text-align:center}
 
 .ticker{background:#fff;color:var(--ink);padding:0;font-family:'Outfit';font-size:.85rem;font-weight:500;overflow:hidden;border-top:2px solid var(--blue);border-bottom:2px solid var(--blue)}
 .ticker-track{display:flex;gap:80px;white-space:nowrap;padding:4px 0;width:max-content;animation:scrollx 24s linear infinite;align-items:center}
@@ -491,9 +493,15 @@ footer{background:var(--ink);color:rgba(255,255,255,.72);padding:60px 0 28px}
   .hero-copy h1{font-size:2rem}
   .hero-copy .eyebrow{font-size:.75rem}
   .hero-copy .lead{font-size:.95rem;max-width:100%}
-  .cd-grid{flex-wrap:wrap;justify-content:center}
-  .cd-box{min-width:65px;padding:10px 10px}
-  .cd-box .n{font-size:1.6rem}
+  /* Four dials won't sit on one phone row. Capping the width forces an even
+     2x2 block rather than an awkward three-then-one. */
+  .cd-grid{gap:14px;max-width:210px;margin:0 auto}
+  .cd-ring{width:92px;height:92px}
+  .cd-ring-track,.cd-ring-arc{stroke-width:8}
+  .cd-ring-label{font-size:.56rem;letter-spacing:.1em}
+  .cd-ring-value{font-size:1.5rem}
+  .cd-venue{font-size:1.7rem}
+  .cd-date{font-size:1rem}
   .arrows{display:none}
   .inclusion-grid,.ways-grid,.obj-grid,.theme-cards,.reg-info-grid,.contact-info-grid{grid-template-columns:1fr}
   .team-grid{grid-template-columns:repeat(2,1fr)}

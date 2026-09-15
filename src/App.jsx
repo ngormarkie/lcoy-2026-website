@@ -30,6 +30,29 @@ function getPageFromPath(pathname) {
 function pathFor(id) {
   return PAGE_TO_PATH[id] || '/';
 }
+
+// One dial of the countdown: a grey track with a coloured arc drawn over it.
+// Days has no natural ceiling to measure against, so its ring is simply full.
+const RING_R = 52;
+const RING_C = 2 * Math.PI * RING_R;
+function CountRing({ label, value, fraction, colour }) {
+  const f = Math.max(0, Math.min(1, fraction || 0));
+  return (
+    <div className="cd-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle className="cd-ring-track" cx="60" cy="60" r={RING_R} />
+        <circle
+          className="cd-ring-arc" cx="60" cy="60" r={RING_R} stroke={colour}
+          strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - f)}
+        />
+      </svg>
+      <div className="cd-ring-inner">
+        <span className="cd-ring-label">{label}</span>
+        <span className="cd-ring-value">{value}</span>
+      </div>
+    </div>
+  );
+}
 const CAPS = [
   'Photos from LCOY Sierra Leone 2024',
   'Photos from LCOY Sierra Leone 2024',
@@ -609,7 +632,7 @@ export default function App() {
   const [open,setOpen] = useState(false);
   const [slide,setSlide] = useState(0);
   const [msgOk,setMsgOk] = useState(false);
-  const [cd,setCd] = useState({d:'--',h:'--',m:'--',s:'--'});
+  const [cd,setCd] = useState({d:0,h:0,m:0,s:0});
   const timer = useRef(null);
 
   const nav = (id) => {
@@ -647,10 +670,11 @@ export default function App() {
     // two can't drift apart if the date is ever changed — the 09:00 start
     // time is the only thing added on top.
     const target = Date.UTC(CONFERENCE_DATE.getUTCFullYear(), CONFERENCE_DATE.getUTCMonth(), CONFERENCE_DATE.getUTCDate(), 9, 0, 0);
-    const pad = v=>String(v).padStart(2,'0');
+    // Kept as plain numbers rather than padded strings: the rings need them to
+    // work out how far round each arc should go.
     const tick = ()=>{
       let d=target-Date.now(); if(d<0)d=0;
-      setCd({d:Math.floor(d/864e5),h:pad(Math.floor(d%864e5/36e5)),m:pad(Math.floor(d%36e5/6e4)),s:pad(Math.floor(d%6e4/1e3))});
+      setCd({d:Math.floor(d/864e5),h:Math.floor(d%864e5/36e5),m:Math.floor(d%36e5/6e4),s:Math.floor(d%6e4/1e3)});
     };
     tick(); const i=setInterval(tick,1000); return ()=>clearInterval(i);
   },[]);
@@ -785,13 +809,14 @@ export default function App() {
   
   <section className="cd-band">
     <div className="wrap">
-      <div className="cd-location">FREETOWN, SIERRA LEONE · 7–9 OCTOBER 2026</div>
       <div className="cd-grid">
-        <div className="cd-box"><div className="n">{cd.d}</div><div className="u">Days</div></div>
-        <div className="cd-box"><div className="n">{cd.h}</div><div className="u">Hours</div></div>
-        <div className="cd-box"><div className="n">{cd.m}</div><div className="u">Minutes</div></div>
-        <div className="cd-box"><div className="n">{cd.s}</div><div className="u">Seconds</div></div>
+        <CountRing label="Days" value={cd.d} fraction={1} colour="var(--orange)" />
+        <CountRing label="Hours" value={cd.h} fraction={cd.h/24} colour="#e34948" />
+        <CountRing label="Minutes" value={cd.m} fraction={cd.m/60} colour="#3ba9f0" />
+        <CountRing label="Seconds" value={cd.s} fraction={cd.s/60} colour="#2ecc71" />
       </div>
+      <div className="cd-venue">Freetown City Council Hall</div>
+      <div className="cd-date">7–8 October 2026</div>
     </div>
   </section>
 
