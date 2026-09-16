@@ -20,9 +20,7 @@ function esc(s) {
 
 function header(logoUrl) {
   return `
-      <div style="background:#0B2233;padding:24px;border-radius:12px 12px 0 0;text-align:center">
-        ${logoUrl ? `<div style="display:inline-block;background:#fff;padding:10px 18px;border-radius:10px"><img src="${logoUrl}" alt="LCOY Sierra Leone 2026 — officially endorsed by YOUNGO" width="260" style="display:block;max-width:260px;height:auto" /></div>` : ''}
-      </div>`;
+      ${logoUrl ? `<img src="${logoUrl}" alt="LCOY Sierra Leone 2026 — officially endorsed by YOUNGO" width="560" style="display:block;width:100%;max-width:560px;height:auto;border-radius:12px 12px 0 0" />` : ''}`;
 }
 
 const CONTACTS_TIP = '<p style="color:#8a8a8a;font-size:11px;margin-top:14px">Tip: add this address to your contacts so future emails from us land in your inbox.</p>';
