@@ -2,8 +2,23 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const DAY_ORDER = ['Day 1 — 7 October', 'Day 2 — 8 October', 'Day 3 — 9 October'];
-const VENUE = 'Freetown City Council Hall';
-const DATES = '7–8 October 2026';
+const HEADER_SRC = '/Conference Programme Header.png';
+
+// Row shading by session type. Colour-coding by hall was the alternative, but
+// nearly everything sits in the Main Hall, so it would have come out almost
+// entirely one colour — type separates plenaries, workshops, breakouts, meals
+// and ceremonies, and still makes the parallel breakouts stand out.
+const TYPE_FILL = {
+  Plenary: [219, 234, 254],
+  Panel: [237, 233, 254],
+  Workshop: [254, 243, 199],
+  Breakout: [209, 250, 229],
+  Ceremony: [252, 231, 243],
+  Hackathon: [255, 228, 230],
+  'Field Trip': [220, 252, 231],
+  Other: [241, 245, 249],
+};
+const LEGEND = ['Plenary', 'Panel', 'Workshop', 'Breakout', 'Ceremony'];
 
 // Sessions carry a short title plus a subtitle; the printed programme wants the
 // whole name on one line, the same way the public page shows it.
@@ -12,62 +27,72 @@ function fullTitle(s) {
   return sub ? `${s.title}: ${sub}` : (s.title || '');
 }
 
+// The supplied banner is 6000px wide. Embedded as-is that is tens of megabytes
+// of bitmap, so it is redrawn at roughly 200dpi for the page width and handed
+// over as a JPEG.
+async function loadHeaderImage(targetPxWide) {
+  const img = new Image();
+  img.src = encodeURI(HEADER_SRC);
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+  const scale = targetPxWide / img.naturalWidth;
+  const canvas = document.createElement('canvas');
+  canvas.width = targetPxWide;
+  canvas.height = Math.round(img.naturalHeight * scale);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return { data: canvas.toDataURL('image/jpeg', 0.86), ratio: img.naturalWidth / img.naturalHeight };
+}
+
 export async function downloadAgendaPdf(sessions) {
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
 
-  let logoData = null;
-  try {
-    const resp = await fetch('/photos/LCOY-2026-Logo.png');
-    const blob = await resp.blob();
-    logoData = await new Promise((res) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.onerror = () => res(null);
-      r.readAsDataURL(blob);
-    });
-  } catch { /* header just renders without the logo */ }
+  let banner = null;
+  try { banner = await loadHeaderImage(1654); } catch { /* falls back to a plain page */ }
+  const bannerH = banner ? pageW / banner.ratio : 0;
+  const contentTop = (bannerH || 10) + 12;
 
-  const drawHeader = () => {
-    doc.setFillColor(11, 34, 51);
-    doc.rect(0, 0, pageW, 46, 'F');
-    if (logoData) {
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(8, 5, 40, 22, 4, 4, 'F');
-      // The alias makes jsPDF store the logo once and reference it on later
-      // pages; without it the bitmap is re-embedded per page and a two-page
-      // programme weighs in at over 10MB.
-      doc.addImage(logoData, 'PNG', 10, 7, 36, 18, 'lcoyLogo', 'FAST');
-    }
-    const tx = logoData ? 54 : 14;
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-    doc.text('LCOY Sierra Leone 2026', tx, 17);
-    doc.setFontSize(11); doc.setFont('helvetica', 'normal');
-    doc.text('Conference Programme', tx, 26);
-    doc.setFontSize(8); doc.setTextColor(180, 200, 220);
-    doc.text(`${VENUE} · ${DATES}`, tx, 34);
-    doc.text(`Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, tx, 40);
-    doc.setTextColor(0, 0, 0);
+  const drawBanner = () => {
+    if (!banner) return;
+    doc.addImage(banner.data, 'JPEG', 0, 0, pageW, bannerH, 'lcoyHeader', 'FAST');
   };
 
-  let cursorY = 56;
-  let firstDay = true;
+  const drawDayTitle = (day, y) => {
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(11, 34, 51);
+    doc.text(day.toUpperCase(), pageW / 2, y, { align: 'center' });
+  };
 
-  for (const day of DAY_ORDER) {
-    const items = sessions
-      .filter(s => s.day === day)
-      .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-    if (items.length === 0) continue;
+  // Compact swatch row so the shading is readable without guessing.
+  const drawLegend = (y) => {
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+    const gap = 4, box = 3.2;
+    const widths = LEGEND.map(l => box + 1.6 + doc.getTextWidth(l));
+    const total = widths.reduce((a, b) => a + b, 0) + gap * (LEGEND.length - 1);
+    let x = (pageW - total) / 2;
+    LEGEND.forEach((label, i) => {
+      const [r, g, b] = TYPE_FILL[label];
+      doc.setFillColor(r, g, b);
+      doc.setDrawColor(190, 190, 190);
+      doc.rect(x, y - box + 0.6, box, box, 'FD');
+      doc.setTextColor(90, 90, 90);
+      doc.text(label, x + box + 1.6, y);
+      x += widths[i] + gap;
+    });
+  };
 
-    // Keep a day heading with at least the first row of its table.
-    if (!firstDay && cursorY > pageH - 50) { doc.addPage(); cursorY = 56; }
-    firstDay = false;
+  const days = DAY_ORDER
+    .map(day => ({ day, items: sessions.filter(s => s.day === day).sort((a, b) => (a.time || '').localeCompare(b.time || '')) }))
+    .filter(d => d.items.length > 0);
 
-    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 114, 198);
-    doc.text(day, 14, cursorY);
-    cursorY += 5;
+  days.forEach(({ day, items }, index) => {
+    // One day per page.
+    if (index > 0) doc.addPage();
+    drawBanner();
+    drawDayTitle(day, contentTop);
+    drawLegend(contentTop + 8);
 
     autoTable(doc, {
       head: [['Time', 'Session', 'Type', 'Venue']],
@@ -77,34 +102,38 @@ export async function downloadAgendaPdf(sessions) {
         s.type === 'Other' ? '' : (s.type || ''),
         s.room || '',
       ]),
-      startY: cursorY,
-      styles: { fontSize: 8, cellPadding: 3, lineColor: [220, 220, 220], lineWidth: 0.1, valign: 'top' },
-      headStyles: { fillColor: [0, 114, 198], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
-      alternateRowStyles: { fillColor: [244, 248, 246] },
+      startY: contentTop + 13,
+      styles: { fontSize: 7.5, cellPadding: 2.4, lineColor: [214, 214, 214], lineWidth: 0.1, valign: 'top', textColor: [25, 35, 45] },
+      headStyles: { fillColor: [11, 34, 51], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
       columnStyles: {
-        0: { cellWidth: 26 },
-        2: { cellWidth: 22 },
-        3: { cellWidth: 38 },
+        0: { cellWidth: 24 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 34 },
       },
-      margin: { left: 14, right: 14, top: 56, bottom: 22 },
+      margin: { left: 12, right: 12, bottom: 18 },
+      // Shade the whole row by its session type.
+      didParseCell: (data) => {
+        if (data.section !== 'body') return;
+        const type = items[data.row.index]?.type || 'Other';
+        const fill = TYPE_FILL[type] || TYPE_FILL.Other;
+        data.cell.styles.fillColor = fill;
+      },
     });
+  });
 
-    cursorY = doc.lastAutoTable.finalY + 12;
-  }
-
-  // Stamped once at the end over every page. Doing this inside autoTable's
-  // didDrawPage instead would number pages per table rather than per document,
-  // so a third day would restart the count at 1.
+  // Stamped once at the end so page numbers count the document, not each table.
+  const generated = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {
     doc.setPage(p);
-    drawHeader();
     doc.setDrawColor(200, 200, 200);
-    doc.line(14, pageH - 14, pageW - 14, pageH - 14);
-    doc.setFontSize(7); doc.setTextColor(140, 140, 140);
-    doc.setFont('helvetica', 'normal');
-    doc.text('LCOY Sierra Leone 2026 · Inclusive Climate Action: Leaving No Youth Behind', 14, pageH - 8);
-    doc.text(`Page ${p} of ${total}`, pageW - 14, pageH - 8, { align: 'right' });
+    doc.line(12, pageH - 13, pageW - 12, pageH - 13);
+    doc.setFontSize(7); doc.setTextColor(140, 140, 140); doc.setFont('helvetica', 'normal');
+    // Kept short: the full tagline ran past the middle of the page and
+    // collided with the centred "Generated" line.
+    doc.text('LCOY Sierra Leone 2026', 12, pageH - 8.5);
+    doc.text(`Generated ${generated}`, pageW / 2, pageH - 8.5, { align: 'center' });
+    doc.text(`Page ${p} of ${total}`, pageW - 12, pageH - 8.5, { align: 'right' });
   }
 
   doc.save('lcoy2026_conference_agenda.pdf');
