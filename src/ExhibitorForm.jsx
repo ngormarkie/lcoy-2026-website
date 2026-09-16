@@ -199,6 +199,20 @@ export default function ExhibitorForm() {
       setSent(true);
       setSubmitError('');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Acknowledgement email. Deliberately after the application is safely
+      // stored and never awaited into the success path: if the mail fails the
+      // application still stands, and an organiser can still see it.
+      fetch('/api/send-exhibitor-confirmation', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: f.repName.trim(),
+          businessName: f.businessName.trim(),
+          email: f.repEmail.trim().toLowerCase(),
+          origin: window.location.origin,
+        }),
+      }).catch(e => console.error('confirmation email failed', e));
     } catch (err) {
       console.error(err);
       setSubmitError('We could not send your application. Please check your connection and try again — nothing you typed has been lost.');
