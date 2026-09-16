@@ -4,6 +4,7 @@ import { db } from './admin/services/firebase'
 import { REGIONS, getDistricts } from './admin/utils/locations'
 import { isValidEmail } from './admin/utils/badgeCode'
 import ProgrammeAgenda from './ProgrammeAgenda'
+import ExhibitorForm from './ExhibitorForm'
 
 const NAV = [
   ['home','Home'],
@@ -16,11 +17,11 @@ const NAV = [
 // "/" and a refresh or shared link dropped you back on the homepage.
 const PATH_TO_PAGE = {
   '/apply': 'register', '/register': 'register',
-  '/programme': 'programme', '/about': 'about', '/themes': 'themes',
+  '/programme': 'programme', '/exhibit': 'exhibit', '/about': 'about', '/themes': 'themes',
   '/team': 'team', '/editions': 'editions', '/contact': 'contact',
 };
 const PAGE_TO_PATH = {
-  register: '/apply', programme: '/programme', about: '/about', themes: '/themes',
+  register: '/apply', exhibit: '/exhibit', programme: '/programme', about: '/about', themes: '/themes',
   team: '/team', editions: '/editions', contact: '/contact',
 };
 function getPageFromPath(pathname) {
@@ -30,6 +31,15 @@ function getPageFromPath(pathname) {
 function pathFor(id) {
   return PAGE_TO_PATH[id] || '/';
 }
+
+const DEFAULT_TITLE = 'LCOY Sierra Leone 2026 — Inclusive Climate Action: Leaving No Youth Behind';
+const PAGE_META = {
+  exhibit: {
+    title: 'Exhibitor registration | LCOY Sierra Leone 2026',
+    description: 'Register your green business to exhibit at the Local Conference of Youth Sierra Leone 2026, 7 to 8 October, Freetown City Council Hall.',
+  },
+  programme: { title: 'Programme | LCOY Sierra Leone 2026' },
+};
 
 // One dial of the countdown: a grey track with a coloured arc drawn over it.
 // Hours, minutes and seconds measure against their own ceiling; days has none,
@@ -655,6 +665,15 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop);
   },[]);
 
+  // Each page carries its own title and description, so a shared link shows
+  // what it actually points at rather than the site-wide default.
+  useEffect(()=>{
+    const meta = PAGE_META[page];
+    document.title = meta ? meta.title : DEFAULT_TITLE;
+    const tag = document.querySelector('meta[name="description"]');
+    if (tag && meta?.description) tag.setAttribute('content', meta.description);
+  },[page]);
+
   // ----- slider auto-rotate -----
   const reduce = typeof window!=='undefined' && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   const startSlider = useCallback(()=>{
@@ -736,7 +755,7 @@ export default function App() {
           <a href="/live" className="nav-live"><span className="nav-live-dot"></span>Live</a>
         </nav>
         <div className="nav-cta">
-          <a className="btn btn-blue" href={pathFor('register')} onClick={(e)=>go(e,'register')}>Register</a>
+          <a className="btn btn-blue" href={pathFor('exhibit')} onClick={(e)=>go(e,'exhibit')}>Exhibit</a>
           <button className="burger" onClick={()=>setOpen(o=>!o)} aria-label="Menu"><span></span><span></span><span></span></button>
         </div>
       </div>
@@ -756,7 +775,7 @@ export default function App() {
             <a onClick={()=>nav('themes')}>Thematic Areas</a><a onClick={()=>nav('editions')}>Past Editions</a>
           </div>
           <div><h4>Get involved</h4>
-            <a onClick={()=>nav('register')}>Register</a>
+            <a href={pathFor('exhibit')} onClick={(e)=>go(e,'exhibit')}>Exhibit</a>
             <a onClick={()=>{nav('home');setTimeout(()=>document.getElementById('partners').scrollIntoView({behavior:'smooth'}),120)}}>Partners</a>
             <a onClick={()=>nav('contact')}>Contact</a>
           </div>
@@ -1429,6 +1448,14 @@ export default function App() {
   </section>
   </>);
 
+  const Page_exhibit = () => (<>
+  <section className="objectives-section">
+    <div className="wrap">
+      <div style={{maxWidth:820,margin:'0 auto'}}><ExhibitorForm /></div>
+    </div>
+  </section>
+  </>);
+
   const Page_contact = () => (<>
   <section className="about-hero">
     <div className="about-hero-bg" style={{backgroundImage:"url('photos/Past Editions/LCOY 2025 Photos/IMG_0506.JPG.jpeg')",backgroundPosition:'center 40%'}}></div>
@@ -1655,7 +1682,7 @@ export default function App() {
   </section>
   </>);
 
-  const pages = { home:Page_home,about:Page_about,programme:Page_programme,themes:Page_themes,editions:Page_editions,team:Page_team,register:Page_register,contact:Page_contact };
+  const pages = { home:Page_home,about:Page_about,programme:Page_programme,themes:Page_themes,editions:Page_editions,team:Page_team,register:Page_register,exhibit:Page_exhibit,contact:Page_contact };
 
   return (
     <>

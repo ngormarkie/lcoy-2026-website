@@ -188,6 +188,23 @@ service cloud.firestore {
       allow list, update: if false;
     }
 
+    // ---------- EXHIBITOR APPLICATIONS ----------
+    // Anyone can submit the public /exhibit form, but only the two consent
+    // declarations make a submission valid. Reads stay organiser-only: these
+    // hold business contact details, and delegates are signed-in accounts on
+    // this site, so "any authenticated user" would expose them to the whole
+    // delegate list.
+    match /exhibitorApplications/{id} {
+      allow create: if request.resource.data.keys().hasAll([
+                         'businessName', 'sector', 'repName', 'repEmail',
+                         'repWhatsapp', 'consentMedia', 'consentTerms'
+                       ])
+                    && request.resource.data.consentMedia == true
+                    && request.resource.data.consentTerms == true
+                    && request.resource.data.status == 'new';
+      allow read, update, delete: if isOrganiser();
+    }
+
     // ---------- SETTINGS ----------
     // Small named config docs (e.g. settings/application: { open: boolean }).
     // Public single-doc read so the application form can check its own

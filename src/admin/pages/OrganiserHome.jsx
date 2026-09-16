@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import { useAuth } from '../contexts/AuthContext';
 import OrganiserDashboard from './organiser/Dashboard';
 import Applications from './organiser/Applications';
+import Exhibitors from './organiser/Exhibitors';
 import ImportApplications from './organiser/ImportApplications';
 import ApplicationsDashboard from './organiser/ApplicationsDashboard';
 import FixDistricts from './organiser/FixDistricts';
@@ -35,6 +36,7 @@ export default function OrganiserHome() {
       { to: '/admin/applications', label: 'Applications', icon: '◪' },
       { to: '/admin/users', label: 'People', icon: '◉' },
       { to: '/admin/users/new', label: 'Add person', icon: '＋' },
+      { to: '/admin/exhibitors', label: 'Exhibitors', icon: '◧' },
     ] : []),
     { to: '/admin/verify', label: 'Verify entry', icon: '◐' },
     { to: '/admin/meals', label: 'Meal check-in', icon: '◍' },
@@ -59,6 +61,7 @@ export default function OrganiserHome() {
       <Routes>
         <Route path="/" element={<OrganiserDashboard />} />
         <Route path="/applications" element={<Applications />} />
+        <Route path="/exhibitors" element={<Exhibitors />} />
         <Route path="/applications/import" element={<ImportApplications />} />
         <Route path="/applications/dashboard" element={<ApplicationsDashboard />} />
         <Route path="/applications/fix-districts" element={<FixDistricts />} />
