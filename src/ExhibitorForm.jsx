@@ -214,8 +214,14 @@ export default function ExhibitorForm() {
         }),
       }).catch(e => console.error('confirmation email failed', e));
     } catch (err) {
-      console.error(err);
-      setSubmitError('We could not send your application. Please check your connection and try again — nothing you typed has been lost.');
+      // Blaming the connection for every failure sends people off checking
+      // their wifi when the real cause is server side, so say which it was.
+      console.error('exhibitor submit failed:', err?.code, err);
+      if (err?.code === 'permission-denied') {
+        setSubmitError(`This form is not accepting submissions yet — that is a problem on our side, not with anything you entered. Please email ${CONTACT_EMAIL} and we will take your details directly. Nothing you typed has been lost.`);
+      } else {
+        setSubmitError('We could not send your application. Please check your connection and try again — nothing you typed has been lost.');
+      }
     } finally {
       settled = true;
       clearTimeout(timer);
